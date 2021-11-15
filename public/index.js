@@ -179,7 +179,7 @@ function uploadFile(formData) {
   uploadBox.classList.add("loading");
   axios({
     method: "post",
-    url: "https://efood-analytics.herokuapp.com//api/v1/efood",
+    url: "https://efood-analytics.herokuapp.com/api/v1/efood",
     data: formData,
     headers: { "Content-Type": "multipart/form-data" },
   })
