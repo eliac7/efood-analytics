@@ -1,0 +1,292 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap");
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+:root {
+  --clr-white: rgb(255, 255, 255);
+  --clr-dark: #363949;
+  --clr-light: rgb(245, 248, 255);
+  --clr-light-gray: rgb(196, 195, 196);
+  --clr-red: rgb(237, 46, 46);
+  --clr-light-red: rgb(238, 109, 109);
+}
+
+html,
+body {
+  height: 100%;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+}
+a {
+  display: block;
+}
+a:focus {
+  outline: none;
+}
+.cursor-pointer {
+  cursor: pointer !important;
+}
+.upload-box {
+  width: 100%;
+  max-width: 25rem;
+  background-color: var(--clr-white);
+  box-shadow: 0 0.625rem 3.75rem var(--clr-light-red);
+  border-radius: 1.5rem;
+  padding: 2rem 1.875rem 2rem 1.875rem;
+  margin: 0.625rem;
+  transition: all 0.2s linear;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+}
+.upload-box.loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(2px);
+  background-color: rgba(0, 0, 0, 0.4);
+  background-image: url("https://raw.githubusercontent.com/eliac7/node-openweather-proxy-server/master/public/assets/images/loading.gif");
+  background-size: 3.75rem;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.upload-area {
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: column;
+  border: 0.125rem dashed var(--clr-light-gray);
+  border-radius: 0.9375rem;
+  margin-top: 2.1875rem;
+  transition: border-color 300ms ease-in-out;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+[class*="-step"] {
+  display: none;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+}
+[class*="-step"].active {
+  display: flex;
+  flex-direction: column;
+}
+.fab,
+.fas {
+  background-color: var(--clr-light-gray);
+  color: var(--clr-dark);
+  padding: 5px;
+  font-size: 1rem;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  user-select: none;
+}
+.navigation-buttons .fas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.insights .fab,
+.insights .fas {
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+}
+.sales .fab,
+.sales .fas {
+  width: 80px;
+  height: 80px;
+  font-size: 2rem;
+  text-align: center;
+  line-height: 80px;
+  vertical-align: middle;
+}
+.back,
+.next {
+  cursor: pointer;
+}
+.back:hover,
+.next:hover {
+  background-color: #e9673f;
+}
+.upload-area-badge {
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--clr-light-gray);
+  color: var(--clr-white);
+  border-radius: 50%;
+}
+.upload-area-fourth-step p:not(:last-child) {
+  font-size: 0.9rem;
+  color: var(--clr-light-gray);
+}
+.upload-container {
+  display: flex;
+  z-index: 1;
+}
+.upload-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(30px);
+}
+.release {
+  display: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--clr-dark);
+}
+.upload-area-fourth-step {
+  cursor: pointer;
+}
+.upload-area-fourth-step.drag-active .release {
+  display: block;
+}
+.upload-area-fourth-step.drag-active .html-icon,
+.upload-area-fourth-step.drag-active > *:not(:last-child) {
+  opacity: 0.5;
+}
+.rocket {
+  animation: rocket 0.2s ease infinite;
+}
+@keyframes rocket {
+  0%,
+  100% {
+    top: 0px;
+  }
+  50% {
+    top: -5px;
+  }
+}
+
+/* Statistics */
+
+.statistics {
+  z-index: 0;
+  background-color: #151c28;
+}
+
+.insights div.sales {
+  background: #202528;
+  border-radius: 2rem;
+  padding: 0.8rem;
+  box-shadow: 0 2rem 3rem rgb(0, 0, 0, 0.4);
+  transition: all 300ms ease;
+}
+.insights div.sales:hover {
+  box-shadow: none;
+}
+
+.analytics-dashboard a {
+  text-decoration: none;
+  color: var(--clr-white);
+  cursor: pointer;
+}
+.analytics-dashboard a:hover {
+  color: var(--clr-white);
+}
+
+.insights h3 {
+  margin: 1rem 0 0.6rem;
+  font-size: 1rem;
+}
+#first-order,
+#latest-order,
+#total-orders,
+#total-amount,
+#frequent-store {
+  font-size: 1.9rem;
+  margin: 1rem 0;
+}
+
+canvas {
+  width: 100%;
+  height: 100px;
+}
+
+.frequent-store-container {
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.table-container {
+  overflow-x: auto;
+  box-shadow: 0 2rem 3rem rgba(0, 0, 0, 0.4);
+  transition: all 300ms ease;
+  border-radius: 2rem;
+}
+.table-container:hover {
+  box-shadow: none;
+}
+table#ordersTable {
+  background: #202528;
+  width: 100%;
+  border-radius: 2rem;
+  text-align: center;
+  overflow-x: auto;
+  padding: 1.8rem;
+  border-collapse: separate !important;
+}
+
+table#ordersTable tbody td {
+  height: 2.8rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  color: #a3bdcc;
+}
+
+table#ordersTable tbody tr:last-child td {
+  border: none;
+}
+
+.credits-link,
+table#ordersTable tbody td a {
+  text-decoration: none;
+  color: var(--clr-white);
+}
+.credits-link:hover,
+table#ordersTable tbody td a:hover {
+  color: var(--clr-white);
+  text-decoration: underline;
+}
+
+@media (max-width: 992px) {
+  .sales {
+    width: 100%;
+    margin: 0 auto;
+    gap: 2rem !important;
+  }
+}
