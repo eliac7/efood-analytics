@@ -12,7 +12,7 @@ app.use(cors());
 
 app.use(express.json({ limit: "10mb" }));
 
-const uploadPATH = pathOS.normalize(pathOS.join(__dirname, "uploads/"));
+const uploadPATH = pathOS.normalize(pathOS.join(__dirname, "tmp/"));
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
