@@ -263,7 +263,10 @@ app.post("/api/v1/efood", upload.single("analytics"), async (req, res) => {
 });
 
 app.get("*", (req, res) => {
-  res.json("nothing to see here");
+  res.status(404).json({
+    status: 404,
+    message: "Page not found",
+  });
 });
 
 app.listen(port, () => console.log(`Listening on ${port}`));
