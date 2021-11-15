@@ -136,6 +136,7 @@
                 class="img-fluid pe-none"
                 alt="Site logo"
               />
+
               <div class="upload-area">
                 <div class="upload-area-first-step active">
                   <span class="upload-area-badge align-self-baseline">1</span>
@@ -240,16 +241,26 @@
             col-lg-12
             text-white
             d-flex
+            flex-lg-row flex-column
             align-items-center
             justify-content-center
+            gap-4 gap-lg-0
           "
         >
-          <img
-            src="./assets/images/efood-analytics-logo-white.png"
-            class="img-fluid"
-            style="width: 250px"
-            alt="Site logo"
-          />
+          <div class="flex-grow-1 text-center">
+            <img
+              src="./assets/images/efood-analytics-logo-white.png"
+              class="img-fluid"
+              style="width: 250px"
+              alt="Site logo"
+            />
+          </div>
+          <button
+            class="btn btn-danger reset-button ms-lg-auto rounded-top"
+            title="Reset app"
+          >
+            <i class="fas fa-undo"></i>
+          </button>
         </div>
       </div>
       <div class="row d-flex justify-content-center text-white">

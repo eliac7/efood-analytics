@@ -98,7 +98,7 @@ a:focus {
   flex-direction: column;
 }
 .fab,
-.fas {
+.fas:not(.fa-undo) {
   background-color: var(--clr-light-gray);
   color: var(--clr-dark);
   padding: 5px;
@@ -281,6 +281,14 @@ table#ordersTable tbody td a {
 table#ordersTable tbody td a:hover {
   color: var(--clr-white);
   text-decoration: underline;
+}
+
+/*Reset button */
+.reset-button i {
+  transition: transform 0.7s ease-in-out;
+}
+.reset-button:hover i {
+  transform: rotate(-360deg);
 }
 
 @media (max-width: 992px) {

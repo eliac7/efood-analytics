@@ -8,6 +8,7 @@ let uploadInput = document.querySelector("input[type=file]");
 let uploadText = document.querySelector(".upload-area > p");
 let nextIcon = document.querySelectorAll(".next");
 let prevIcon = document.querySelectorAll(".back");
+let resetButton = document.querySelector(".reset-button");
 
 let ToastifyAlertColor = "#cc3300";
 let ToastifyInfoColor = "#7db0b1";
@@ -76,6 +77,7 @@ function FadeOutUploadArea() {
     (s.opacity -= 0.1) < 0 ? (s.display = "none") : setTimeout(fade, 40);
   })();
 }
+
 //Trigger Toastify with message given by user
 function TriggerToastify(message, color) {
   Toastify({
@@ -462,6 +464,20 @@ uploadArea.addEventListener("drop", function (e) {
 form.onsubmit = function (e) {
   e.preventDefault();
 };
+
+//Handle reset button click
+resetButton.addEventListener("click", (e) => {
+  e.preventDefault();
+  uploadInput.value = "";
+  uploadAreaSteps.forEach((element, index) => {
+    element.classList.remove("active");
+    if (index == 0) {
+      element.classList.add("active");
+    }
+  });
+  uploadContainer.style.display = "flex";
+  uploadContainer.style.opacity = "1";
+});
 
 //Chart JS
 const chart = document.getElementById("chart");
