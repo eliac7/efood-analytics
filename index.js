@@ -5,15 +5,18 @@ const fs = require("fs");
 const cheerio = require("cheerio");
 const multer = require("multer");
 const uuid = require("uuid").v4;
+const pathOS = require("path");
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 
 app.use(express.json({ limit: "10mb" }));
 
+const uploadPATH = pathOS.normalize(pathOS.join(__dirname, "uploads/"));
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./uploads/");
+    cb(null, uploadPATH);
   },
   filename: function (req, file, cb) {
     const { originalname } = file;
@@ -34,7 +37,7 @@ app.post("/api/v1/efood", upload.single("analytics"), async (req, res) => {
   }
   let filename = req.file.filename;
   let path = req.file.path;
-  let $ = cheerio.load(fs.readFileSync("./uploads/" + filename));
+  let $ = cheerio.load(fs.readFileSync(uploadPATH + filename));
 
   const stores = $("a");
 
