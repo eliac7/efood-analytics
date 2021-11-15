@@ -211,8 +211,6 @@ app.post("/api/v1/efood", upload.single("analytics"), async (req, res) => {
     });
   });
 
-  //   console.log(tempStores);
-
   //Filter the tempStores array to remove duplicates
   const seen = new Set();
   const filteredStores = tempStores.filter((el) => {

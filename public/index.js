@@ -184,7 +184,6 @@ function uploadFile(formData) {
     headers: { "Content-Type": "multipart/form-data" },
   })
     .then(function (response) {
-      console.log(response.data);
       //Remove loading class from upload box
       setTimeout(() => {
         uploadBox.classList.remove("loading");
