@@ -481,7 +481,11 @@ function uploadFile(formData) {
           );
         }
       }
-      TriggerToastify(error.response.data.error, ToastifyAlertColor);
+      if (error.response.data.error) {
+        TriggerToastify(error.response.data.error, ToastifyAlertColor);
+      } else {
+        TriggerToastify("Unknown error", ToastifyAlertColor);
+      }
     });
 }
 
