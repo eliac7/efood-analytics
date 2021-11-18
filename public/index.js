@@ -196,18 +196,6 @@ function uploadFile(formData) {
     headers: { "Content-Type": "multipart/form-data" },
   })
     .then(function (response) {
-      //Remove event listener on window for refreshing the page
-      window.removeEventListener(
-        "beforeunload",
-        (event) => {
-          // Cancel the event as stated by the standard.
-          event.preventDefault();
-          // Chrome requires returnValue to be set.
-          event.returnValue = "";
-        },
-        true
-      );
-
       //Remove progress bar
       let progress = document.querySelector(".progress");
       if (progress) progress.remove();
