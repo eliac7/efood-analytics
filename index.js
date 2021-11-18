@@ -29,7 +29,6 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.static("public"));
 
 app.post("/api/v1/efood", upload.single("analytics"), async (req, res) => {
-  const checkMaps = req.query["maps"] === "true";
   const { file } = req;
   if (!file) {
     return res.status(400).json({
@@ -204,7 +203,6 @@ app.post("/api/v1/efood", upload.single("analytics"), async (req, res) => {
       link: storeLink,
       times: 0,
       amount: 0,
-      ...(checkMaps ? { gps: { x: 0, y: 0 } } : {}),
     });
   });
   //For each order, find the store and increase the times that been seen and the amount that spent on that store
@@ -238,96 +236,33 @@ app.post("/api/v1/efood", upload.single("analytics"), async (req, res) => {
   });
   //Sort stores by times been seen
   filteredStores.sort((a, b) => (a.times > b.times ? 1 : -1));
-  //Get Geo Location of every store
-  if (checkMaps) {
-    let time;
-    var filter = new Promise((resolve, reject) => {
-      filteredStores.forEach((store, i, array) => {
-        time = setTimeout(async () => {
-          let response = await humanoid.sendRequest(store.link);
-          let $ = cheerio.load(response.body);
-          let scripts = $("script[type='application/ld+json']")[0];
-          let json = JSON.parse(scripts.children[0].data);
-          let scriptSplit = json;
-          if (Object.keys(scriptSplit).length === 1) {
-            scriptSplit = scriptSplit["@graph"][0];
-          }
-          let latitude = scriptSplit.geo.latitude;
-          let longitude = scriptSplit.geo.longitude;
-          store.gps.x = latitude;
-          store.gps.y = longitude;
 
-          console.log(store);
-
-          if (i === array.length - 1) resolve();
-        }, i * 1000);
-      });
-      req.connection.on("close", () => {
-        clearTimeout(time);
-        reject("Error");
-      });
-    });
-
-    filter.then(() => {
-      let frequentStore = filteredStores[filteredStores.length - 1];
-      //Money
-      let total = 0;
-      money.each((index, el) => {
-        replacedMoney = Number($(el).text().replace("€", "").replace(",", "."));
-        total = total + replacedMoney;
-      });
-      total = formatter.format(total);
-      res.status(200).json({
-        status: 200,
-        data: {
-          filteredStores,
-          frequentStore,
-          firstOrder,
-          lastOrder,
-          total,
-          frequentProduct,
-          totalOrders,
-          ordersByYear,
-          ordersByYearAndPrice,
-          paymentTypeOccurrences,
-          topTenOrders,
-          tipsCounter,
-        },
-      });
-      fs.unlinkSync(path);
-    });
-    filter.catch(() => {
-      next(new Error("Something went wrong"));
-      return;
-    });
-  } else {
-    let frequentStore = filteredStores[filteredStores.length - 1];
-    //Money
-    let total = 0;
-    money.each((index, el) => {
-      replacedMoney = Number($(el).text().replace("€", "").replace(",", "."));
-      total = total + replacedMoney;
-    });
-    total = formatter.format(total);
-    res.status(200).json({
-      status: 200,
-      data: {
-        filteredStores,
-        frequentStore,
-        firstOrder,
-        lastOrder,
-        total,
-        frequentProduct,
-        totalOrders,
-        ordersByYear,
-        ordersByYearAndPrice,
-        paymentTypeOccurrences,
-        topTenOrders,
-        tipsCounter,
-      },
-    });
-    fs.unlinkSync(path);
-  }
+  let frequentStore = filteredStores[filteredStores.length - 1];
+  //Money
+  let total = 0;
+  money.each((index, el) => {
+    replacedMoney = Number($(el).text().replace("€", "").replace(",", "."));
+    total = total + replacedMoney;
+  });
+  total = formatter.format(total);
+  res.status(200).json({
+    status: 200,
+    data: {
+      filteredStores,
+      frequentStore,
+      firstOrder,
+      lastOrder,
+      total,
+      frequentProduct,
+      totalOrders,
+      ordersByYear,
+      ordersByYearAndPrice,
+      paymentTypeOccurrences,
+      topTenOrders,
+      tipsCounter,
+    },
+  });
+  fs.unlinkSync(path);
 });
 
 app.get("*", (req, res) => {
