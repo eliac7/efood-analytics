@@ -214,11 +214,12 @@ function uploadFile(formData) {
   uploadBox.classList.add("loading");
   switchMapInput.disabled = true;
   let mapRow = document.getElementsByClassName("map-row")[0];
+  let url = "https://efood-analytics.herokuapp.com/api/v1/efood";
   if (switchMapInput.checked) {
     mapRow.style.display = "flex";
     mapRow.style.visibility = "visible";
 
-    url = "https://efood-analytics.herokuapp.com/api/v1/efood?maps=true";
+    url = url + "?maps=true";
 
     const progressBar = ` 
       <div class="progress w-100 position-absolute w-100 top-0" style="z-index:2">
@@ -236,7 +237,7 @@ function uploadFile(formData) {
   } else {
     mapRow.style.display = "none";
     mapRow.style.visibility = "hidden";
-    url = "https://efood-analytics.herokuapp.com/api/v1/efood?maps=false";
+    url = url + "?maps=false";
   }
 
   axios({
