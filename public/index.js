@@ -214,7 +214,7 @@ function uploadFile(formData) {
   uploadBox.classList.add("loading");
   switchMapInput.disabled = true;
   let mapRow = document.getElementsByClassName("map-row")[0];
-  let url = "https://efood-analytics.herokuapp.com/api/v1/efood";
+  let url = "http://localhost:3000/api/v1/efood";
   if (switchMapInput.checked) {
     mapRow.style.display = "flex";
     mapRow.style.visibility = "visible";
