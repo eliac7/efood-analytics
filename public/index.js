@@ -218,7 +218,7 @@ function uploadFile(formData) {
     mapRow.style.display = "flex";
     mapRow.style.visibility = "visible";
 
-    url = "http://localhost:3000/api/v1/efood?maps=true";
+    url = "https://efood-analytics.herokuapp.com/api/v1/efood?maps=true";
 
     const progressBar = ` 
       <div class="progress w-100 position-absolute w-100 top-0" style="z-index:2">
@@ -236,7 +236,7 @@ function uploadFile(formData) {
   } else {
     mapRow.style.display = "none";
     mapRow.style.visibility = "hidden";
-    url = "http://localhost:3000/api/v1/efood?maps=false";
+    url = "https://efood-analytics.herokuapp.com/api/v1/efood?maps=false";
   }
 
   axios({
