@@ -345,8 +345,6 @@ function uploadFile(formData) {
       totalOrders.setAttribute("data-target", response.data.data.totalOrders);
       totalAmount.innerHTML = response.data.data.total;
 
-      console.log();
-
       uniqueStores.innerHTML = Object.keys(
         response.data.data.filteredStores
       ).length;

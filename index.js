@@ -257,8 +257,6 @@ app.post("/api/v1/efood", upload.single("analytics"), async (req, res) => {
           store.gps.x = latitude;
           store.gps.y = longitude;
 
-          console.log(store);
-
           if (i === array.length - 1) resolve();
         }, i * 1000);
       });
