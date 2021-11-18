@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "node --trace-warnings index",
+    "start": "node index",
     "dev": "nodemon index",
     "debug": "node --inspect index",
     "warnings": "node --trace-warnings index"
