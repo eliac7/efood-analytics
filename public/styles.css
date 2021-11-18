@@ -37,6 +37,7 @@ a:focus {
 .cursor-pointer {
   cursor: pointer !important;
 }
+
 .upload-box {
   width: 100%;
   max-width: 25rem;
@@ -99,7 +100,7 @@ a:focus {
   flex-direction: column;
 }
 .fab,
-.fas:not(.fa-undo) {
+.fas:not(.fa-undo, .fa-info-circle) {
   background-color: var(--clr-light-gray);
   color: var(--clr-dark);
   padding: 5px;
@@ -108,6 +109,9 @@ a:focus {
   width: 30px;
   height: 30px;
   user-select: none;
+}
+.fa-info-circle {
+  color: var(--clr-light-gray);
 }
 .navigation-buttons .fas {
   display: flex;
@@ -193,6 +197,21 @@ a:focus {
   }
 }
 
+.form-check-input:checked {
+  background-color: #118c4f;
+  border-color: #118c4f;
+}
+.form-switch .form-check-input {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e");
+}
+.form-switch .form-check-input:focus:not(:checked) {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e");
+  border-color: #16be6a;
+}
+.form-switch .form-check-input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(22, 190, 106, 0.25);
+}
+
 /* Statistics */
 
 .statistics {
@@ -209,6 +228,10 @@ a:focus {
 }
 .insights div.sales:hover {
   box-shadow: none;
+}
+.insights div.sales-payment {
+  max-width: 250px;
+  margin: 0 auto;
 }
 
 .analytics-dashboard a {
@@ -228,8 +251,10 @@ a:focus {
 #latest-order,
 #total-orders,
 #total-amount,
-#frequent-store {
-  font-size: 1.9rem;
+#frequent-store,
+#unique-stores,
+#total-tips {
+  font-size: 1.6rem;
   margin: 1rem 0;
 }
 
@@ -309,6 +334,25 @@ table#ordersTable tbody td a:hover {
   .upload-container::before {
     background-color: rgb(43, 42, 42);
   }
+}
+
+/*Map*/
+#map {
+  width: 100%;
+  height: 800px;
+  box-shadow: 0 2rem 3rem rgb(0, 0, 0, 0.4);
+  border-radius: 20px;
+  margin: 0 auto;
+}
+
+.map-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 9999;
 }
 
 @media (max-width: 992px) {
