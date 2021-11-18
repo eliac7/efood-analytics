@@ -5,7 +5,6 @@ let uploadArea = document.querySelector(".upload-area-fourth-step");
 let uploadAreaSteps = document.querySelectorAll("[class*=step]");
 
 let uploadInput = document.querySelector("input[type=file]");
-let switchMapInput = document.querySelector("#map-switch");
 let uploadText = document.querySelector(".upload-area > p");
 let nextIcon = document.querySelectorAll(".next");
 let prevIcon = document.querySelectorAll(".back");
@@ -87,30 +86,6 @@ var tooltipTriggerList = [].slice.call(
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl);
 });
-
-//Leaflet JS
-var map = L.map("map").setView([37.9908997, 23.70332], 13);
-
-L.tileLayer(
-  "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
-  {
-    maxZoom: 18,
-    id: "mapbox/streets-v11",
-    tileSize: 512,
-    zoomOffset: -1,
-    accessToken:
-      "pk.eyJ1IjoiZWxpYWM3IiwiYSI6ImNrcjZ1d3pqczA5dDIybm1hbndkYzA3cWUifQ.oCsZHSmdgFiahDuozJWNOg",
-  }
-).addTo(map);
-var storesLayer = L.layerGroup().addTo(map);
-const controlSearch = new L.Control.Search({
-  layer: storesLayer,
-  initial: false,
-  zoom: 16,
-  marker: false,
-});
-
-map.addControl(controlSearch);
 
 //Trigger Toastify with message given by user
 function TriggerToastify(message, color) {
@@ -212,33 +187,7 @@ function counterAnimationHandler() {
 
 function uploadFile(formData) {
   uploadBox.classList.add("loading");
-  switchMapInput.disabled = true;
-  let mapRow = document.getElementsByClassName("map-row")[0];
   let url = "https://efood-analytics.herokuapp.com/api/v1/efood";
-  if (switchMapInput.checked) {
-    mapRow.style.display = "flex";
-    mapRow.style.visibility = "visible";
-
-    url = url + "?maps=true";
-
-    const progressBar = ` 
-      <div class="progress w-100 position-absolute w-100 top-0" style="z-index:2">
-        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="100" aria-valuemax="100" style="width: 100%">Loading, please wait...</div>
-      </div>
-    `;
-    uploadContainer.insertAdjacentHTML("beforeend", progressBar);
-
-    window.addEventListener("beforeunload", (event) => {
-      // Cancel the event as stated by the standard.
-      event.preventDefault();
-      // Chrome requires returnValue to be set.
-      event.returnValue = "";
-    });
-  } else {
-    mapRow.style.display = "none";
-    mapRow.style.visibility = "hidden";
-    url = url + "?maps=false";
-  }
 
   axios({
     method: "post",
@@ -259,9 +208,6 @@ function uploadFile(formData) {
         true
       );
 
-      //Enable again map switcher
-      switchMapInput.disabled = false;
-
       //Remove progress bar
       let progress = document.querySelector(".progress");
       if (progress) progress.remove();
@@ -279,44 +225,8 @@ function uploadFile(formData) {
       //Update Chart
       let orders = response.data.data.ordersByYear;
       let ordersByPrice = response.data.data.ordersByYearAndPrice;
-      let stores = response.data.data.filteredStores;
 
       console.log(response.data);
-
-      if (switchMapInput.checked) {
-        let coords = [];
-        stores.forEach((store) => {
-          let storeLink = store.link;
-          let storeName = store.name;
-          let storeImage = store.image;
-          let storeTimes = store.times;
-          let storeAmount = store.amount;
-          let latitude = store.gps.x;
-          let longitude = store.gps.y;
-          coords.push([latitude, longitude]);
-          marker = new L.marker([latitude, longitude], {
-            title: storeName,
-            icon: L.icon({
-              iconUrl: storeImage,
-              iconSize: [50, 50],
-              iconAnchor: [25, 25],
-              popupAnchor: [0, -15],
-            }),
-          }).bindPopup(
-            ` <a class="text-center" href=${storeLink} target="_blank" rel="noreferrer">
-                      ${storeName}
-                    </a>
-                    <p class="text-center">Times: <b>${storeTimes}</b></h1>
-                    <p class="text-center">Total spent: <b>${formatter.format(
-                      storeAmount
-                    )}</b></h1>
-                  `
-          );
-          storesLayer.addLayer(marker);
-        });
-        var bounds = new L.LatLngBounds(coords);
-        map.fitBounds(bounds);
-      }
 
       let chartLabelsOrdersPerYear = [];
       let chartDataOrdersPerYear = [];
@@ -455,9 +365,6 @@ function uploadFile(formData) {
     .catch(function (error) {
       console.log(error);
 
-      //Enable again map switcher
-      switchMapInput.disabled = false;
-
       //Remove progress bar
       let progress = document.querySelector(".progress");
       if (progress) progress.remove();
@@ -560,13 +467,6 @@ prevIcon.forEach(function (element) {
 
 //Manipulate form to trigger upload
 uploadArea.addEventListener("click", (e) => {
-  if (
-    e.target === switchMapInput ||
-    e.target.classList.contains("form-check-label") ||
-    e.target.classList.contains("fa-info-circle") ||
-    e.target.classList.contains("form-check")
-  )
-    return;
   uploadInput.click();
 });
 
