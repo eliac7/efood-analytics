@@ -63,6 +63,29 @@ lastOrder.innerHTML = today;
 const yearSelector = document.querySelector(".year");
 yearSelector.innerText = yyyy;
 
+//Check if there is toast item on local storage
+let toastItem = localStorage.getItem("toast");
+let toast = document.querySelector(".toast");
+if (!toastItem) {
+  toast.style.display = "block";
+} else {
+  toast.style.display = "none";
+}
+
+//Handle toast close button
+
+let closeToast = document.querySelector(".btn-close");
+
+closeToast.addEventListener("click", function () {
+  let toast = document.querySelector(".toast");
+  toast.style.display = "none";
+  //Save it to local storage
+  let toastItem = localStorage.getItem("toast");
+  if (!toastItem) {
+    localStorage.setItem("toast", "false");
+  }
+});
+
 //Check if is touch device
 function isTouchDevice() {
   return (

@@ -99,7 +99,7 @@ a:focus {
   display: flex;
   flex-direction: column;
 }
-.fab,
+.fab:not(.fa-github),
 .fas:not(.fa-undo, .fa-info-circle) {
   background-color: var(--clr-light-gray);
   color: var(--clr-dark);
@@ -113,6 +113,14 @@ a:focus {
 .fa-info-circle {
   color: var(--clr-light-gray);
 }
+.fa-github {
+  font-size: 2rem;
+  transition: color 100ms ease-in-out;
+}
+.fa-github:hover {
+  color: #fff;
+}
+
 .navigation-buttons .fas {
   display: flex;
   align-items: center;
