@@ -67,9 +67,9 @@ yearSelector.innerText = yyyy;
 let toastItem = localStorage.getItem("toast");
 let toast = document.querySelector(".toast");
 if (!toastItem) {
-  toast.style.display = "block";
+  toast.classList.remove("d-none");
 } else {
-  toast.style.display = "none";
+  toast.classList.add("d-none");
 }
 
 //Handle toast close button
@@ -77,10 +77,9 @@ if (!toastItem) {
 let closeToast = document.querySelector(".btn-close");
 
 closeToast.addEventListener("click", function () {
-  let toast = document.querySelector(".toast");
-  toast.style.display = "none";
+  toast.classList.add("d-none");
   //Save it to local storage
-  let toastItem = localStorage.getItem("toast");
+
   if (!toastItem) {
     localStorage.setItem("toast", "false");
   }
