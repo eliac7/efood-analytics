@@ -1,5 +1,6 @@
 
 
+
 <div id="top"></div>
 <!--
 *** Thanks for checking out the Best-README-Template. If you have a suggestion
@@ -38,7 +39,10 @@
 <h3 align="center">E-food Analytics</h3>
 
   <p align="center">
-    Have you ever wondered how much have you spent on E-food? Well, this project is for you.
+    <i>Have you ever wondered how much have you spent on E-food? Well, this project is for you. </i>     
+    <br/>
+    <br/>
+    Built with <b>Node.js</b> and <b>Express.js</b> to serve the data from an endpoint of REST API. For the frontend part, built with Vanilla JS and Bootstrap Framework to build a minimal design by me. Includes dynamic Chart and interactive map* filled with the stores you have bought from.
     <br />
     <br />
     <a href="https://bit.ly/efood-analytics">View Demo</a>
