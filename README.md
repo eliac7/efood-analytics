@@ -114,7 +114,7 @@ This is an example of how to list things you need to use the software and how to
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/elliac7/efood-analytics.git
+   git clone https://github.com/eliac7/efood-analytics.git
    ```
 2. Install NPM packages
    ```sh
@@ -164,7 +164,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Your Name - [@ilias_thal](https://twitter.com/ilias_thal) - elias_thal(at)hotmail.com
 
-Project Link: [https://github.com/elliac7/efood-analytics](https://github.com/elliac7/efood-analytics)
+Project Link: [https://github.com/eliac7/efood-analytics](https://github.com/eliac7/efood-analytics)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -173,15 +173,15 @@ Project Link: [https://github.com/elliac7/efood-analytics](https://github.com/el
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/eliac7/efood-analytics.svg?style=for-the-badge
-[contributors-url]: https://github.com/elliac7/efood-analytics/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/elliac7/efood-analytics.svg?style=for-the-badge
-[forks-url]: https://github.com/elliac7/efood-analytics/network/members
-[stars-shield]: https://img.shields.io/github/stars/elliac7/efood-analytics.svg?style=for-the-badge
-[stars-url]: https://github.com/elliac7/efood-analytics/stargazers
-[issues-shield]: https://img.shields.io/github/issues/elliac7/efood-analytics.svg?style=for-the-badge
-[issues-url]: https://github.com/elliac7/efood-analytics/issues
-[license-shield]: https://img.shields.io/github/license/elliac7/efood-analytics.svg?style=for-the-badge
-[license-url]: https://github.com/elliac7/efood-analytics/blob/master/LICENSE.txt
+[contributors-url]: https://github.com/eliac7/efood-analytics/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/eliac7/efood-analytics.svg?style=for-the-badge
+[forks-url]: https://github.com/eliac7/efood-analytics/network/members
+[stars-shield]: https://img.shields.io/github/stars/eliac7/efood-analytics.svg?style=for-the-badge
+[stars-url]: https://github.com/eliac7/efood-analytics/stargazers
+[issues-shield]: https://img.shields.io/github/issues/eliac7/efood-analytics.svg?style=for-the-badge
+[issues-url]: https://github.com/eliac7/efood-analytics/issues
+[license-shield]: https://img.shields.io/github/license/eliac7/efood-analytics.svg?style=for-the-badge
+[license-url]: https://github.com/eliac7/efood-analytics/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/eliac7/
 [product-screenshot]: https://i.imgur.com/ySju4q6.png
