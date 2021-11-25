@@ -166,7 +166,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@ilias_thal](https://twitter.com/ilias_thal) - elias_thal(at)hotmail.com
+Ilias Thalassochoritis - [@ilias_thal](https://twitter.com/ilias_thal) - elias_thal(at)hotmail.com
 
 Project Link: [https://github.com/eliac7/efood-analytics](https://github.com/eliac7/efood-analytics)
 
