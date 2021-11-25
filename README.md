@@ -39,7 +39,7 @@
 <h3 align="center">E-food Analytics</h3>
 
   <p align="center">
-    <i>Have you ever wondered how much have you spent on E-food? Well, this project is for you. </i>     
+    <i>Have you ever wondered how much you have spent on E-food? Well, this project is for you. </i>     
     <br/>
     <br/>
     Built with <b>Node.js</b> and <b>Express.js</b> to serve the data from an endpoint of REST API. For the frontend part, built with Vanilla JS and Bootstrap Framework to build a minimal design by me. Includes dynamic Chart and interactive map* filled with the stores you have bought from.
@@ -127,7 +127,7 @@ This is an example of how to list things you need to use the software and how to
 3. Open a terminal on the folder and enter:
    ```node index.js```
    
-4. Open below URL on your browser
+4. Open the below URL on your browser
 ```http://localhost:3000/```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
