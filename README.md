@@ -92,6 +92,7 @@
 * [Node.js](https://nodejs.org/en/)
 * [Expressjs](https://expressjs.com/)
 * [Chart.js](https://www.chartjs.org/)
+* [Leafletjs](https://leafletjs.com/)
 * [Bootstrap](https://getbootstrap.com)
 * [Toastify](https://aleab.github.io/toastify/)
 * [FontAwesome](https://fontawesome.com/)
