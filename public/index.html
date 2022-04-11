@@ -55,7 +55,7 @@
 </head>
 
 <body class="position-relative">
-  <div class="posotion-aboslute inset-0 h-100 w-100 d-flex align-items-center justify-content-center "
+  <!-- <div class="posotion-aboslute inset-0 h-100 w-100 d-flex align-items-center justify-content-center "
     style="z-index: 5;background-color: rgba(0,0,0,0.4)">
     <div class="card">
       <div class="card-body">
@@ -67,7 +67,7 @@
        
       </div>
     </div>
-  </div>
+  </div> -->
   <div class="
         container-fluid
         upload-container
@@ -85,79 +85,20 @@
           <div class="upload-box">
             <img src="./assets/images/efood-analytics-logo.png" class="img-fluid pe-none" alt="Site logo" />
 
-            <div class="upload-area">
-              <div class="upload-area-first-step active">
-                <span class="upload-area-badge align-self-baseline">1</span>
-                <p class="fs-5">
-                  Συνδέσου στο
-                  <a href="https://www.e-food.gr/" target="_blank" rel="noreferrer" class="text-danger">e-food</a>
-                </p>
-                <div class="
-                      navigation-buttons
-                      d-flex
-                      justify-content-between
-                      w-100
-                    ">
-                  <i class="fas fa-chevron-right next ms-auto text-white"></i>
+            <div class="upload-area p-3">
+              <form method="POST" id="login">
+                <div class="form-group mb-2">
+                  <label for="email">Email address</label>
+                  <input type="email" name="email" class="form-control" id="email" placeholder="Enter email" required>
                 </div>
-              </div>
-              <div class="upload-area-second-step">
-                <span class="upload-area-badge align-self-baseline">2</span>
-                <p>
-                  <a href="https://www.e-food.gr/account/get_past_orders?limit=2000" target="_blank"
-                    rel="noreferrer">Δες το ιστορικό των παραγγελιών σου (μέχρι 2.000
-                    παραγγελίες)</a>
-                </p>
-                <div class="
-                      navigation-buttons
-                      d-flex
-                      justify-content-between
-                      w-100
-                    ">
-                  <i class="fas fa-chevron-left back text-white"></i>
-                  <i class="fas fa-chevron-right next text-white"></i>
+                <div class="form-group mb-2">
+                  <label for="password">Password</label>
+                  <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                  <small class="form-text text-muted">Your data is posted on E-food.</small>
                 </div>
-              </div>
-              <div class="upload-area-third-step">
-                <span class="upload-area-badge align-self-baseline">3</span>
-                <p>
-                  Αποθήκευσε την παραπάνω σελίδα ως προέκταση αρχείου<code class="mx-1">.htm</code> ή <code
-                    class="ms-1">.html</code>
-                </p>
-                <div class="
-                      navigation-buttons
-                      d-flex
-                      justify-content-between
-                      w-100
-                    ">
-                  <i class="fas fa-chevron-left back text-white"></i>
-                  <i class="fas fa-chevron-right next text-white"></i>
-                </div>
-              </div>
-              <div class="upload-area-fourth-step">
-                <img class="img-fluid w-25 pe-none html-icon" src="./assets/images/html-icon.png" alt="HTML Icon" />
-                <p class="fw-bolder pe-none">
-                  Ανέβασε το αρχείο σου εδώ
-                  <br />
-                  (Κάνε κλικ ή drag & drop)
-                </p>
-                <p class="pe-none release">
-                  Release to upload!
-                  <span class="rocket position-relative pe-none"> 🚀 </span>
-                </p>
-                <div class="row">
-                  <div class="col">
-                    <div class="form-check form-switch d-inline-block">
-                      <input type="checkbox" class="form-check-input" id="map-switch" style="cursor: pointer;">
-                      <label for="map-switch" class="form-check-label">Map</label>
-                      <i class="fas fa-info-circle ms-2" data-bs-toggle="tooltip" data-bs-placement="right"
-                        title="Ενεργοποιώντας αυτήν την επιλογή, θα λάβετε έναν χάρτη με τα καταστήματα που παραγγείλατε. Ωστόσο, αυτό θα έχει ως αποτέλεσμα την καθυστέρηση λήψης αποτελεσμάτων."></i>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+             
             </div>
 
             <form class="d-none w-100" enctype="multipart/form-data" method="POST">
