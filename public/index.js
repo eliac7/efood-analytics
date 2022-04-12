@@ -1,48 +1,37 @@
 let form = document.querySelector("form");
-let formLogin = document.querySelector('form[id="login"]')
+let formLogin = document.querySelector('form[id="login"]');
 let uploadContainer = document.querySelector(".upload-container");
 let uploadBox = document.querySelector(".upload-box");
 let submitButton = document.querySelector('button[type="submit"]');
-let passwordField = document.querySelector('input[type="password"]')
-
+let passwordField = document.querySelector('input[type="password"]');
 
 let ToastifyAlertColor = "#cc3300";
 let ToastifyInfoColor = "#7db0b1";
-let ToastifySuccessColor = "#00C851"
+let ToastifySuccessColor = "#00C851";
 
-
-let ordersAPI = []
-
+let ordersAPI = [];
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-
-formLogin.addEventListener('submit', async (e) => {
+formLogin.addEventListener("submit", async (e) => {
   e.preventDefault();
-  submitButton.disabled = true;
+  // submitButton.disabled = true;
   const formData = new FormData(e.target);
   const object = {};
-  formData.forEach((value, key) => object[key] = value);
+  formData.forEach((value, key) => (object[key] = value));
   const json = object;
 
   try {
-    const data = await axios.post('http://localhost:3002/api/v1/efood', json)
-    const res = await data.data
+    const data = await axios.post("http://localhost:3002/api/v1/efood", json);
+    const res = await data.data;
   } catch (error) {
-    TriggerToastify(error.response.data.error, ToastifyAlertColor)
-    passwordField.value = ''
+    TriggerToastify(error.response.data.error, ToastifyAlertColor);
+    passwordField.value = "";
     submitButton.disabled = false;
-
-
   }
-
-
 });
-
-
-
 
 //Analytics selectors
 
@@ -93,7 +82,6 @@ lastOrder.innerHTML = today;
 //Year on credits
 const yearSelector = document.querySelector(".year");
 yearSelector.innerText = yyyy;
-
 
 var tooltipTriggerList = [].slice.call(
   document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -160,16 +148,16 @@ function createModal(ID, products) {
       <div class="modal-body">
         <ul class="list-group list-unstyled">
         ${Object.keys(products)
-      .map(function (key) {
-        return (
-          "<li class='list-group-item' value='" +
-          key +
-          "'>" +
-          products[key] +
-          "</li>"
-        );
-      })
-      .join("")}
+          .map(function (key) {
+            return (
+              "<li class='list-group-item' value='" +
+              key +
+              "'>" +
+              products[key] +
+              "</li>"
+            );
+          })
+          .join("")}
         </li>
       </div>
       <div class="modal-footer">
@@ -223,9 +211,6 @@ function counterAnimationHandler() {
     updateCounter(); //call the function event
   });
 }
-
-
-
 
 //Chart JS
 const chart = document.getElementById("chart");

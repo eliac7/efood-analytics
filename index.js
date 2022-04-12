@@ -11,7 +11,6 @@ require("dotenv").config();
 app.use(cors());
 app.use(express.json());
 
-
 async function getUserSession(body) {
   //Fetch to Efood API
   const DEFAULT_URL = "https://thingproxy.freeboard.io/fetch/";
@@ -45,6 +44,46 @@ async function getUserOrders(tkn, num) {
   }
 }
 
+async function Logic(orders) {
+  //Get the first order
+  const firstOrder = new Date(orders[0].submission_date).toLocaleDateString(
+    "el-GR"
+  );
+  //Get the last order
+  const lastOrder = new Date(
+    orders[orders.length - 1].submission_date
+  ).toLocaleDateString("el-GR");
+
+  //Total orders
+  const totalOrders = orders.length;
+
+  //Get total price of all orders
+  let totalPrice = 0;
+  orders.forEach((order) => {
+    totalPrice += order.price;
+  });
+
+  totalPrice = totalPrice.toFixed(2);
+
+  //Get all the restaurants
+  const restaurants = [];
+  orders.forEach((order) => {
+    if (!restaurants.includes(order.restaurant.name)) {
+      restaurants.push(order.restaurant.name);
+    }
+  });
+  //Remove any duplicates
+  const uniqueRestaurants = [...new Set(restaurants)];
+
+  console.log(
+    firstOrder,
+    lastOrder,
+    totalOrders,
+    totalPrice,
+    uniqueRestaurants.length
+  );
+}
+
 app.post("/api/v1/efood", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -71,7 +110,7 @@ app.post("/api/v1/efood", async (req, res) => {
     console.log(orders.length);
     res.status(200).json(orders);
   } catch (error) {
-    res.status(403).send({ error })
+    res.status(403).send({ error });
   }
 });
 
