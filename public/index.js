@@ -2,16 +2,8 @@ let form = document.querySelector("form");
 let formLogin = document.querySelector('form[id="login"]')
 let uploadContainer = document.querySelector(".upload-container");
 let uploadBox = document.querySelector(".upload-box");
-let uploadArea = document.querySelector(".upload-area-fourth-step");
-let uploadAreaSteps = document.querySelectorAll("[class*=step]");
-
-let uploadInput = document.querySelector("input[type=file]");
-let switchMapInput = document.querySelector("#map-switch");
-let uploadText = document.querySelector(".upload-area > p");
-let nextIcon = document.querySelectorAll(".next");
-let prevIcon = document.querySelectorAll(".back");
-let resetButton = document.querySelector(".reset-button");
-
+let submitButton = document.querySelector('button[type="submit"]');
+let passwordField = document.querySelector('input[type="password"]')
 
 
 let ToastifyAlertColor = "#cc3300";
@@ -27,102 +19,24 @@ function sleep(ms) {
 }
 
 
-async function getUserSession(body) {
-  //Fetch to Efood API
-  const DEFAULT_URL = 'https://bypass-cors-food.herokuapp.com/';
-  const USER_LOGIN = 'https://api.e-food.gr/api/v1/user/login'
-
-
-  const call = await fetch(DEFAULT_URL + USER_LOGIN, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json"
-    },
-    body
-  })
-
-  const res = await call.json();
-  if (res.status === 'ok') {
-    return Promise.resolve(res.data.session_id)
-  } else {
-    return Promise.reject({ message: 'Wrong e-mail or password' })
-  }
-
-
-  // .then((res) => { return res.json() })
-  //   .then((data) => {
-  //     if (data.status === 'ok') {
-  //       let token = data.data.session_id;
-  //       return token;
-  //       TriggerToastify("Logged in successfully", ToastifySuccessColor)
-
-  //     } else {
-  //     }
-  //   })
-  //   .catch(err => console.log(err))
-
-}
-
-async function getUserOrders(tkn, num) {
-  const DEFAULT_URL = 'https://bypass-cors-food.herokuapp.com/';
-  const USER_ORDERS = `https://api.e-food.gr/api/v1/user/orders/history?limit=100&offset=${num}&mode=extended`
-
-
-  const call = await fetch(DEFAULT_URL + USER_ORDERS, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      'X-core-session-id': tkn
-    }
-  })
-
-  const res = await call.json();
-
-  if (res.status === 'ok') {
-    return Promise.resolve(res.data)
-  } else {
-    return Promise.reject({ message: 'Unexpected error.' })
-  }
-
-
-}
-
 formLogin.addEventListener('submit', async (e) => {
   e.preventDefault();
-  let hasNext
-  let number = 100;
-  let counter = 1;
+  submitButton.disabled = true;
   const formData = new FormData(e.target);
   const object = {};
   formData.forEach((value, key) => object[key] = value);
-  const json = JSON.stringify(object);
-  fetch('http://localhost:3002/api/v1/efood', {
-    method: "POST",
+  const json = object;
 
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: json
-  })
-  // const tkn = await getUserSession(json)
-  // const orders = await getUserOrders(tkn, 0)
-  // hasNext = orders.hasNext;
-  // ordersAPI.push(orders.orders)
-  // while (hasNext) {
-  //   await sleep(counter * 2000)
-  //   const orders = await getUserOrders(tkn, number)
-  //   hasNext = orders.hasNext;
-  //   ordersAPI.push(orders.orders)
-  //   number += 100
-  //   counter += 1
-  // }
+  try {
+    const data = await axios.post('http://localhost:3002/api/v1/efood', json)
+    const res = await data.data
+  } catch (error) {
+    TriggerToastify(error.response.data.error, ToastifyAlertColor)
+    passwordField.value = ''
+    submitButton.disabled = false;
 
 
-  console.log(ordersAPI)
-
+  }
 
 
 });
