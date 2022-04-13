@@ -5,36 +5,8 @@ let uploadBox = document.querySelector(".upload-box");
 let submitButton = document.querySelector('button[type="submit"]');
 let passwordField = document.querySelector('input[type="password"]');
 
-let ToastifyAlertColor = "#cc3300";
-let ToastifyInfoColor = "#7db0b1";
-let ToastifySuccessColor = "#00C851";
-
-let ordersAPI = [];
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-formLogin.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  // submitButton.disabled = true;
-  const formData = new FormData(e.target);
-  const object = {};
-  formData.forEach((value, key) => (object[key] = value));
-  const json = object;
-
-  try {
-    const data = await axios.post("http://localhost:3002/api/v1/efood", json);
-    const res = await data.data;
-  } catch (error) {
-    TriggerToastify(error.response.data.error, ToastifyAlertColor);
-    passwordField.value = "";
-    submitButton.disabled = false;
-  }
-});
-
 //Analytics selectors
-
+let nameSelector = document.getElementById("name");
 let firstOrder = document.getElementById("first-order");
 let lastOrder = document.getElementById("latest-order");
 let totalOrders = document.getElementById("total-orders");
@@ -55,6 +27,50 @@ let paypalTotal = document.getElementById("paypal-total");
 
 //Chart JS Selectors
 let topTenOrdersTable = document.getElementById("ordersTableBody");
+
+let ToastifyAlertColor = "#cc3300";
+let ToastifyInfoColor = "#7db0b1";
+let ToastifySuccessColor = "#00C851";
+
+//Vanilla JS Fade out animation
+function FadeOutUploadArea() {
+  var s = uploadContainer.style;
+  s.opacity = 1;
+  (function fade() {
+    (s.opacity -= 0.1) < 0 ? (s.display = "none") : setTimeout(fade, 40);
+  })();
+}
+
+formLogin.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  submitButton.disabled = true;
+  const formData = new FormData(e.target);
+  const object = {};
+  formData.forEach((value, key) => (object[key] = value));
+  const json = object;
+
+  try {
+    const data = await axios.post("/api/v1/efood", json);
+    const res = await data.data;
+
+    //Fade out login area
+
+    FadeOutUploadArea();
+
+    //remove overflow hidden from body
+    document.body.style.overflow = "visible";
+
+    //Make sure that user is top of the page to check the counters animating ;)
+    window.scroll({ top: 0, left: 0, behavior: "smooth" });
+
+    //Change name
+    nameSelector.innerText = res.name;
+  } catch (error) {
+    TriggerToastify(error.response.data.error, ToastifyAlertColor);
+    passwordField.value = "";
+    submitButton.disabled = false;
+  }
+});
 
 //Currency formatter
 const formatter = new Intl.NumberFormat("el-GR", {
@@ -214,7 +230,7 @@ function counterAnimationHandler() {
 
 //Chart JS
 const chart = document.getElementById("chart");
-const labels = ["2016", "2017", "2018", "2019", "2020", "2021"];
+const labels = ["2016", "2017", "2018", "2019", "2020", "2021", "2022"];
 let ChartData = {
   labels: labels,
   datasets: [
@@ -222,13 +238,13 @@ let ChartData = {
       label: "Orders per Year",
       backgroundColor: "#ed2e2e",
       borderColor: "#ed2e2e",
-      data: ["23", "150", "98", "60", "121", "50"],
+      data: ["23", "150", "98", "60", "121", "50", "70"],
     },
     {
       label: "Money per Year",
       backgroundColor: "#118C4F",
       borderColor: "#118C4F",
-      data: ["23 ", "150", "98", "60", "121", "50"],
+      data: ["23 ", "150", "98", "60", "121", "50", "70"],
     },
   ],
 };

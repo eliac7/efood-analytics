@@ -19,8 +19,9 @@ async function getUserSession(body) {
 
   const { data } = await axios.post(url, body);
   if (data.status === "ok") {
-    const res = await data.data.session_id;
-    return Promise.resolve(res);
+    const session_id = await data.data.session_id;
+    const name = await data.data.user.first_name_in_vocative;
+    return Promise.resolve({ session_id, name });
   } else {
     return Promise.reject(data.message);
   }
@@ -44,7 +45,7 @@ async function getUserOrders(tkn, num) {
   }
 }
 
-async function Logic(orders) {
+async function Logic(orders, name) {
   //Get the first order
   const firstOrder = new Date(
     orders[orders.length - 1].submission_date
@@ -75,6 +76,7 @@ async function Logic(orders) {
   let totalProducts = [];
   let mediumTotalDeliveryTime = 0;
   let ordersByYear = {};
+  let couponAmount = 0;
   orders.forEach((order) => {
     totalPrice += order.price;
     restaurants.push({
@@ -170,8 +172,11 @@ async function Logic(orders) {
         ordersByYear[year].amount.toFixed(2)
       );
     }
-  });
 
+    if (order.coupon) {
+      couponAmount += order.coupon.amount;
+    }
+  });
   //Get the medium of delivery time by the total orders
 
   const mediumDeliveryTime = Math.round(mediumTotalDeliveryTime / totalOrders);
@@ -224,24 +229,25 @@ async function Logic(orders) {
   //Sort the products by quantity
   removedProducts.sort((a, b) => (b.quantity > a.quantity ? 1 : -1));
 
-  console.log(
-    "First order: " + firstOrder,
-    "Last order: " + lastOrder,
-    "Total orders: " + totalOrders,
-    "Total money: " + totalPrice,
-    "Total tips: " + totalTips,
-    // "Restaurants" + removedRestaurants,
-    "Frequent restaurant: " + removedRestaurants[0].name,
-    removedRestaurants[0].times,
-    "Unique restaurants: " + removedRestaurants.length,
-    "Payment methods: " + paymentMethods,
-    "Platforms: " + platforms,
-    "Delivery cost on Efood: " + deliveryCost,
-    "Most frequent product: " + removedProducts[0].name,
-    "Most frequent product quantity: " + removedProducts[0].totalPrice,
-    "Medium delivery time: " + mediumDeliveryTime + " minutes",
-    "Orders by year: " + ordersByYear
-  );
+  // console.log(
+  //   "First order: " + firstOrder,
+  //   "Last order: " + lastOrder,
+  //   "Total orders: " + totalOrders,
+  //   "Total money: " + totalPrice,
+  //   "Total tips: " + totalTips,
+  //   "Restaurants" + removedRestaurants,
+  //   "Frequent restaurant: " + removedRestaurants[0].name,
+  //   removedRestaurants[0].times,
+  //   "Unique restaurants: " + removedRestaurants.length,
+  //   "Payment methods: " + paymentMethods,
+  //   "Platforms: " + platforms,
+  //   "Delivery cost on Efood: " + deliveryCost,
+  //   "Most frequent product: " + removedProducts[0].name,
+  //   "Most frequent product quantity: " + removedProducts[0].totalPrice,
+  //   "Medium delivery time: " + mediumDeliveryTime + " minutes",
+  //   "Orders by year: " + ordersByYear,
+  //   "Coupon amount: " + couponAmount
+  // );
 
   return {
     firstOrder,
@@ -259,6 +265,8 @@ async function Logic(orders) {
     },
     mediumDeliveryTime,
     ordersByYear,
+    couponAmount,
+    name,
   };
 }
 
@@ -270,28 +278,30 @@ app.post("/api/v1/efood", async (req, res) => {
   }
 
   try {
-    // const token = await getUserSession(req.body);
-    // let data = await getUserOrders(token, 0);
+    // const { session_id, name } = await getUserSession(req.body);
+    // let data = await getUserOrders(session_id, 0);
     // let offset = 100;
     // data.orders.forEach((order) => {
     //   orders.push(order);
     // });
 
     // while (data.hasNext) {
-    //   data = await getUserOrders(token, offset);
+    //   data = await getUserOrders(session_id, offset);
     //   data.orders.forEach((order) => {
     //     orders.push(order);
     //   });
     //   offset += 100;
     // }
-    // fs.writeFileSync('orders.json', JSON.stringify(orders))
-
-    // res.status(200).json(orders);
 
     let rawdata = fs.readFileSync("orders.json");
     let orders = JSON.parse(rawdata);
-    const result = await Logic(orders);
-    res.status(200).json(result);
+    let name = "Efood";
+    const result = await Logic(orders, name);
+
+    //delay to simulate the time of the request
+    setTimeout(() => {
+      res.status(200).json(result);
+    }, 1000);
   } catch (error) {
     res.status(403).send({ error });
   }
