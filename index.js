@@ -73,6 +73,8 @@ async function Logic(orders) {
     android: 0,
   };
   let totalProducts = [];
+  let mediumTotalDeliveryTime = 0;
+  let ordersByYear = {};
   orders.forEach((order) => {
     totalPrice += order.price;
     restaurants.push({
@@ -148,7 +150,31 @@ async function Logic(orders) {
     });
 
     deliveryCost += order.delivery_cost;
+    mediumTotalDeliveryTime += order.delivery_time;
+
+    //Get orders by year and with total amount
+    const year = new Date(order.submission_date).getFullYear();
+    if (ordersByYear[year]) {
+      ordersByYear[year].amount += order.price;
+      ordersByYear[year].times++;
+      ordersByYear[year].amount = parseFloat(
+        ordersByYear[year].amount.toFixed(2)
+      );
+    } else {
+      ordersByYear[year] = {
+        amount: order.price,
+        times: 1,
+      };
+
+      ordersByYear[year].amount = parseFloat(
+        ordersByYear[year].amount.toFixed(2)
+      );
+    }
   });
+
+  //Get the medium of delivery time by the total orders
+
+  const mediumDeliveryTime = Math.round(mediumTotalDeliveryTime / totalOrders);
 
   totalPrice = totalPrice.toFixed(2);
   //Remove duplicate restaurants
@@ -183,6 +209,21 @@ async function Logic(orders) {
     (arr, index, self) => index === self.findIndex((t) => t.name === arr.name)
   );
 
+  //On removedPoducts count the quantity of each product from all the orders and add the total price of each product
+  removedProducts.forEach((product) => {
+    let total = 0;
+    totalProducts.forEach((item) => {
+      if (product.name === item.name) {
+        total += item.quantity;
+      }
+    });
+    product.quantity = total;
+    product.totalPrice = Number(product.price * total).toFixed(2);
+  });
+
+  //Sort the products by quantity
+  removedProducts.sort((a, b) => (b.quantity > a.quantity ? 1 : -1));
+
   console.log(
     "First order: " + firstOrder,
     "Last order: " + lastOrder,
@@ -195,8 +236,30 @@ async function Logic(orders) {
     "Unique restaurants: " + removedRestaurants.length,
     "Payment methods: " + paymentMethods,
     "Platforms: " + platforms,
-    "Delivery cost on Efood: " + deliveryCost
+    "Delivery cost on Efood: " + deliveryCost,
+    "Most frequent product: " + removedProducts[0].name,
+    "Most frequent product quantity: " + removedProducts[0].totalPrice,
+    "Medium delivery time: " + mediumDeliveryTime + " minutes",
+    "Orders by year: " + ordersByYear
   );
+
+  return {
+    firstOrder,
+    lastOrder,
+    totalOrders,
+    totalPrice,
+    totalTips,
+    restaurants: removedRestaurants,
+    paymentMethods,
+    platforms,
+    deliveryCost,
+    frequentProducct: {
+      name: removedProducts[0].name,
+      price: removedProducts[0].totalPrice,
+    },
+    mediumDeliveryTime,
+    ordersByYear,
+  };
 }
 
 app.post("/api/v1/efood", async (req, res) => {
@@ -227,7 +290,8 @@ app.post("/api/v1/efood", async (req, res) => {
 
     let rawdata = fs.readFileSync("orders.json");
     let orders = JSON.parse(rawdata);
-    Logic(orders);
+    const result = await Logic(orders);
+    res.status(200).json(result);
   } catch (error) {
     res.status(403).send({ error });
   }
