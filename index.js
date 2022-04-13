@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const axios = require("axios");
-const fetch = require("node-fetch");
 const cors = require("cors");
 const fs = require("fs");
 let orders = [];
@@ -10,6 +9,7 @@ require("dotenv").config();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 async function getUserSession(body) {
   //Fetch to Efood API
@@ -46,41 +46,156 @@ async function getUserOrders(tkn, num) {
 
 async function Logic(orders) {
   //Get the first order
-  const firstOrder = new Date(orders[0].submission_date).toLocaleDateString(
-    "el-GR"
-  );
-  //Get the last order
-  const lastOrder = new Date(
+  const firstOrder = new Date(
     orders[orders.length - 1].submission_date
   ).toLocaleDateString("el-GR");
+  //Get the last order
+  const lastOrder = new Date(orders[0].submission_date).toLocaleDateString(
+    "el-GR"
+  );
 
   //Total orders
   const totalOrders = orders.length;
 
-  //Get total price of all orders
+  //Get total price of all orders, all the restaurants, tips, payment methods
   let totalPrice = 0;
+  let totalTips = 0;
+  let deliveryCost = 0;
+  let restaurants = [];
+  let paymentMethods = {
+    paypal: 0,
+    cash: 0,
+    credit_card: 0,
+  };
+  let platforms = {
+    web: 0,
+    ios: 0,
+    android: 0,
+  };
+  let totalProducts = [];
   orders.forEach((order) => {
     totalPrice += order.price;
+    restaurants.push({
+      name: order.restaurant.name,
+      longitude: order.restaurant.longitude,
+      latitude: order.restaurant.latitude,
+      logo: order.restaurant.logo,
+      times: 0,
+      amount: 0,
+    });
+
+    totalTips += order.tip;
+
+    switch (order.payment_type) {
+      case "paypal":
+        paymentMethods.paypal++;
+        break;
+      case "cash":
+        paymentMethods.cash++;
+        break;
+      case "credit_card":
+        paymentMethods.credit_card++;
+        break;
+      default:
+        break;
+    }
+
+    switch (order.platform) {
+      case "web":
+        platforms.web++;
+        break;
+      case "ios":
+        platforms.ios++;
+        break;
+      case "android":
+        platforms.android++;
+        break;
+      default:
+        break;
+    }
+
+    order.products.map((product) => {
+      let image;
+
+      if (product.images) {
+        const {
+          original,
+          menu_item,
+          popular_item,
+          banner_item,
+          featured_item,
+        } = product.images;
+        if (original) {
+          image = original;
+        } else if (menu_item) {
+          image = menu_item;
+        } else if (popular_item) {
+          image = popular_item;
+        } else if (banner_item) {
+          image = banner_item;
+        } else {
+          image = featured_item;
+        }
+      }
+
+      totalProducts.push({
+        name: product.name,
+        quantity: product.quantity,
+        customisation: product.customisation || null,
+        price: product.full_price,
+        image,
+      });
+    });
+
+    deliveryCost += order.delivery_cost;
   });
 
   totalPrice = totalPrice.toFixed(2);
+  //Remove duplicate restaurants
+  let removedRestaurants = restaurants.filter(
+    (arr, index, self) => index === self.findIndex((t) => t.name === arr.name)
+  );
 
-  //Get all the restaurants
-  const restaurants = [];
-  orders.forEach((order) => {
-    if (!restaurants.includes(order.restaurant.name)) {
-      restaurants.push(order.restaurant.name);
-    }
+  //Most frequent restaurant
+
+  restaurants.forEach((item) => {
+    removedRestaurants.forEach((store) => {
+      if (item.name === store.name) {
+        store.times++;
+      }
+    });
   });
-  //Remove any duplicates
-  const uniqueRestaurants = [...new Set(restaurants)];
+
+  removedRestaurants.sort((a, b) => (b.times > a.times ? 1 : -1));
+
+  //Get the total amount have been spent of each restaurant
+  orders.forEach((order) => {
+    removedRestaurants.forEach((store) => {
+      if (order.restaurant.name === store.name) {
+        store.amount += Number(order.price);
+      }
+      store.amount = Number(store.amount.toFixed(2));
+    });
+  });
+
+  //Remove duplicate products
+  let removedProducts = totalProducts.filter(
+    (arr, index, self) => index === self.findIndex((t) => t.name === arr.name)
+  );
 
   console.log(
-    firstOrder,
-    lastOrder,
-    totalOrders,
-    totalPrice,
-    uniqueRestaurants.length
+    "First order: " + firstOrder,
+    "Last order: " + lastOrder,
+    "Total orders: " + totalOrders,
+    "Total money: " + totalPrice,
+    "Total tips: " + totalTips,
+    // "Restaurants" + removedRestaurants,
+    "Frequent restaurant: " + removedRestaurants[0].name,
+    removedRestaurants[0].times,
+    "Unique restaurants: " + removedRestaurants.length,
+    "Payment methods: " + paymentMethods,
+    "Platforms: " + platforms,
+    "Delivery cost on Efood: " + deliveryCost
   );
 }
 
@@ -92,23 +207,27 @@ app.post("/api/v1/efood", async (req, res) => {
   }
 
   try {
-    const token = await getUserSession(req.body);
-    let data = await getUserOrders(token, 0);
-    let offset = 100;
-    data.orders.forEach((order) => {
-      orders.push(order);
-    });
+    // const token = await getUserSession(req.body);
+    // let data = await getUserOrders(token, 0);
+    // let offset = 100;
+    // data.orders.forEach((order) => {
+    //   orders.push(order);
+    // });
 
-    while (data.hasNext) {
-      data = await getUserOrders(token, offset);
-      data.orders.forEach((order) => {
-        orders.push(order);
-      });
-      offset += 100;
-    }
+    // while (data.hasNext) {
+    //   data = await getUserOrders(token, offset);
+    //   data.orders.forEach((order) => {
+    //     orders.push(order);
+    //   });
+    //   offset += 100;
+    // }
+    // fs.writeFileSync('orders.json', JSON.stringify(orders))
 
-    console.log(orders.length);
-    res.status(200).json(orders);
+    // res.status(200).json(orders);
+
+    let rawdata = fs.readFileSync("orders.json");
+    let orders = JSON.parse(rawdata);
+    Logic(orders);
   } catch (error) {
     res.status(403).send({ error });
   }
