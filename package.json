@@ -9,6 +9,11 @@
     "debug": "node --inspect index",
     "warnings": "node --trace-warnings index"
   },
+  "nodemonConfig": {
+    "ignore": [
+      "orders.json"
+    ]
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

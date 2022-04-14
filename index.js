@@ -11,6 +11,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function getUserSession(body) {
   //Fetch to Efood API
   const DEFAULT_URL = "https://thingproxy.freeboard.io/fetch/";
@@ -43,6 +45,46 @@ async function getUserOrders(tkn, num) {
   } else {
     return Promise.reject(data.message);
   }
+}
+
+async function getRestaurantDetails(tkn, ids) {
+  const DEFAULT_URL = "https://thingproxy.freeboard.io/fetch/";
+  const RESTAURANT_DETAILS = (id) => {
+    return `https://api.e-food.gr/v3/shops/info?shop_id=${String(id)}`;
+  };
+  let restaurantAnswers = [];
+
+  let urls = [];
+  //Loop through ids
+
+  ids.map((id) => {
+    const url = RESTAURANT_DETAILS(id);
+    urls.push(DEFAULT_URL + url);
+  });
+  await axios
+    .all(
+      urls.map((endpoint) =>
+        axios.get(endpoint, {
+          headers: {
+            "X-core-session-id": tkn,
+          },
+        })
+      )
+    )
+    .then(
+      axios.spread((...responses) => {
+        return responses.map((res) =>
+          restaurantAnswers.push(res.data.data.shop)
+        );
+      })
+    )
+    .then(() => {
+      return Promise.resolve(restaurantAnswers);
+    })
+    .catch((error) => {
+      console.log(error);
+      return Promise.reject(error.response.data);
+    });
 }
 
 async function Logic(orders, name) {
@@ -80,10 +122,12 @@ async function Logic(orders, name) {
   orders.forEach((order) => {
     totalPrice += order.price;
     restaurants.push({
+      id: order.restaurant.id,
       name: order.restaurant.name,
       longitude: order.restaurant.longitude,
       latitude: order.restaurant.latitude,
       logo: order.restaurant.logo,
+      details: order.restaurant.details,
       times: 0,
       amount: 0,
     });
@@ -228,7 +272,6 @@ async function Logic(orders, name) {
 
   //Sort the products by quantity
   removedProducts.sort((a, b) => (b.quantity > a.quantity ? 1 : -1));
-
   // console.log(
   //   "First order: " + firstOrder,
   //   "Last order: " + lastOrder,
@@ -259,9 +302,11 @@ async function Logic(orders, name) {
     paymentMethods,
     platforms,
     deliveryCost,
-    frequentProducct: {
+    frequentProduct: {
       name: removedProducts[0].name,
       price: removedProducts[0].totalPrice,
+      image: removedProducts[0].image,
+      quantity: removedProducts[0].quantity,
     },
     mediumDeliveryTime,
     ordersByYear,
@@ -278,20 +323,32 @@ app.post("/api/v1/efood", async (req, res) => {
   }
 
   try {
+    // let restaurantIds = [];
     // const { session_id, name } = await getUserSession(req.body);
     // let data = await getUserOrders(session_id, 0);
     // let offset = 100;
     // data.orders.forEach((order) => {
     //   orders.push(order);
-    // });
-
-    // while (data.hasNext) {
-    //   data = await getUserOrders(session_id, offset);
-    //   data.orders.forEach((order) => {
-    //     orders.push(order);
+    //   if (!restaurantIds.includes(order.restaurant.id))
+    //     restaurantIdsEfoodds.push(order.restaurant.id);
     //   });
     //   offset += 100;
     // }
+
+    // const restaurantDetails = await getRestaurantDetails(
+    //   session_id,
+    //   restaurantIds
+    // );
+
+    // restaurantDetails.forEach((restaurant) => {
+    //   orders.forEach((order) => {
+    //     if (restaurant.id === order.restaurant.id) {
+    //       order.restaurant.details = restaurant;
+    //     }
+    //   });
+    // });
+
+    // fs.writeFileSync("orders.json", JSON.stringify(orders));
 
     let rawdata = fs.readFileSync("orders.json");
     let orders = JSON.parse(rawdata);
@@ -300,7 +357,7 @@ app.post("/api/v1/efood", async (req, res) => {
 
     //delay to simulate the time of the request
     setTimeout(() => {
-      res.status(200).json(result);
+      res.status(200).json(orders);
     }, 1000);
   } catch (error) {
     res.status(403).send({ error });

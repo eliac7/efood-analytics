@@ -43,7 +43,7 @@ function FadeOutUploadArea() {
 
 formLogin.addEventListener("submit", async (e) => {
   e.preventDefault();
-  submitButton.disabled = true;
+  // submitButton.disabled = true;
   const formData = new FormData(e.target);
   const object = {};
   formData.forEach((value, key) => (object[key] = value));
@@ -55,7 +55,7 @@ formLogin.addEventListener("submit", async (e) => {
 
     //Fade out login area
 
-    FadeOutUploadArea();
+    // FadeOutUploadArea();
 
     //remove overflow hidden from body
     document.body.style.overflow = "visible";
@@ -65,10 +65,45 @@ formLogin.addEventListener("submit", async (e) => {
 
     //Change name
     nameSelector.innerText = res.name;
+
+    //Add restaurants on the map
+    console.log(res);
+    let coords = [];
+    res.forEach((r) => {
+      const { name, longitude, latitude, logo, times, amount, details } =
+        r.restaurant;
+      coords.push([latitude, longitude]);
+      marker = new L.marker([latitude, longitude], {
+        title: name,
+        icon: L.icon({
+          iconUrl: logo,
+          iconSize: [50, 50],
+          iconAnchor: [25, 25],
+          popupAnchor: [0, -15],
+        }),
+      }).bindPopup(
+        ` <a class="text-center" href=${
+          "https://www.e-food.gr" + details.slug
+        } target="_blank" rel="noreferrer">
+                  ${name}
+                </a>
+                <p class="text-center">Times: <b>${times}</b></h1>
+                <p class="text-center">Total spent: <b>${formatter.format(
+                  amount
+                )}</b></h1>
+              `
+      );
+      storesLayer.addLayer(marker);
+    });
+    console.log(coords);
+    var bounds = new L.LatLngBounds(coords);
+    map.fitBounds(bounds);
   } catch (error) {
-    TriggerToastify(error.response.data.error, ToastifyAlertColor);
-    passwordField.value = "";
-    submitButton.disabled = false;
+    if (error) {
+      TriggerToastify(error.response.data.error, ToastifyAlertColor);
+      // passwordField.value = "";
+      submitButton.disabled = false;
+    }
   }
 });
 
