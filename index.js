@@ -3,7 +3,6 @@ const app = express();
 const axios = require("axios");
 const cors = require("cors");
 const fs = require("fs");
-let orders = [];
 const port = process.env.PORT || 3002;
 require("dotenv").config();
 
@@ -79,12 +78,14 @@ async function getRestaurantDetails(tkn, ids) {
       })
     )
     .then(() => {
-      return Promise.resolve(restaurantAnswers);
+      return restaurantAnswers;
     })
     .catch((error) => {
       console.log(error);
-      return Promise.reject(error.response.data);
+      return Promise.reject(error);
     });
+
+  return Promise.resolve(restaurantAnswers);
 }
 
 async function Logic(orders, name) {
@@ -127,6 +128,7 @@ async function Logic(orders, name) {
       longitude: order.restaurant.longitude,
       latitude: order.restaurant.latitude,
       logo: order.restaurant.logo,
+      is_open: order.is_open,
       details: order.restaurant.details,
       times: 0,
       amount: 0,
@@ -221,6 +223,7 @@ async function Logic(orders, name) {
       couponAmount += order.coupon.amount;
     }
   });
+
   //Get the medium of delivery time by the total orders
 
   const mediumDeliveryTime = Math.round(mediumTotalDeliveryTime / totalOrders);
@@ -324,13 +327,21 @@ app.post("/api/v1/efood", async (req, res) => {
 
   try {
     // let restaurantIds = [];
+    // let orders = [];
     // const { session_id, name } = await getUserSession(req.body);
     // let data = await getUserOrders(session_id, 0);
     // let offset = 100;
     // data.orders.forEach((order) => {
     //   orders.push(order);
     //   if (!restaurantIds.includes(order.restaurant.id))
-    //     restaurantIdsEfoodds.push(order.restaurant.id);
+    //     restaurantIds.push(order.restaurant.id);
+    // });
+    // while (data.hasNext) {
+    //   data = await getUserOrders(session_id, offset);
+    //   data.orders.forEach((order) => {
+    //     orders.push(order);
+    //     if (!restaurantIds.includes(order.restaurant.id))
+    //       restaurantIds.push(order.restaurant.id);
     //   });
     //   offset += 100;
     // }
@@ -357,9 +368,10 @@ app.post("/api/v1/efood", async (req, res) => {
 
     //delay to simulate the time of the request
     setTimeout(() => {
-      res.status(200).json(orders);
+      res.status(200).json(result);
     }, 1000);
   } catch (error) {
+    console.log(error);
     res.status(403).send({ error });
   }
 });

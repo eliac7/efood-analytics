@@ -355,6 +355,10 @@ table#ordersTable tbody td a:hover {
   z-index: 9999;
 }
 
+.leaflet-marker-icon {
+  border-radius: 50%;
+}
+
 @media (max-width: 992px) {
   .sales {
     width: 100%;

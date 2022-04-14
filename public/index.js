@@ -67,11 +67,19 @@ formLogin.addEventListener("submit", async (e) => {
     nameSelector.innerText = res.name;
 
     //Add restaurants on the map
-    console.log(res);
+
     let coords = [];
-    res.forEach((r) => {
-      const { name, longitude, latitude, logo, times, amount, details } =
-        r.restaurant;
+    res.restaurants.forEach((r) => {
+      const {
+        name,
+        longitude,
+        latitude,
+        logo,
+        times,
+        amount,
+        details,
+        is_open,
+      } = r;
       coords.push([latitude, longitude]);
       marker = new L.marker([latitude, longitude], {
         title: name,
@@ -83,7 +91,7 @@ formLogin.addEventListener("submit", async (e) => {
         }),
       }).bindPopup(
         ` <a class="text-center" href=${
-          "https://www.e-food.gr" + details.slug
+          "https://www.e-food.gr/delivery" + details.slug
         } target="_blank" rel="noreferrer">
                   ${name}
                 </a>
@@ -91,16 +99,21 @@ formLogin.addEventListener("submit", async (e) => {
                 <p class="text-center">Total spent: <b>${formatter.format(
                   amount
                 )}</b></h1>
+                <p class="text-center">Is open: <b>${
+                  is_open
+                    ? '<i class="fa-solid fa-check text-success"></i>'
+                    : '<i class="fa-solid fa-circle-xmark text-danger"></i>'
+                }</b></h1>
               `
       );
       storesLayer.addLayer(marker);
     });
-    console.log(coords);
+
     var bounds = new L.LatLngBounds(coords);
     map.fitBounds(bounds);
   } catch (error) {
     if (error) {
-      TriggerToastify(error.response.data.error, ToastifyAlertColor);
+      TriggerToastify(error || error.response.data.error, ToastifyAlertColor);
       // passwordField.value = "";
       submitButton.disabled = false;
     }
