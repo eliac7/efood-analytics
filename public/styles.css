@@ -269,6 +269,13 @@ canvas {
   overflow: hidden;
 }
 
+.frequent-product {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .table-container {
   overflow-x: auto;
   box-shadow: 0 2rem 3rem rgba(0, 0, 0, 0.4);

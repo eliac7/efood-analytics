@@ -15,9 +15,12 @@ let uniqueStores = document.getElementById("unique-stores");
 let totalTips = document.getElementById("total-tips");
 let frequentStoreSelector = document.getElementById("frequent-store");
 let salesLink = document.querySelectorAll("a.sales-link");
-let frequentImageStore = document.querySelectorAll(".frequent-store");
+let frequentImageStore = document.querySelector(".frequent-store");
+let frequentStoreName = document.getElementById("frequent-store-name");
 let frequentStoreTimes = document.getElementById("frequent-store-times");
-let frequentProductSelector = document.getElementById("frequent-product");
+let frequentProductImage = document.getElementById("frequent-product");
+let frequentProductName = document.getElementById("frequent-product-name");
+
 let frequentProductTimesSelector = document.getElementById(
   "frequent-product-times"
 );
@@ -25,6 +28,7 @@ let creditCardTotal = document.getElementById("credit-card-total");
 let cashTotal = document.getElementById("cash-total");
 let paypalTotal = document.getElementById("paypal-total");
 
+let numberOfOrders = document.querySelector(".number-orders");
 //Chart JS Selectors
 let topTenOrdersTable = document.getElementById("ordersTableBody");
 
@@ -40,10 +44,15 @@ function FadeOutUploadArea() {
     (s.opacity -= 0.1) < 0 ? (s.display = "none") : setTimeout(fade, 40);
   })();
 }
+//Currency formatter
+const formatter = new Intl.NumberFormat("el-GR", {
+  style: "currency",
+  currency: "EUR",
+});
 
 formLogin.addEventListener("submit", async (e) => {
   e.preventDefault();
-  // submitButton.disabled = true;
+  submitButton.disabled = true;
   const formData = new FormData(e.target);
   const object = {};
   formData.forEach((value, key) => (object[key] = value));
@@ -55,7 +64,7 @@ formLogin.addEventListener("submit", async (e) => {
 
     //Fade out login area
 
-    // FadeOutUploadArea();
+    FadeOutUploadArea();
 
     //remove overflow hidden from body
     document.body.style.overflow = "visible";
@@ -111,19 +120,130 @@ formLogin.addEventListener("submit", async (e) => {
 
     var bounds = new L.LatLngBounds(coords);
     map.fitBounds(bounds);
+
+    //First order
+    firstOrder.innerText = res.firstOrder;
+
+    //Latest order
+    lastOrder.innerText = res.lastOrder;
+
+    //Total orders
+
+    totalOrders.innerText = res.totalOrders;
+
+    //Total spendings
+
+    totalAmount.innerText = formatter.format(res.totalPrice);
+
+    //Unique stores
+    uniqueStores.innerText = res.restaurants.length;
+
+    //Total tips
+    totalTips.innerText = formatter.format(res.totalTips);
+
+    //Frequent store
+    frequentImageStore.src = res.restaurants[0].logo;
+    frequentStoreName.innerText = res.restaurants[0].name;
+    frequentStoreSelector.innerText = formatter.format(
+      res.restaurants[0].amount
+    );
+    frequentStoreTimes.innerText = res.restaurants[0].times + " orders";
+
+    //Frequent product
+
+    frequentProductImage.src = res.frequentProduct.image;
+    frequentProductName.innerText = res.frequentProduct.name;
+    frequentProductTimesSelector.innerText = formatter.format(
+      res.frequentProduct.price
+    );
+
+    //Credit Card
+    creditCardTotal.innerText = res.paymentMethods.credit_card;
+
+    //PayPqal
+    paypalTotal.innerText = res.paymentMethods.paypal;
+
+    //Cash
+    cashTotal.innerText = res.paymentMethods.cash;
+
+    //Update Chart stats
+
+    let chartLabelsOrdersPerYear = [];
+    let chartDataOrdersPerYear = [];
+    let chartDataMoneyPerYear = [];
+
+    for (const key in res.ordersByYear) {
+      chartLabelsOrdersPerYear.push(key);
+      chartDataOrdersPerYear.push(res.ordersByYear[key].times);
+      chartDataMoneyPerYear.push(res.ordersByYear[key].amount);
+    }
+    myChart.data.labels = chartLabelsOrdersPerYear;
+    myChart.data.datasets[0].data = chartDataOrdersPerYear;
+    myChart.data.datasets[1].data = chartDataMoneyPerYear;
+
+    myChart.update();
+
+    //Update table with the maximum of 10 recent orders
+    numberOfOrders.innerText = res.tenRecentOrders.length;
+    topTenOrdersTable.innerHTML = "";
+    let html = "";
+    res.tenRecentOrders.map((order) => {
+      const { id, price, submission_date, products, name } = order;
+
+      let dateObj = new Date(submission_date);
+      let dateResult = dateObj.toLocaleDateString("el-GR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      let timeResult = dateObj.toLocaleTimeString("el-GR", {
+        hour12: false,
+      });
+
+      const tr = `
+      <tr>
+        <td>${id}</td>
+        <td>${name}</td>
+        <td>${dateResult}</td>
+        <td>${timeResult}</td>
+        <td>
+        <i class="fas fa-info bg-success text-white p-1 cursor-pointer product-info" data-id=${id} title="Click to see your products"></i>
+        </td>
+        <td>${formatter.format(price)}</td>
+      </tr>
+    `;
+      html += tr;
+    });
+    topTenOrdersTable.innerHTML = html;
+
+    //Handle click on i icon of products
+    let buttons = topTenOrdersTable.querySelectorAll(".product-info");
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        let ID = e.target.dataset.id;
+        let storeName = "";
+        let products = [];
+        res.tenRecentOrders.filter((order, index) => {
+          if (order.id == ID) {
+            storeName = res.tenRecentOrders[index].name;
+            res.tenRecentOrders[index].products.forEach((product) => {
+              products.push(product);
+            });
+          }
+        });
+
+        createModal(storeName, products);
+      });
+    });
+    counterAnimationHandler();
   } catch (error) {
     if (error) {
-      TriggerToastify(error || error.response.data.error, ToastifyAlertColor);
-      // passwordField.value = "";
+      TriggerToastify(error.response.data.error, ToastifyAlertColor);
+      passwordField.value = "";
       submitButton.disabled = false;
     }
   }
-});
-
-//Currency formatter
-const formatter = new Intl.NumberFormat("el-GR", {
-  style: "currency",
-  currency: "EUR",
 });
 
 //Placeholder for first and last orders date
@@ -196,40 +316,55 @@ function TriggerToastify(message, color) {
 }
 
 //Create new Bootstrap Model for the products
-function createModal(ID, products) {
+function createModal(storeName, products) {
   let modal = document.getElementById("productsModal");
   if (modal) {
     modal.parentNode.removeChild(modal);
   }
 
-  let html = `<div class="modal fade" id="productsModal" tabindex="-1" aria-labelledby="productsModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
+  let html = `
+<div class="modal fade" id="productsModal" tabindex="-1" aria-labelledby="productsModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+   <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="productsModalLabel">Order No: ${ID}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         <h5 class="modal-title"><span class="text-secondary">Restaurant: </span> ${storeName}</h5>
+
+         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <ul class="list-group list-unstyled">
-        ${Object.keys(products)
-          .map(function (key) {
-            return (
-              "<li class='list-group-item' value='" +
-              key +
-              "'>" +
-              products[key] +
-              "</li>"
-            );
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Price</th>
+          </tr>
+        </thead>
+        ${products
+          .map((product) => {
+            return `
+          <tr>
+            <td>${product.name}</td>
+            <td>${product.quantity}</td>
+            <td>${formatter.format(
+              Number(product.quantity * product.full_price)
+            )}</td>
+          </tr>
+          `;
           })
           .join("")}
-        </li>
+        <tbody>
+        </tbody>
+      </table>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
-    </div>
-  </div>
-</div>`;
+   </div>
+</div>
+</div>
+
+`;
   document.body.insertAdjacentHTML("beforeend", html);
 
   var myModal = new bootstrap.Modal(

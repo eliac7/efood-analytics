@@ -120,7 +120,9 @@ async function Logic(orders, name) {
   let mediumTotalDeliveryTime = 0;
   let ordersByYear = {};
   let couponAmount = 0;
-  orders.forEach((order) => {
+  let tenRecentOrders = [];
+
+  orders.forEach((order, index) => {
     totalPrice += order.price;
     restaurants.push({
       id: order.restaurant.id,
@@ -133,6 +135,20 @@ async function Logic(orders, name) {
       times: 0,
       amount: 0,
     });
+
+    //Get the 10 most recent orders
+    if (index < 10) {
+      const { id, price, products, submission_date, restaurant } = order;
+      tenRecentOrders.push({
+        id,
+        price,
+        products,
+        submission_date,
+        name: restaurant.name,
+      });
+    }
+
+    //Tips
 
     totalTips += order.tip;
 
@@ -183,8 +199,12 @@ async function Logic(orders, name) {
           image = popular_item;
         } else if (banner_item) {
           image = banner_item;
-        } else {
+        } else if (featured_item) {
           image = featured_item;
+        } else {
+          //Placeholder image
+          image =
+            "https://i0.wp.com/assets.e-food.gr/gravatar/no-avatar2.png?ssl=1";
         }
       }
 
@@ -315,6 +335,7 @@ async function Logic(orders, name) {
     ordersByYear,
     couponAmount,
     name,
+    tenRecentOrders,
   };
 }
 
@@ -326,50 +347,49 @@ app.post("/api/v1/efood", async (req, res) => {
   }
 
   try {
-    // let restaurantIds = [];
-    // let orders = [];
-    // const { session_id, name } = await getUserSession(req.body);
-    // let data = await getUserOrders(session_id, 0);
-    // let offset = 100;
-    // data.orders.forEach((order) => {
-    //   orders.push(order);
-    //   if (!restaurantIds.includes(order.restaurant.id))
-    //     restaurantIds.push(order.restaurant.id);
-    // });
-    // while (data.hasNext) {
-    //   data = await getUserOrders(session_id, offset);
-    //   data.orders.forEach((order) => {
-    //     orders.push(order);
-    //     if (!restaurantIds.includes(order.restaurant.id))
-    //       restaurantIds.push(order.restaurant.id);
-    //   });
-    //   offset += 100;
-    // }
+    let restaurantIds = [];
+    let orders = [];
+    const { session_id, name } = await getUserSession(req.body);
+    let data = await getUserOrders(session_id, 0);
+    let offset = 100;
+    data.orders.forEach((order) => {
+      orders.push(order);
+      if (!restaurantIds.includes(order.restaurant.id))
+        restaurantIds.push(order.restaurant.id);
+    });
+    while (data.hasNext) {
+      data = await getUserOrders(session_id, offset);
+      data.orders.forEach((order) => {
+        orders.push(order);
+        if (!restaurantIds.includes(order.restaurant.id))
+          restaurantIds.push(order.restaurant.id);
+      });
+      offset += 100;
+    }
 
-    // const restaurantDetails = await getRestaurantDetails(
-    //   session_id,
-    //   restaurantIds
-    // );
+    const restaurantDetails = await getRestaurantDetails(
+      session_id,
+      restaurantIds
+    );
 
-    // restaurantDetails.forEach((restaurant) => {
-    //   orders.forEach((order) => {
-    //     if (restaurant.id === order.restaurant.id) {
-    //       order.restaurant.details = restaurant;
-    //     }
-    //   });
-    // });
+    restaurantDetails.forEach((restaurant) => {
+      orders.forEach((order) => {
+        if (restaurant.id === order.restaurant.id) {
+          order.restaurant.details = restaurant;
+        }
+      });
+    });
 
     // fs.writeFileSync("orders.json", JSON.stringify(orders));
 
-    let rawdata = fs.readFileSync("orders.json");
-    let orders = JSON.parse(rawdata);
-    let name = "Efood";
+    // let rawdata = fs.readFileSync("orders.json");
+    // let orders = JSON.parse(rawdata);
+    // let name = "Efood";
     const result = await Logic(orders, name);
 
     //delay to simulate the time of the request
-    setTimeout(() => {
-      res.status(200).json(result);
-    }, 1000);
+
+    res.status(200).json(result);
   } catch (error) {
     console.log(error);
     res.status(403).send({ error });

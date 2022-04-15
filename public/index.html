@@ -322,7 +322,7 @@
                         ">
                       <div class="center">
                         <h3 class="text-center" style="color: #ff7300">
-                          Number of Tips
+                          Tips
                         </h3>
                         <h1 class="text-center count" id="total-tips">0</h1>
                       </div>
@@ -369,6 +369,7 @@
                         <h3 class="text-center" style="color: #0070ff">
                           Most Frequent Store
                         </h3>
+                        <h3 id="frequent-store-name">Frequest Store Name</h3>
                         <h1 class="text-center" id="frequent-store">0</h1>
                         <small class="text-muted" id="frequent-store-times">0</small>
                       </div>
@@ -390,7 +391,8 @@
                         h-100
                       ">
                     <div class="frequent-product-container">
-                      <i class="fas fa-hamburger"></i>
+                      <img src="#" id="frequent-product" class="frequent-product -block" alt="frequent product logo" />
+
                     </div>
 
                     <div class="
@@ -404,7 +406,7 @@
                         <h3 class="text-center" style="color: #ae2012">
                           Most Frequent Product
                         </h3>
-                        <h1 class="text-center" id="frequent-product" style="font-size: 30px">
+                        <h1 class="text-center" id="frequent-product-name" style="font-size: 20px">
                           Souvlaki
                         </h1>
                         <small class="text-muted" id="frequent-product-times">0</small>
@@ -518,7 +520,7 @@
     <div class="row my-3">
       <div class="col-lg-9 mx-lg-auto text-white">
         <h2 style="margin-bottom: 0.8rem; font-size: 19px">
-          10 Recent Orders
+          <span class="number-orders"></span> Recent Orders
         </h2>
         <div class="table-container">
           <table id="ordersTable">
