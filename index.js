@@ -4,13 +4,14 @@ const axios = require("axios");
 const cors = require("cors");
 const fs = require("fs");
 const port = process.env.PORT || 3002;
+
 require("dotenv").config();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms = 1000) => new Promise((r) => setTimeout(r, ms));
 
 async function getUserSession(body) {
   //Fetch to Efood API
@@ -60,31 +61,25 @@ async function getRestaurantDetails(tkn, ids) {
     const url = RESTAURANT_DETAILS(id);
     urls.push(DEFAULT_URL + url);
   });
-  await axios
-    .all(
-      urls.map((endpoint) =>
-        axios.get(endpoint, {
-          headers: {
-            "X-core-session-id": tkn,
-          },
-        })
-      )
-    )
-    .then(
-      axios.spread((...responses) => {
-        return responses.map((res) =>
-          restaurantAnswers.push(res.data.data.shop)
-        );
-      })
-    )
-    .then(() => {
-      return restaurantAnswers;
-    })
-    .catch((error) => {
-      console.log(error);
-      return Promise.reject(error);
-    });
 
+  for (let i = 0; i < urls.length; i += 10) {
+    let url = urls.slice(i, i + 10);
+
+    for (let inUrl of url) {
+      const { data } = await axios.get(inUrl, {
+        headers: {
+          "X-core-session-id": tkn,
+        },
+      });
+      if (data.status === "ok") {
+        const res = data.data.shop;
+        restaurantAnswers.push(res);
+      } else {
+        return Promise.reject(data.message);
+      }
+    }
+    await delay(2000);
+  }
   return Promise.resolve(restaurantAnswers);
 }
 
