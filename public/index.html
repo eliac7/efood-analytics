@@ -34,7 +34,9 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
 
   <!--FontAwesome CSS-->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <!-- Leaflet CSS-->
 
@@ -78,12 +80,13 @@
                 </div>
                 <div class="form-group mb-2">
                   <label for="password">Password</label>
-                  <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                  <input type="password" name="password" class="form-control" id="password" autocomplete="off"
+                    placeholder="Password" required>
                   <small class="form-text text-muted">Your data is posted on E-food.</small>
                 </div>
                 <button type="submit" class="btn btn-primary">Submit</button>
               </form>
-             
+
             </div>
 
             <form class="d-none w-100" enctype="multipart/form-data" method="POST">
@@ -582,6 +585,8 @@
       </div>
     </div>
   </div>
+
+
 
   <!--Popper JS -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
