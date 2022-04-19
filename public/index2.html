@@ -130,6 +130,19 @@
       rel="stylesheet"
       href="https://unpkg.com/swiper@8/swiper-bundle.min.css"
     />
+    <!--Datatables CSS-->
+    <link
+      href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <!--Leaflet Gesture CSS-->
+    <link
+      rel="stylesheet"
+      href="//unpkg.com/leaflet-gesture-handling/dist/leaflet-gesture-handling.min.css"
+      type="text/css"
+    />
 
     <!--Custom CSS-->
     <link rel="stylesheet" href="./styles2.css" />
@@ -140,6 +153,30 @@
   <body>
     <!--Background-->
     <div class="bg"></div>
+    <!--Star it on Github-->
+    <a
+      class="star d-none d-lg-block position-fixed p-2 shadow rounded"
+      href="https://github.com/eliac7/efood-analytics"
+      target="_blank"
+      noopener
+      noreferrer
+    >
+      <svg
+        aria-hidden="true"
+        height="16"
+        viewBox="0 0 16 16"
+        version="1.1"
+        width="16"
+        data-view-component="true"
+        class="d-inline-block me-2"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25zm0 2.445L6.615 5.5a.75.75 0 01-.564.41l-3.097.45 2.24 2.184a.75.75 0 01.216.664l-.528 3.084 2.769-1.456a.75.75 0 01.698 0l2.77 1.456-.53-3.084a.75.75 0 01.216-.664l2.24-2.183-3.096-.45a.75.75 0 01-.564-.41L8 2.694v.001z"
+        ></path>
+      </svg>
+      <span class="d-inline">Star it on Github</span>
+    </a>
 
     <header class="mb-5">
       <div class="container-fluid bg-transparent">
@@ -155,7 +192,12 @@
           </div>
         </div>
       </div>
-      <div class="toggle_container">
+      <div class="toggle_container d-flex gap-2">
+        <div
+          class="logout bg-danger text-white px-2 d-flex align-items-center justify-content-center rounded-pill d-none"
+        >
+          <i class="fa fa-sign-out" aria-hidden="true"></i>
+        </div>
         <div class="toggle_wrapper">
           <div class="toggle"></div>
           <i class="fas fa-sun"></i>
@@ -166,7 +208,7 @@
 
     <main class="flex-grow-1 d-flex align-items-center justify-content-center">
       <!--Container of login-->
-      <div class="container-fluid outer-container d-none">
+      <div class="container-fluid outer-container">
         <div class="row">
           <div class="col d-flex align-items-center justify-content-center">
             <div class="container p-0 login-box shadow-lg">
@@ -199,13 +241,13 @@
                         class="img-fluid"
                       />
                       <p class="fw-bold">Παρακαλώ περιμένετε...</p>
-                      <p>Αυτή η διαδικασία μπορεί να πάρει μέχρι και 1'</p>
+                      <p>Αυτή η διαδικασία μπορεί να διαρκέσει μέχρι και 1'</p>
                     </div>
                     <p class="fst-italic" id="quote"></p>
                   </div>
-                  <div class="container">
+                  <div class="container p-0">
                     <div class="row">
-                      <div class="col-10 offset-1">
+                      <div class="col-md-10 offset-md-1">
                         <h4 class="mb-4 welcome-text">
                           Καλώς ήρθατε στο Efood Analytics
                         </h4>
@@ -240,8 +282,17 @@
         </div>
       </div>
       <!--Container of results-->
-      <div class="container-fluid w-100">
-        <div class="row">
+      <div class="container-fluid w-100 outer-results-container d-none">
+        <div class="row flex-column">
+          <div
+            class="col text-center d-flex align-items-center justify-content-center"
+          >
+            <div class="text-center shadow-lg welcome-text-name-container">
+              <p class="h6 m-0">
+                Καλώς ήρθες <span class="welcome-text-name">Ηλία</span>
+              </p>
+            </div>
+          </div>
           <div class="col d-flex flex-column gap-2">
             <div
               class="container results-container w-100 shadow-lg rounded p-3"
@@ -257,7 +308,7 @@
                       Παραγγελίες
                     </h3>
                     <div
-                      class="col-md-3 first-order shadow-lg text-center d-flex flex-column flex-md-row align-items-center justify-content-center flex-wrap gap-3"
+                      class="col-md-3 first-order shadow-lg text-center d-flex flex-column flex-xl-row align-items-center justify-content-center gap-3"
                     >
                       <div class="icon">
                         <i class="fa fa-baby"></i>
@@ -268,7 +319,7 @@
                       </div>
                     </div>
                     <div
-                      class="col-md-3 last-order shadow-lg text-center d-flex flex-column flex-md-row align-items-center justify-content-center flex-wrap gap-3"
+                      class="col-md-3 last-order shadow-lg text-center d-flex flex-column flex-xl-row align-items-center justify-content-center gap-3"
                     >
                       <div class="icon">
                         <i class="fas fa-trophy"></i>
@@ -279,7 +330,7 @@
                       </div>
                     </div>
                     <div
-                      class="col-md-3 total-order shadow-lg text-center d-flex flex-column flex-md-row align-items-center justify-content-center flex-wrap gap-3"
+                      class="col-md-3 total-order shadow-lg text-center d-flex flex-column flex-xl-row align-items-center justify-content-center gap-3"
                     >
                       <div class="icon">
                         <i class="fas fa-shopping-cart"></i>
@@ -361,6 +412,12 @@
                       <div class="info">
                         <h6 class="mb-2 text-muted">Το πιο συχνό εστιατόριο</h6>
                         <p class="m-0">Gril Academy</p>
+                        <p
+                          class="text-muted"
+                          style="font-size: 0.8rem; margin-top: 1rem"
+                        >
+                          60 φορές
+                        </p>
                       </div>
                     </div>
                     <div
@@ -376,6 +433,12 @@
                       <div class="info">
                         <h6 class="mb-2 text-muted">Το πιο συχνό προϊόν</h6>
                         <p class="m-0">Σουβλάκι χορινό</p>
+                        <p
+                          class="text-muted"
+                          style="font-size: 0.8rem; margin-top: 1rem"
+                        >
+                          60 φορές
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -404,7 +467,7 @@
                       </div>
                     </div>
                     <div
-                      class="col-md-3 shadow-lg text-center d-flex flex-column align-items-center justify-content-center gap-3 frequent-product-container"
+                      class="col-md-3 shadow-lg text-center d-flex flex-column align-items-center justify-content-center gap-3 coupon-container"
                     >
                       <div class="icon">
                         <i class="fa-solid fa-tag"></i>
@@ -416,7 +479,7 @@
                     </div>
                   </div>
                   <!-- Εxtra statistics 2-->
-                  <div class="row gap-2 gap-md-0 justify-content-around">
+                  <div class="row pt-3 gap-2 gap-md-0 justify-content-around">
                     <div
                       class="col-md-4 shadow-lg text-center d-flex flex-column align-items-center justify-content-center gap-3 medium-time"
                     >
@@ -429,29 +492,27 @@
                 </div>
               </div>
             </div>
+            <!--Bar Chart Container-->
+            <div class="container bar-container w-100 shadow-lg rounded p-3">
+              <canvas id="chart"></canvas>
+            </div>
             <!--Table container-->
             <div class="container table-container w-100 shadow-lg rounded p-3">
               <div class="row">
-                <h3
-                  style="
-                    margin-bottom: 0.8rem;
-                    font-size: 19px;
-                    color: var(--white-color);
-                  "
-                >
+                <h4 class="text-center">
                   <span class="number-orders">10</span> πιο πρόσφατες
                   παραγγελίες
-                </h3>
+                </h4>
                 <div class="col">
                   <table id="ordersTable">
                     <thead>
                       <tr>
-                        <th>Order ID</th>
-                        <th>Store Name</th>
-                        <th>Order Date</th>
-                        <th>Order Time</th>
-                        <th>Products</th>
-                        <th>Total Amount</th>
+                        <th>Αρ. παραγγελίας</th>
+                        <th>Όνομα εστιατορίου</th>
+                        <th>Ημερομηνία παραγγελίας</th>
+                        <th>Ώρα παραγγελίας</th>
+                        <th>Προϊόντα</th>
+                        <th>Σύνολο</th>
                       </tr>
                     </thead>
                     <tbody id="ordersTableBody">
@@ -563,6 +624,15 @@
 
     <!--Swiper JS-->
     <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+
+    <!--Datatables JS-->
+    <script
+      src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"
+      type="text/javascript"
+    ></script>
+
+    <!--Leaflet gesture JS-->
+    <script src="https://elmarquis.github.io/Leaflet.GestureHandling/dist/leaflet-gesture-handling.js"></script>
 
     <!--Toggle JS -->
     <script type="module" src="./toggle.js"></script>

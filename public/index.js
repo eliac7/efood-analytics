@@ -207,7 +207,9 @@ formLogin.addEventListener("submit", async (e) => {
         <td>${dateResult}</td>
         <td>${timeResult}</td>
         <td>
-        <i class="fas fa-info bg-success text-white p-1 cursor-pointer product-info" data-id=${id} title="Click to see your products"></i>
+          <div>
+            <i class="fas fa-info bg-success text-white p-1" data-id=${id} title="Click to see your products"></i>
+          <div>
         </td>
         <td>${formatter.format(price)}</td>
       </tr>

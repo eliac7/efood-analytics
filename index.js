@@ -131,14 +131,24 @@ async function Logic(orders, name) {
       amount: 0,
     });
 
-    //Get the 10 most recent orders
     if (index < 10) {
-      const { id, price, products, submission_date, restaurant } = order;
+      //Get the 10 most recent orders
+      const {
+        id,
+        price,
+        products,
+        submission_date,
+        restaurant,
+        tip,
+        delivery_cost,
+      } = order;
       tenRecentOrders.push({
         id,
         price,
         products,
         submission_date,
+        tip,
+        delivery_cost,
         name: restaurant.name,
       });
     }
@@ -384,7 +394,9 @@ app.post("/api/v1/efood", async (req, res) => {
 
     //delay to simulate the time of the request
 
-    res.status(200).json(result);
+    setTimeout(() => {
+      res.status(200).json(result);
+    }, 4000);
   } catch (error) {
     console.log(error);
     res.status(403).send({ error });
