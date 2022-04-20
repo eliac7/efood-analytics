@@ -156,6 +156,9 @@ window.addEventListener("load", function () {
     currency: "EUR",
   });
 
+  //Add year on the footer
+  document.querySelector(".year").innerHTML = new Date().getFullYear();
+
   //Handle the eye icon to show/hide the password
 
   passwordEye.addEventListener("click", () => {
