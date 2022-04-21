@@ -3,11 +3,20 @@ const app = express();
 const axios = require("axios");
 const cors = require("cors");
 const fs = require("fs");
+const apicache = require("apicache");
+const rateLimit = require("express-rate-limit");
 const port = process.env.PORT || 3002;
+
+let cache = apicache.middleware;
+const limiter = rateLimit({
+  windowMs: 10 * 1000,
+  max: 10,
+});
 
 require("dotenv").config();
 
 app.use(cors());
+app.use(limiter);
 app.use(express.json());
 app.use(express.static("public"));
 
@@ -344,7 +353,7 @@ async function Logic(orders, name) {
   };
 }
 
-app.post("/api/v1/efood", async (req, res) => {
+app.post("/api/v1/efood", cache("2 minutes"), async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     res.status(500).json({ error: "Please enter e-mail or password." });
