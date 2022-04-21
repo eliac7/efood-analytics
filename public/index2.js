@@ -66,9 +66,15 @@ window.addEventListener("load", function () {
 <div class="modal-dialog">
    <div class="modal-content">
       <div class="modal-header">
-         <h5 class="modal-title"><span class="text-secondary"></span> ${storeName}</h5>
+         <h5 class="modal-title" style="var(--background-color)"><span class="text-secondary"></span> ${storeName}</h5>
 
-         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         <button type="button" class="btn-close ${
+           document
+             .querySelector(".toggle")
+             .classList.contains("toggle--active")
+             ? "btn-close-white"
+             : ""
+         }" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
       <table class="table">

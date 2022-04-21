@@ -3,10 +3,7 @@ const app = express();
 const axios = require("axios");
 const cors = require("cors");
 const fs = require("fs");
-const apicache = require("apicache");
 const port = process.env.PORT || 3002;
-
-let cache = apicache.middleware;
 
 require("dotenv").config();
 
@@ -348,7 +345,7 @@ async function Logic(orders, name) {
   };
 }
 
-app.post("/api/v1/efood", cache("2 minutes"), async (req, res) => {
+app.post("/api/v1/efood", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     res.status(500).json({ error: "Please enter e-mail or password." });
@@ -356,51 +353,56 @@ app.post("/api/v1/efood", cache("2 minutes"), async (req, res) => {
   }
 
   try {
-    // let restaurantIds = [];
-    // let orders = [];
-    // const { session_id, name } = await getUserSession(req.body);
-    // let data = await getUserOrders(session_id, 0);
-    // let offset = 100;
-    // data.orders.forEach((order) => {
-    //   orders.push(order);
-    //   if (!restaurantIds.includes(order.restaurant.id))
-    //     restaurantIds.push(order.restaurant.id);
-    // });
-    // while (data.hasNext) {
-    //   data = await getUserOrders(session_id, offset);
-    //   data.orders.forEach((order) => {
-    //     orders.push(order);
-    //     if (!restaurantIds.includes(order.restaurant.id))
-    //       restaurantIds.push(order.restaurant.id);
-    //   });
-    //   offset += 100;
-    // }
+    let restaurantIds = [];
+    let orders = [];
+    const { session_id, name } = await getUserSession(req.body);
+    let data = await getUserOrders(session_id, 0);
+    let offset = 100;
+    data.orders.forEach((order) => {
+      orders.push(order);
+      if (!restaurantIds.includes(order.restaurant.id))
+        restaurantIds.push(order.restaurant.id);
+    });
+    while (data.hasNext) {
+      data = await getUserOrders(session_id, offset);
+      data.orders.forEach((order) => {
+        orders.push(order);
+        if (!restaurantIds.includes(order.restaurant.id))
+          restaurantIds.push(order.restaurant.id);
+      });
+      offset += 100;
+    }
 
-    // const restaurantDetails = await getRestaurantDetails(
-    //   session_id,
-    //   restaurantIds
-    // );
+    const restaurantDetails = await getRestaurantDetails(
+      session_id,
+      restaurantIds
+    );
 
-    // restaurantDetails.forEach((restaurant) => {
-    //   orders.forEach((order) => {
-    //     if (restaurant.id === order.restaurant.id) {
-    //       order.restaurant.details = restaurant;
-    //     }
-    //   });
-    // });
+    restaurantDetails.forEach((restaurant) => {
+      orders.forEach((order) => {
+        if (restaurant.id === order.restaurant.id) {
+          order.restaurant.details = restaurant;
+        }
+      });
+    });
 
-    // fs.writeFileSync("orders.json", JSON.stringify(orders));
+    if (process.env.DEVELOPMENT) {
+      fs.writeFileSync("orders.json", JSON.stringify(orders));
 
-    let rawdata = fs.readFileSync("orders.json");
-    let orders = JSON.parse(rawdata);
-    let name = "Efood";
+      let rawdata = fs.readFileSync("orders.json");
+      let orders = JSON.parse(rawdata);
+      let name = "Efood";
+    }
     const result = await Logic(orders, name || "επισκέπτη");
 
     //delay to simulate the time of the request
 
-    setTimeout(() => {
-      res.status(200).json(result);
-    }, 4000);
+    if (process.env.DEVELOPMENT) {
+      setTimeout(() => {
+        return res.status(200).json(result);
+      }, 4000);
+    }
+    res.status(200).json(result);
   } catch (error) {
     console.log(error);
     res.status(403).send({ error });
