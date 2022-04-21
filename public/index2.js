@@ -42,6 +42,10 @@ window.addEventListener("load", function () {
       document
         .querySelector(".outer-results-container")
         .classList.remove("d-none");
+      //add fade in class
+      document
+        .querySelector(".outer-results-container")
+        .classList.add("fade-in");
       //Re render map to get the correct size
       map.invalidateSize();
       const bounds = new L.LatLngBounds(coords);
@@ -173,6 +177,25 @@ window.addEventListener("load", function () {
     }
   });
 
+  //Handle dark mode for chartJS charts
+  document.querySelector(".toggle_wrapper").addEventListener("click", () => {
+    if (
+      //dark mode enabled
+      document.querySelector(".toggle").classList.contains("toggle--active")
+    ) {
+      configBar.options.scales.x.ticks.color = "#fff";
+      configBar.options.scales.y.ticks.color = "#fff";
+      configBar.options.plugins.legend.labels.color = "#fff";
+
+      barChart.update();
+    } else {
+      configBar.options.scales.x.ticks.color = "#121212";
+      configBar.options.scales.y.ticks.color = "#121212";
+      configBar.options.plugins.legend.labels.color = "#121212";
+      barChart.update();
+    }
+  });
+
   //On blur or on input handle the validation
   "blur input".split(" ").forEach((e) => {
     email.addEventListener(e, function () {
@@ -196,6 +219,7 @@ window.addEventListener("load", function () {
       delay: 3000,
       disableOnInteraction: false,
     },
+    spaceBetween: 30,
 
     pagination: {
       el: ".swiper-pagination",
@@ -307,7 +331,10 @@ window.addEventListener("load", function () {
         },
         legend: {
           labels: {
-            color: "#121212",
+            color:
+              this.localStorage.getItem("theme") === "dark"
+                ? "#fff"
+                : "#121212",
             font: {
               size: 16,
             },
@@ -322,7 +349,10 @@ window.addEventListener("load", function () {
             color: "rgba(255,255,255,0.5)",
           },
           ticks: {
-            color: "#121212",
+            color:
+              this.localStorage.getItem("theme") === "dark"
+                ? "#fff"
+                : "#121212",
             font: {
               size: 14,
             },
@@ -336,7 +366,10 @@ window.addEventListener("load", function () {
             color: "rgba(255,255,255,0.5)",
           },
           ticks: {
-            color: "#121212",
+            color:
+              this.localStorage.getItem("theme") === "dark"
+                ? "#fff"
+                : "#121212",
           },
         },
       },
@@ -366,6 +399,7 @@ window.addEventListener("load", function () {
       zoomOffset: -1,
       accessToken:
         "pk.eyJ1IjoiZWxpYWM3IiwiYSI6ImNrcjZ1d3pqczA5dDIybm1hbndkYzA3cWUifQ.oCsZHSmdgFiahDuozJWNOg",
+      className: "map-tiles",
     }
   ).addTo(map);
   const storesLayer = L.layerGroup().addTo(map);
@@ -654,11 +688,11 @@ window.addEventListener("load", function () {
           } target="_blank" rel="noreferrer">
                   ${name}
                 </a>
-                <p class="text-center">Times: <b>${times}</b></h1>
-                <p class="text-center">Total spent: <b>${formatter.format(
+                <p class="text-center">Φορές: <b>${times}</b></h1>
+                <p class="text-center">Σύνολο δαπανών: <b>${formatter.format(
                   amount
                 )}</b></h1>
-                <p class="text-center">Is open: <b>${
+                <p class="text-center">Εξυπηρετεί αυτή τη στιγμή: <b>${
                   is_open
                     ? '<i class="fa-solid fa-check text-success"></i>'
                     : '<i class="fa-solid fa-circle-xmark text-danger"></i>'

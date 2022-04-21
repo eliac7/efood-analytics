@@ -23,7 +23,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
-    "express-rate-limit": "^6.3.0",
     "nodemon": "^2.0.14"
   }
 }

@@ -4,19 +4,14 @@ const axios = require("axios");
 const cors = require("cors");
 const fs = require("fs");
 const apicache = require("apicache");
-const rateLimit = require("express-rate-limit");
 const port = process.env.PORT || 3002;
 
 let cache = apicache.middleware;
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-});
 
 require("dotenv").config();
 
 app.use(cors());
-app.use(limiter);
+
 app.use(express.json());
 app.use(express.static("public"));
 
@@ -399,7 +394,7 @@ app.post("/api/v1/efood", cache("2 minutes"), async (req, res) => {
     let rawdata = fs.readFileSync("orders.json");
     let orders = JSON.parse(rawdata);
     let name = "Efood";
-    const result = await Logic(orders, name);
+    const result = await Logic(orders, name || "επισκέπτη");
 
     //delay to simulate the time of the request
 
