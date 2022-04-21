@@ -672,14 +672,16 @@ window.addEventListener("load", function () {
       FadeOutLoginAndBringResults();
     } catch (error) {
       console.log(error);
-      if (error) {
+      //empty password field
+      document.querySelector("input[type='password']").value = "";
+      //make submit button active
+      form.querySelector("button[type='submit']").disabled = false;
+      //remove loading class
+      loading.classList.remove("loading--active");
+      if (error.response.data.error) {
         TriggerToastify(error.response.data.error, "#cc3300");
-        //empty password field
-        document.querySelector("input[type='password']").value = "";
-        //make submit button active
-        form.querySelector("button[type='submit']").disabled = false;
-        //remove loading class
-        loading.classList.remove("loading--active");
+      } else {
+        TriggerToastify(error, "#cc3300");
       }
     }
   });

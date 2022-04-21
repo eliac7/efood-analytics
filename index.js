@@ -9,8 +9,8 @@ const port = process.env.PORT || 3002;
 
 let cache = apicache.middleware;
 const limiter = rateLimit({
-  windowMs: 10 * 1000,
-  max: 10,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
 });
 
 require("dotenv").config();
