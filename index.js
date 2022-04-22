@@ -386,7 +386,7 @@ app.post("/api/v1/efood", async (req, res) => {
       });
     });
 
-    if (process.env.DEVELOPMENT) {
+    if (process.env.NODE_ENV === "development") {
       fs.writeFileSync("orders.json", JSON.stringify(orders));
 
       let rawdata = fs.readFileSync("orders.json");
@@ -397,7 +397,7 @@ app.post("/api/v1/efood", async (req, res) => {
 
     //delay to simulate the time of the request
 
-    if (process.env.DEVELOPMENT) {
+    if (process.env.NODE_ENV === "development") {
       setTimeout(() => {
         return res.status(200).json(result);
       }, 4000);
