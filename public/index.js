@@ -870,7 +870,8 @@ window.addEventListener("load", function () {
       form.querySelector("button[type='submit']").disabled = false;
       //remove loading class
       loading.classList.remove("loading--active");
-      TriggerToastify(error, "#cc3300");
+
+      TriggerToastify(error?.response?.data?.error || error, "#cc3300");
     }
   });
 });
