@@ -8,6 +8,87 @@ window.addEventListener("load", function () {
   const passwordEye = document.querySelector(".fa-eye-slash");
   let coords = [];
 
+  //Get user login
+
+  async function getUserLogin(loginData) {
+    try {
+      const res = await axios.post("/api/v1/efood/login", loginData);
+      const { data } = res;
+      const { session_id, name } = data;
+
+      return Promise.resolve({ session_id, name });
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  //Get user orders
+
+  async function getUserOrders(session_id, page) {
+    try {
+      const res = await axios.get(`/api/v1/efood/orders?page=${page}`, {
+        headers: {
+          session_id,
+        },
+      });
+
+      const { data } = res;
+      const { orders, hasNext } = data;
+
+      return { orders, hasNext };
+    } catch (error) {
+      console.log(error);
+      TriggerToastify(error, "#cc3300");
+    }
+  }
+
+  //Get restuarant details
+
+  async function getRestaurantDetails(session_id, id) {
+    try {
+      const res = await axios.get(`/api/v1/efood/restaurants/${id}`, {
+        headers: {
+          session_id,
+        },
+      });
+
+      const { data } = res;
+
+      return Promise.resolve(data);
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  //Get logic from API
+  async function Logic(finalData, name, session_id) {
+    //send data to server
+    try {
+      const res = await axios.post(
+        "/api/v1/efood/logic",
+        {
+          data: {
+            data: JSON.stringify(finalData),
+            name,
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            session_id,
+          },
+        }
+      );
+      const { data } = res;
+      return Promise.resolve(data);
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
+  //Function to delay resolve
+  const sleep = (ms = 1000) => new Promise((res) => setTimeout(res, ms));
+
   //Quotes about food
 
   function getQuotes(disable) {
@@ -428,301 +509,368 @@ window.addEventListener("load", function () {
 
   //Handle form submit
   form.addEventListener("submit", async function (event) {
-    getQuotes();
     event.preventDefault();
+    getQuotes();
+    //Disable submit button
     form.querySelector("button[type='submit']").disabled = true;
     loading.classList.add("loading--active");
     const formData = new FormData(event.target);
     const object = {};
     formData.forEach((value, key) => (object[key] = value));
     const loginData = object;
+    const finalData = [];
+    const restaurantsId = [];
 
     try {
-      const res = await axios.post("/api/v1/efood", loginData);
-      const data = await res.data;
+      const dataLogin = await getUserLogin(loginData);
+      const { session_id, name } = dataLogin;
 
-      //Cancel interval
-      getQuotes(true);
+      //if there is session id get the orders
+      if (session_id) {
+        const dataOrders = await getUserOrders(session_id, 0);
+        const { hasNext, orders } = dataOrders;
 
-      ///////////////////////////////SELECTORS///////////////////////////////
-
-      //Name selector
-      const name = (document.querySelector(".welcome-text-name").innerText =
-        data.name);
-      //First order selector
-      document.querySelector(".first-order .info p").innerHTML =
-        data.firstOrder;
-
-      //Latest order selector
-      document.querySelector(".last-order .info p").innerHTML = data.lastOrder;
-
-      //Total order selector
-      document.querySelector(".total-order .info p").innerHTML =
-        data.totalOrders;
-
-      //Total spendings selector
-      document.querySelector(".total-spending .info p").innerHTML =
-        formatter.format(data.totalPrice);
-
-      //Total tips selector
-      document.querySelector(".total-tips .info p").innerHTML =
-        formatter.format(data.totalTips);
-
-      //Unique restaurants selector
-      document.querySelector(".unique-restaurants .info p").innerHTML =
-        data.restaurants.length;
-
-      //Frequent store
-      //Frequent store logo
-      document.querySelector(".frequent-store").src = data.restaurants[0].logo;
-      //Frequent store title
-      document.querySelector(".frequent-store-container .info p").innerHTML =
-        data.restaurants[0].name;
-      //Frequent store times
-      document.querySelector(
-        ".frequent-store-container .info p:last-child"
-      ).innerHTML =
-        data.restaurants[0].times +
-        " φορές " +
-        "με σύνολο " +
-        formatter.format(data.restaurants[0].amount);
-
-      //Frequent product
-      //Frequent prduct logo
-      document.querySelector(".frequent-product").src =
-        data.frequentProduct.image;
-
-      //Frequent product name
-      document.querySelector(".frequent-product-container .info p").innerHTML =
-        data.frequentProduct.name;
-
-      //Frequent product times
-      document.querySelector(
-        ".frequent-product-container .info p:last-child"
-      ).innerHTML =
-        data.frequentProduct.quantity +
-        " φορές " +
-        "με σύνολο " +
-        formatter.format(data.frequentProduct.price);
-
-      //Medium time selector
-      document.querySelector(".medium-time .info p").innerHTML =
-        data.mediumDeliveryTime + "'";
-
-      //Delivered by efood selector
-      //Firstly we need to check if the user has delivered by efood
-      if (data.deliveryCost) {
-        document.querySelector(".delivered-by-efood .info p").innerHTML =
-          formatter.format(data.deliveryCost);
-      } else {
-        document.querySelector(".delivered-by-efood").classList.add("d-none");
-      }
-
-      //Coupon selector
-      //Firstly we need to check if the user has used a coupon
-      if (data.couponAmount) {
-        document.querySelector(".coupon-container .info p").innerHTML =
-          formatter.format(data.couponAmount);
-      } else {
-        document.querySelector(".coupon-container").classList.add("d-none");
-      }
-
-      document.querySelector(".number-orders").innerHTML =
-        data.tenRecentOrders.length;
-      ///////////////////////////////END OF SELECTORS///////////////////////////////
-
-      ///////////////////////////////SIMPLE DATATABLE///////////////////////////////
-
-      let dataTable = new simpleDatatables.DataTable("#ordersTable", {
-        searchable: false,
-        responsive: true,
-        pagination: true,
-        perPage: 5,
-        perPageSelect: [5, 10],
-        labels: {
-          perPage: "{select} παραγγελίες ανά σελίδα",
-          noRows: " Δεν βρέθηκαν παραγγελίες",
-          info: " Εμφανίζονται {start} έως {end} από {rows} παραγγελίες",
-        },
-        columns: [
-          {
-            select: 2,
-            type: "date",
-            format: "DD/MM/YYYY",
-          },
-          {
-            select: 3,
-            type: "time",
-            format: "HH:mm:ss",
-          },
-          {
-            select: 4,
-            sortable: false,
-            //render a green button
-            render: function (data, cell, row) {
-              return `<div class="product-info"><i class="fas fa-info text-white p-1 pe-none" data-id=${data} title="Click to see your products"></i></div>`;
-            },
-          },
-          {
-            select: 5,
-            type: "number",
-            sortable: false,
-          },
-        ],
-        data: {
-          headings: [
-            "Αρ. παραγγελίας",
-            "Όνομα εστιατορίου",
-            "Ημερομηνία παραγγελίας",
-            "Ώρα παραγγελίας",
-            "Προϊόντα",
-            "Σύνολο",
-          ],
-          data: data.tenRecentOrders.map((order) => {
-            let { submission_date } = order;
-            let dateObj = new Date(submission_date);
-            let dateResult = dateObj.toLocaleDateString("el-GR", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
+        //push orders to array
+        orders.forEach((order) => {
+          finalData.push(order);
+          if (!restaurantsId.includes(order.restaurant.id)) {
+            restaurantsId.push(order.restaurant.id);
+          }
+        });
+        if (hasNext) {
+          let next = hasNext;
+          let page = 100;
+          while (next) {
+            const data = await getUserOrders(session_id, page);
+            const { hasNext, orders } = data;
+            next = hasNext;
+            //push orders to array
+            orders.forEach((order) => {
+              finalData.push(order);
             });
-            let timeResult = dateObj.toLocaleTimeString("el-GR", {
-              hour12: false,
-            });
-            return [
-              order.id,
-              order.name,
-              dateResult,
-              timeResult,
-              order.id,
-              formatter.format(order.price),
-            ];
-          }),
-        },
-      });
-
-      //catch product info click
-
-      dataTable.body.addEventListener("click", (e) => {
-        let target = e.target.children[0];
-        if (target && target.classList.contains("fas") && target.dataset.id) {
-          //get the id of the clicked element
-          let id = target.dataset.id;
-          //get the products of the order
-          let products = data.tenRecentOrders.find((order) => order.id == id);
-          createModal(products?.name, products);
+            page += 100;
+          }
         }
-      });
+        //Trigger a toastify to let the user know that the data is getting prepared
+        TriggerToastify(`Βρέθηκαν ${finalData.length} παραγγελίες`, "#649eff");
+        setTimeout(() => {
+          //Trigger a toastify to let the user know that the data is getting prepared (restaurants)
+          TriggerToastify(
+            `Βρέθηκαν ${restaurantsId.length} μοναδικά εστιατόρια`,
+            "#649eff"
+          );
+        }, 5000);
 
-      ///////////////////////////////END OF SIMPLE DATATABLE///////////////////////////////
+        //get the restaurants
 
-      //Lower opacity of Star rating
-      document.querySelector(".star").style.opacity = 0.7;
+        //fetch every 5 ids
+        let ids = [];
+        for (let i = 0; i < restaurantsId.length; i += 10) {
+          ids.push(restaurantsId.slice(i, i + 10));
+        }
 
-      //Enable logout button
+        for (let i = 0; i < ids.length; i++) {
+          let localids = ids[i];
 
-      document.querySelector(".logout").classList.remove("d-none");
+          for (let j = 0; j < localids.length; j++) {
+            try {
+              const data = await getRestaurantDetails(session_id, localids[j]);
+              finalData.forEach((order) => {
+                if (order.restaurant.id === localids[j]) {
+                  order.restaurant.slug = data.slug;
+                }
+              });
+            } catch (error) {
+              console.log(error);
+              break;
+            }
+          }
+          await sleep(1000);
+        }
 
-      //Handle click of logout button
-      document.querySelector(".logout").addEventListener("click", () => {
-        //just refresh the page
-        window.location.reload();
-      });
+        const data = await Logic(finalData, name, session_id);
 
-      //PIES
-      //Update pie chart with payment methods
-      piePayments.data.datasets[0].data = [
-        data.paymentMethods.cash,
-        data.paymentMethods.credit_card,
-        data.paymentMethods.paypal,
-      ];
-      piePayments.update();
+        //NEW ERA//
+        //Cancel interval
+        getQuotes(true);
 
-      //Update pie chart with operating systems
-      configOS.data.datasets[0].data = [
-        data.platforms.web,
-        data.platforms.ios,
-        data.platforms.android,
-      ];
-      pieOS.update();
+        ///////////////////////////////SELECTORS///////////////////////////////
 
-      //Bar chart
+        //Name selector
+        document.querySelector(".welcome-text-name").innerText = data.name;
+        //First order selector
+        document.querySelector(".first-order .info p").innerHTML =
+          data.firstOrder;
 
-      //Firstly add labels to the bar chart
-      let labels = [];
-      let timesPerYear = [];
-      let amountPerYear = [];
+        //Latest order selector
+        document.querySelector(".last-order .info p").innerHTML =
+          data.lastOrder;
 
-      for (let year in data.ordersByYear) {
-        labels.push(year);
-        timesPerYear.push(data.ordersByYear[year].times);
-        amountPerYear.push(data.ordersByYear[year].amount);
+        //Total order selector
+        document.querySelector(".total-order .info p").innerHTML =
+          data.totalOrders;
+
+        //Total spendings selector
+        document.querySelector(".total-spending .info p").innerHTML =
+          formatter.format(data.totalPrice);
+
+        //Total tips selector
+        document.querySelector(".total-tips .info p").innerHTML =
+          formatter.format(data.totalTips);
+
+        //Unique restaurants selector
+        document.querySelector(".unique-restaurants .info p").innerHTML =
+          data.restaurants.length;
+
+        //Frequent store
+        //Frequent store logo
+        document.querySelector(".frequent-store").src =
+          data.restaurants[0].logo;
+        //Frequent store title
+        document.querySelector(".frequent-store-container .info p").innerHTML =
+          data.restaurants[0].name;
+        //Frequent store times
+        document.querySelector(
+          ".frequent-store-container .info p:last-child"
+        ).innerHTML =
+          data.restaurants[0].times +
+          " φορές " +
+          "με σύνολο " +
+          formatter.format(data.restaurants[0].amount);
+
+        //Frequent product
+        //Frequent prduct logo
+        document.querySelector(".frequent-product").src =
+          data.frequentProduct.image;
+
+        //Frequent product name
+        document.querySelector(
+          ".frequent-product-container .info p"
+        ).innerHTML = data.frequentProduct.name;
+
+        //Frequent product times
+        document.querySelector(
+          ".frequent-product-container .info p:last-child"
+        ).innerHTML =
+          data.frequentProduct.quantity +
+          " φορές " +
+          "με σύνολο " +
+          formatter.format(data.frequentProduct.price);
+
+        //Medium time selector
+        document.querySelector(".medium-time .info p").innerHTML =
+          data.mediumDeliveryTime + "'";
+
+        //Delivered by efood selector
+        //Firstly we need to check if the user has delivered by efood
+        if (data.deliveryCost) {
+          document.querySelector(".delivered-by-efood .info p").innerHTML =
+            formatter.format(data.deliveryCost);
+        } else {
+          document.querySelector(".delivered-by-efood").classList.add("d-none");
+        }
+
+        //Coupon selector
+        //Firstly we need to check if the user has used a coupon
+        if (data.couponAmount) {
+          document.querySelector(".coupon-container .info p").innerHTML =
+            formatter.format(data.couponAmount);
+        } else {
+          document.querySelector(".coupon-container").classList.add("d-none");
+        }
+
+        document.querySelector(".number-orders").innerHTML =
+          data.tenRecentOrders.length;
+        ///////////////////////////////END OF SELECTORS///////////////////////////////
+
+        ///////////////////////////////SIMPLE DATATABLE///////////////////////////////
+
+        let dataTable = new simpleDatatables.DataTable("#ordersTable", {
+          searchable: false,
+          responsive: true,
+          pagination: true,
+          perPage: 5,
+          perPageSelect: [5, 10],
+          labels: {
+            perPage: "{select} παραγγελίες ανά σελίδα",
+            noRows: " Δεν βρέθηκαν παραγγελίες",
+            info: " Εμφανίζονται {start} έως {end} από {rows} παραγγελίες",
+          },
+          columns: [
+            {
+              select: 2,
+              type: "date",
+              format: "DD/MM/YYYY",
+            },
+            {
+              select: 3,
+              type: "time",
+              format: "HH:mm:ss",
+            },
+            {
+              select: 4,
+              sortable: false,
+              //render a green button
+              render: function (data, cell, row) {
+                return `<div class="product-info"><i class="fas fa-info text-white p-1 pe-none" data-id=${data} title="Click to see your products"></i></div>`;
+              },
+            },
+            {
+              select: 5,
+              type: "number",
+              sortable: false,
+            },
+          ],
+          data: {
+            headings: [
+              "Αρ. παραγγελίας",
+              "Όνομα εστιατορίου",
+              "Ημερομηνία παραγγελίας",
+              "Ώρα παραγγελίας",
+              "Προϊόντα",
+              "Σύνολο",
+            ],
+            data: data.tenRecentOrders.map((order) => {
+              let { submission_date } = order;
+              let dateObj = new Date(submission_date);
+              let dateResult = dateObj.toLocaleDateString("el-GR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+              });
+              let timeResult = dateObj.toLocaleTimeString("el-GR", {
+                hour12: false,
+              });
+              return [
+                order.id,
+                order.name,
+                dateResult,
+                timeResult,
+                order.id,
+                formatter.format(order.price),
+              ];
+            }),
+          },
+        });
+
+        //catch product info click
+
+        dataTable.body.addEventListener("click", (e) => {
+          let target = e.target.children[0];
+          if (target && target.classList.contains("fas") && target.dataset.id) {
+            //get the id of the clicked element
+            let id = target.dataset.id;
+            //get the products of the order
+            let products = data.tenRecentOrders.find((order) => order.id == id);
+            createModal(products?.name, products);
+          }
+        });
+
+        ///////////////////////////////END OF SIMPLE DATATABLE///////////////////////////////
+
+        //Lower opacity of Star rating
+        document.querySelector(".star").style.opacity = 0.7;
+
+        //Enable logout button
+
+        document.querySelector(".logout").classList.remove("d-none");
+
+        //Handle click of logout button
+        document.querySelector(".logout").addEventListener("click", () => {
+          //just refresh the page
+          window.location.reload();
+        });
+
+        //PIES
+        //Update pie chart with payment methods
+        piePayments.data.datasets[0].data = [
+          data.paymentMethods.cash,
+          data.paymentMethods.credit_card,
+          data.paymentMethods.paypal,
+        ];
+        piePayments.update();
+
+        //Update pie chart with operating systems
+        configOS.data.datasets[0].data = [
+          data.platforms.web,
+          data.platforms.ios,
+          data.platforms.android,
+        ];
+        pieOS.update();
+
+        //Bar chart
+
+        //Firstly add labels to the bar chart
+        let labels = [];
+        let timesPerYear = [];
+        let amountPerYear = [];
+
+        for (let year in data.ordersByYear) {
+          labels.push(year);
+          timesPerYear.push(data.ordersByYear[year].times);
+          amountPerYear.push(data.ordersByYear[year].amount);
+        }
+
+        //Update bar chart with data
+        barChart.data.labels = labels;
+        barChart.data.datasets[0].data = timesPerYear;
+        barChart.data.datasets[1].data = amountPerYear;
+
+        barChart.update();
+
+        //Add cords to map
+
+        data.restaurants.forEach((r) => {
+          const {
+            name,
+            longitude,
+            latitude,
+            logo,
+            times,
+            amount,
+            slug,
+            is_open,
+          } = r;
+          coords.push([latitude, longitude]);
+          marker = new L.marker([latitude, longitude], {
+            title: name,
+            icon: L.icon({
+              iconUrl: logo,
+              iconSize: [50, 50],
+              iconAnchor: [25, 25],
+              popupAnchor: [0, -15],
+            }),
+          }).bindPopup(
+            ` <a class="text-center" href=${
+              "https://www.e-food.gr/delivery" + slug
+            } target="_blank" rel="noreferrer">
+                      ${name}
+                    </a>
+                    <p class="text-center">Φορές: <b>${times}</b></h1>
+                    <p class="text-center">Σύνολο δαπανών: <b>${formatter.format(
+                      amount
+                    )}</b></h1>
+                    <p class="text-center">Εξυπηρετεί αυτή τη στιγμή: <b>${
+                      is_open
+                        ? '<i class="fa-solid fa-check text-success"></i>'
+                        : '<i class="fa-solid fa-circle-xmark text-danger"></i>'
+                    }</b></h1>
+                  `
+          );
+          storesLayer.addLayer(marker);
+        });
+
+        //Fade out login form and fade in the results
+        FadeOutLoginAndBringResults();
       }
-
-      //Update bar chart with data
-      barChart.data.labels = labels;
-      barChart.data.datasets[0].data = timesPerYear;
-      barChart.data.datasets[1].data = amountPerYear;
-
-      barChart.update();
-
-      //Add cords to map
-
-      data.restaurants.forEach((r) => {
-        const {
-          name,
-          longitude,
-          latitude,
-          logo,
-          times,
-          amount,
-          details,
-          is_open,
-        } = r;
-        coords.push([latitude, longitude]);
-        marker = new L.marker([latitude, longitude], {
-          title: name,
-          icon: L.icon({
-            iconUrl: logo,
-            iconSize: [50, 50],
-            iconAnchor: [25, 25],
-            popupAnchor: [0, -15],
-          }),
-        }).bindPopup(
-          ` <a class="text-center" href=${
-            "https://www.e-food.gr/delivery" + details.slug
-          } target="_blank" rel="noreferrer">
-                  ${name}
-                </a>
-                <p class="text-center">Φορές: <b>${times}</b></h1>
-                <p class="text-center">Σύνολο δαπανών: <b>${formatter.format(
-                  amount
-                )}</b></h1>
-                <p class="text-center">Εξυπηρετεί αυτή τη στιγμή: <b>${
-                  is_open
-                    ? '<i class="fa-solid fa-check text-success"></i>'
-                    : '<i class="fa-solid fa-circle-xmark text-danger"></i>'
-                }</b></h1>
-              `
-        );
-        storesLayer.addLayer(marker);
-      });
-
-      //Fade out login form and fade in the results
-      FadeOutLoginAndBringResults();
     } catch (error) {
-      console.log(error);
       //empty password field
       document.querySelector("input[type='password']").value = "";
       //make submit button active
       form.querySelector("button[type='submit']").disabled = false;
       //remove loading class
       loading.classList.remove("loading--active");
-      if (error.response.data.error) {
-        TriggerToastify(error.response.data.error, "#cc3300");
-      } else {
-        TriggerToastify(error, "#cc3300");
-      }
+      TriggerToastify(error, "#cc3300");
     }
   });
 });

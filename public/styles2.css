@@ -15,8 +15,8 @@
   --login-slider: #4d4c7d;
   --orders: #fff;
   --orders-border: #f0f3f4;
-  --map-tiles-filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
-
+  --map-tiles-filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg)
+    saturate(0.3) brightness(0.7);
 }
 [data-theme="dark"] {
   --background-color: #222;
@@ -28,20 +28,20 @@
 /*Datatable dark mode*/
 [data-theme="dark"] .dataTable-sorter::before {
   border-top: 4px solid #fff;
-  opacity.0.5
+  opacity: 0.5;
 }
 [data-theme="dark"] .dataTable-sorter::after {
- border-bottom: 4px solid #fff;
-  opacity.0.5
+  border-bottom: 4px solid #fff;
+  opacity: 0.5;
 }
-[data-theme="dark"] .dataTable-dropdown label{
+[data-theme="dark"] .dataTable-dropdown label {
   color: #fff;
 }
 [data-theme="dark"] .dataTable-pagination a {
   color: #888686;
 }
-[data-theme="dark"]  .map-tiles {
-        filter:var(--map-tiles-filter, none);
+[data-theme="dark"] .map-tiles {
+  filter: var(--map-tiles-filter, none);
 }
 [data-theme="dark"] .modal-content {
   background-color: #212121;
@@ -184,8 +184,6 @@ header img {
 }
 
 .login-box {
-  min-height: 65vh;
-  height: 100%;
   border-radius: 20px;
   overflow: hidden;
 }
@@ -199,6 +197,7 @@ header img {
   background: var(--background-color);
   position: relative;
   transition: all 0.5s ease;
+  min-height: 500px;
 }
 .login-form .loading {
   position: absolute;
@@ -218,7 +217,7 @@ header img {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #121212;
+  background-color: #242526;
   color: #fff;
   opacity: 0.9;
   z-index: 2;
@@ -239,6 +238,7 @@ header img {
 #quote {
   font-size: 13px;
   padding: 25px;
+  line-height: 25px;
 }
 
 .welcome-text {

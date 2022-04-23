@@ -9,7 +9,7 @@ require("dotenv").config();
 
 app.use(cors());
 
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 app.use(express.static("public"));
 
 const delay = (ms = 1000) => new Promise((r) => setTimeout(r, ms));
@@ -48,40 +48,29 @@ async function getUserOrders(tkn, num) {
   }
 }
 
-async function getRestaurantDetails(tkn, ids) {
-  const DEFAULT_URL = "https://thingproxy.freeboard.io/fetch/";
-  const RESTAURANT_DETAILS = (id) => {
-    return `https://api.e-food.gr/v3/shops/info?shop_id=${String(id)}`;
-  };
-  let restaurantAnswers = [];
-
-  let urls = [];
-  //Loop through ids
-
-  ids.map((id) => {
-    const url = RESTAURANT_DETAILS(id);
-    urls.push(DEFAULT_URL + url);
-  });
-
-  for (let i = 0; i < urls.length; i += 10) {
-    let url = urls.slice(i, i + 10);
-
-    for (let inUrl of url) {
-      const { data } = await axios.get(inUrl, {
-        headers: {
-          "X-core-session-id": tkn,
-        },
-      });
-      if (data.status === "ok") {
-        const res = data.data.shop;
-        restaurantAnswers.push(res);
-      } else {
-        return Promise.reject(data.message);
-      }
-    }
-    await delay(2000);
+async function getRestaurantDetails(tkn, id) {
+  if (!tkn || !id) {
+    return Promise.reject("Missing parameters");
   }
-  return Promise.resolve(restaurantAnswers);
+
+  const DEFAULT_URL = "https://thingproxy.freeboard.io/fetch/";
+  const RESTAURANT_URL = `https://api.e-food.gr/v3/shops/info?shop_id=${String(
+    id
+  )}`;
+
+  const URL = DEFAULT_URL + RESTAURANT_URL;
+
+  const { data } = await axios.get(URL, {
+    headers: {
+      "X-core-session-id": tkn,
+    },
+  });
+  if (data.status === "ok") {
+    const res = data.data.shop;
+    return Promise.resolve(res);
+  } else {
+    return Promise.reject(data.message);
+  }
 }
 
 async function Logic(orders, name) {
@@ -127,7 +116,7 @@ async function Logic(orders, name) {
       latitude: order.restaurant.latitude,
       logo: order.restaurant.logo,
       is_open: order.is_open,
-      details: order.restaurant.details,
+      slug: order.restaurant.slug,
       times: 0,
       amount: 0,
     });
@@ -301,25 +290,6 @@ async function Logic(orders, name) {
 
   //Sort the products by quantity
   removedProducts.sort((a, b) => (b.quantity > a.quantity ? 1 : -1));
-  // console.log(
-  //   "First order: " + firstOrder,
-  //   "Last order: " + lastOrder,
-  //   "Total orders: " + totalOrders,
-  //   "Total money: " + totalPrice,
-  //   "Total tips: " + totalTips,
-  //   "Restaurants" + removedRestaurants,
-  //   "Frequent restaurant: " + removedRestaurants[0].name,
-  //   removedRestaurants[0].times,
-  //   "Unique restaurants: " + removedRestaurants.length,
-  //   "Payment methods: " + paymentMethods,
-  //   "Platforms: " + platforms,
-  //   "Delivery cost on Efood: " + deliveryCost,
-  //   "Most frequent product: " + removedProducts[0].name,
-  //   "Most frequent product quantity: " + removedProducts[0].totalPrice,
-  //   "Medium delivery time: " + mediumDeliveryTime + " minutes",
-  //   "Orders by year: " + ordersByYear,
-  //   "Coupon amount: " + couponAmount
-  // );
 
   return {
     firstOrder,
@@ -344,8 +314,7 @@ async function Logic(orders, name) {
     tenRecentOrders,
   };
 }
-
-app.post("/api/v1/efood", async (req, res) => {
+app.post("/api/v1/efood/login", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     res.status(500).json({ error: "Please enter e-mail or password." });
@@ -353,60 +322,65 @@ app.post("/api/v1/efood", async (req, res) => {
   }
 
   try {
-    let restaurantIds = [];
-    let orders = [];
     const { session_id, name } = await getUserSession(req.body);
-    let data = await getUserOrders(session_id, 0);
-    let offset = 100;
-    data.orders.forEach((order) => {
-      orders.push(order);
-      if (!restaurantIds.includes(order.restaurant.id))
-        restaurantIds.push(order.restaurant.id);
-    });
-    while (data.hasNext) {
-      data = await getUserOrders(session_id, offset);
-      data.orders.forEach((order) => {
-        orders.push(order);
-        if (!restaurantIds.includes(order.restaurant.id))
-          restaurantIds.push(order.restaurant.id);
-      });
-      offset += 100;
-    }
+    return res.status(200).json({ session_id, name });
+  } catch (error) {
+    return res.status(500).json({ error });
+  }
+});
 
-    const restaurantDetails = await getRestaurantDetails(
-      session_id,
-      restaurantIds
-    );
+app.get("/api/v1/efood/orders", async (req, res) => {
+  const { session_id } = req.headers;
+  const { page } = req.query;
 
-    restaurantDetails.forEach((restaurant) => {
-      orders.forEach((order) => {
-        if (restaurant.id === order.restaurant.id) {
-          order.restaurant.details = restaurant;
-        }
-      });
-    });
+  if (!session_id) {
+    res.status(500).json({ error: "Please enter session id." });
+    return;
+  }
+  if (!page) {
+    res.status(500).json({ error: "Please enter page." });
+    return;
+  }
 
-    if (process.env.NODE_ENV === "development") {
-      fs.writeFileSync("orders.json", JSON.stringify(orders));
-
-      let rawdata = fs.readFileSync("orders.json");
-      let orders = JSON.parse(rawdata);
-      let name = "Efood";
-    }
-    const result = await Logic(orders, name || "επισκέπτη");
-
-    //delay to simulate the time of the request
-
-    if (process.env.NODE_ENV === "development") {
-      setTimeout(() => {
-        return res.status(200).json(result);
-      }, 4000);
-    }
-    res.status(200).json(result);
+  try {
+    let data = await getUserOrders(session_id, page);
+    res.status(200).json(data);
   } catch (error) {
     console.log(error);
     res.status(403).send({ error });
   }
+});
+
+app.get("/api/v1/efood/restaurants/:id", async (req, res) => {
+  const id = req.params.id;
+  const { session_id } = req.headers;
+
+  if (!id) {
+    res.status(500).json({ error: "Please enter restaurant id." });
+    return;
+  }
+
+  try {
+    const data = await getRestaurantDetails(session_id, id);
+    res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(403).send({ error });
+  }
+});
+
+app.post("/api/v1/efood/logic", async (req, res) => {
+  const { session_id } = req.headers;
+
+  //get data from req body
+  const { data, name } = req.body.data;
+
+  if (!session_id) {
+    res.status(500).json({ error: "Please enter session id." });
+    return;
+  }
+  const results = await Logic(JSON.parse(data), name);
+  res.status(200).json(results);
 });
 
 app.get("*", (req, res) => {
