@@ -865,7 +865,12 @@ window.addEventListener("load", function () {
       }
     } catch (error) {
       //empty password field
-      document.querySelector("input[type='password']").value = "";
+      document.querySelector("input[name='password']").value = "";
+
+      //if input[name='password'] is type text, change it back to password
+      if (document.querySelector("input[name='password']").type == "text") {
+        document.querySelector("input[name='password']").type = "password";
+      }
       //make submit button active
       form.querySelector("button[type='submit']").disabled = false;
       //remove loading class
