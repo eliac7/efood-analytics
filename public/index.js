@@ -283,11 +283,17 @@ window.addEventListener("load", function () {
     }
   });
 
-  //On blur or on input handle the validation
-  "blur input".split(" ").forEach((e) => {
+  const emailRegex =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  //On focus,blur or on input handle the validation
+  "focus blur input".split(" ").forEach((e) => {
     email.addEventListener(e, function () {
-      const emailRegex =
-        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      if (password.value.length && emailRegex.test(email.value)) {
+        form.querySelector("button[type='submit']").disabled = false;
+      } else {
+        form.querySelector("button[type='submit']").disabled = true;
+      }
       if (!emailRegex.test(email.value)) {
         email.classList.add("is-invalid");
       } else {
@@ -295,6 +301,13 @@ window.addEventListener("load", function () {
       }
       if (email.value.length == 0) {
         email.classList.remove("is-invalid");
+      }
+    });
+    password.addEventListener(e, function () {
+      if (password.value.length && emailRegex.test(email.value)) {
+        form.querySelector("button[type='submit']").disabled = false;
+      } else {
+        form.querySelector("button[type='submit']").disabled = true;
       }
     });
   });
@@ -870,7 +883,9 @@ window.addEventListener("load", function () {
       //if input[name='password'] is type text, change it back to password
       if (document.querySelector("input[name='password']").type == "text") {
         document.querySelector("input[name='password']").type = "password";
+        document.querySelector(".fa-eye").classList.toggle("fa-eye-slash");
       }
+      //toggle eye icon
       //make submit button active
       form.querySelector("button[type='submit']").disabled = false;
       //remove loading class
