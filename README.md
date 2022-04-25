@@ -62,7 +62,9 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 <p align="center">
-  <img src="https://github.com/eliac7/efood-analytics/blob/efood-2022-client/Preview.gif?raw=true" alt="Efood analytics GIF "/>
+  <a href="https://bit.ly/efood-analytics" target="_blank">
+    <img src="https://github.com/eliac7/efood-analytics/blob/efood-2022-client/Preview.gif?raw=true" alt="Efood analytics GIF "/>
+  </a>
 </p>
 
 ### Features
