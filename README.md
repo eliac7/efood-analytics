@@ -189,4 +189,4 @@ Project Link: [https://github.com/eliac7/efood-analytics](https://github.com/eli
 [license-url]: https://github.com/eliac7/efood-analytics/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/eliac7/
-[product-screenshot]: https://media.githubusercontent.com/media/eliac7/efood-analytics/master/Preview.webp
+[product-screenshot]: https://media.githubusercontent.com/media/eliac7/efood-analytics/master/Preview.gif
