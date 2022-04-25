@@ -61,9 +61,9 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://bit.ly/efood-analytics)
-
+<p align="center">
+  <img src="https://github.com/eliac7/efood-analytics/blob/efood-2022-client/Preview.gif?raw=true" alt="Efood analytics GIF "/>
+</p>
 
 ### Features
 <ul>
