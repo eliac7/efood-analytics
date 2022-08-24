@@ -82,7 +82,6 @@
      <li>Latest 10 Orders with modal of the products</li>
      <li>Map with all the stores you bought from apace with number of orders and total spending on each store*</li>
    </ul>
-   <b>*</b>Only if you fork the <code>Master</code> branch and follow the below instructions, not on the live site.
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
