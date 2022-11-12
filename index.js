@@ -16,11 +16,27 @@ const delay = (ms = 1000) => new Promise((r) => setTimeout(r, ms));
 
 async function getUserSession(body) {
   //Fetch to Efood API
-  const DEFAULT_URL = "https://thingproxy.freeboard.io/fetch/";
-  const USER_LOGIN = "https://api.e-food.gr/api/v1/user/login";
-  const url = DEFAULT_URL + USER_LOGIN;
+  const USER_LOGIN = "https://www.e-food.gr/users/login";
 
-  const { data } = await axios.post(url, body);
+  const { data } = await axios.post(USER_LOGIN, body, {
+    headers: {
+      authority: "www.e-food.gr",
+      accept: "application/json, text/plain, */*",
+      "accept-language": "en-US,en;q=0.9,el;q=0.8",
+      "content-type": "application/json",
+      dnt: "1",
+      origin: "https://www.e-food.gr",
+      referer: "https://www.e-food.gr/",
+      "sec-ch-ua":
+        '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "same-origin",
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+    },
+  });
+
   if (data.status === "ok") {
     const session_id = await data.data.session_id;
     const name = await data.data.user.first_name_in_vocative;
@@ -31,11 +47,9 @@ async function getUserSession(body) {
 }
 
 async function getUserOrders(tkn, num) {
-  const DEFAULT_URL = "https://thingproxy.freeboard.io/fetch/";
   const USER_ORDERS = `https://api.e-food.gr/api/v1/user/orders/history?limit=100&offset=${num}&mode=extended`;
-  const URL = DEFAULT_URL + USER_ORDERS;
 
-  const { data } = await axios.get(URL, {
+  const { data } = await axios.get(USER_ORDERS, {
     headers: {
       "X-core-session-id": tkn,
     },
@@ -53,14 +67,11 @@ async function getRestaurantDetails(tkn, id) {
     return Promise.reject("Missing parameters");
   }
 
-  const DEFAULT_URL = "https://thingproxy.freeboard.io/fetch/";
   const RESTAURANT_URL = `https://api.e-food.gr/v3/shops/info?shop_id=${String(
     id
   )}`;
 
-  const URL = DEFAULT_URL + RESTAURANT_URL;
-
-  const { data } = await axios.get(URL, {
+  const { data } = await axios.get(RESTAURANT_URL, {
     headers: {
       "X-core-session-id": tkn,
     },
