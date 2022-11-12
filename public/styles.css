@@ -72,6 +72,8 @@ body {
   bottom: 0;
   z-index: -1;
   opacity: 0.5;
+  transition: all 0.5s ease;
+  pointer-events: none;
 }
 .bg::after {
   content: "";
@@ -381,6 +383,13 @@ button:disabled {
   transition: all 0.3s ease-in-out;
 }
 
+.dataTable-container {
+  overflow: hidden;
+}
+.dataTable-table {
+  display: block;
+  white-space: nowrap;
+}
 .results-container,
 .table-container,
 .bar-container {
