@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "concurrently": "^7.5.0"
+  },
+  "name": "efood-analytics",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "server": "npm run dev --prefix backend",
+    "client": "npm run dev --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
