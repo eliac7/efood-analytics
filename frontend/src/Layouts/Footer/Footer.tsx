@@ -4,17 +4,17 @@ function Footer() {
   const currentYear = new Date().getFullYear();
   return (
     // make 3 columns , 1st empty, second logo, 3rd github start
-    <footer className="flex justify-center items-center px-4 text-dark bg-transparent py-2">
+    <footer className="flex flex-col-reverse gap-2 md:flex-row justify-center items-center px-4 text-dark bg-transparent md:pb-2 md:pt-10">
       <div className="flex-1"></div>
-      <div className="flex-1 bg-white rounded select-none py-2 shadow-[_5px_5px_0px_0px_#289fed,_10px_10px_0px_0px_#5fb8ff,_15px_15px_0px_0px_#a1d8ff,_20px_20px_0px_0px_#cae6ff,_25px_25px_0px_0px_#e1eeff,_5px_5px_15px_5px_rgb(0_0_0_/_0%)]">
+      <div className="flex-1 bg-white rounded select-none p-2 max-w-sm shadow-[_5px_5px_0px_0px_#289fed,_10px_10px_0px_0px_#5fb8ff,_15px_15px_0px_0px_#a1d8ff,_20px_20px_0px_0px_#cae6ff,_25px_25px_0px_0px_#e1eeff,_5px_5px_15px_5px_rgb(0_0_0_/_0%)]">
         <a
-          href="https://www.iliasdev.eu"
+          href="https://www.iliasdev.com"
           target="_blank"
           rel="noreferrer"
           className="
             flex justify-center items-center
             w-full h-full
-           text-lg
+           text-center
             text-gray-900
             font-bold
             hover:text-gray-500 
@@ -23,7 +23,9 @@ function Footer() {
             
         "
         >
-          Ilias Thalassochoritis © <span className="year">{currentYear}</span>
+          <span>
+            Ilias Thalassochoritis © <span className="year">{currentYear}</span>
+          </span>
         </a>
       </div>
 

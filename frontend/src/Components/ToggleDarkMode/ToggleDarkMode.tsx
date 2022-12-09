@@ -1,40 +1,35 @@
-import { useContext, useState } from "react";
-import { ThemeContext } from "../../Services/Context/ThemeContext";
-
+import { useMantineColorScheme } from "@mantine/core";
 function ToggleDarkMode() {
-  const { theme, setTheme } = useContext(ThemeContext);
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
 
-  const handleThemeChange = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
+      toggleColorScheme();
+    }
   };
 
-  function handleKeyDown({ key }: { key: string }) {
-    if (key === "Enter") {
-      handleThemeChange();
-    }
-  }
-  function handleClick() {
-    handleThemeChange();
-  }
+  const handleClick = () => {
+    toggleColorScheme();
+  };
 
   return (
     <div
       role="checkbox"
-      aria-checked={theme === "dark" ? true : false}
+      aria-checked={colorScheme === "dark" ? true : false}
       tabIndex={0}
-      onKeyDown={handleKeyDown}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       className={`cursor-pointer w-11 h-5  bg-neutral-700
       rounded-full relative px-1.5 flex items-center ${
-        theme === "dark" ? "" : "justify-end"
+        colorScheme === "dark" ? "" : "justify-end"
       }`}
     >
       <div
         className={`w-4 h-4 rounded-full absolute transform duration-200 ease-out bg-white left-0.5 ${
-          theme === "dark" ? "translate-x-6" : "translate-x-0"
+          colorScheme === "dark" ? "translate-x-6" : "translate-x-0"
         }`}
       />
-      {theme === "dark" ? (
+      {colorScheme === "dark" ? (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-3 w-3 text-white"

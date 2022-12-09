@@ -1,46 +1,58 @@
+import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { MantineProvider } from "@mantine/core";
+import {
+  MantineProvider,
+  ColorSchemeProvider,
+  ColorScheme,
+} from "@mantine/core";
 import { NotificationsProvider } from "@mantine/notifications";
-import { useState, useEffect, useMemo } from "react";
+import { useLocalStorage } from "@mantine/hooks";
 import Home from "./Pages/Home/Home";
-import Results from "./Pages/Results/Results";
+import Dashboard from "./Pages/Dashboard/Dashboard";
 import NotFound from "./Pages/404/404";
-import { ThemeContext } from "./Services/Context/ThemeContext";
-
+import { UserContextProvider } from "./Services/UserContext/UserContext";
 function App() {
-  const [theme, setTheme] = useState("light");
-  useEffect(() => {
-    if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      setTheme("dark");
-    }
-  }, []);
+  const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
+    key: "mantine-color-scheme",
+    defaultValue: "light",
+    getInitialValueInEffect: true,
+  });
 
-  const value = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
+  const toggleColorScheme = (value?: ColorScheme) => {
+    setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
+    document.documentElement.classList.toggle("dark", colorScheme === "dark");
+  };
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", colorScheme === "dark");
+  }, [colorScheme]);
 
   return (
-    <ThemeContext.Provider value={value}>
+    <ColorSchemeProvider
+      colorScheme={colorScheme}
+      toggleColorScheme={toggleColorScheme}
+    >
       <MantineProvider
         withGlobalStyles
         withNormalizeCSS
         theme={{
-          fontFamily: "Monrope, sans-serif",
-          colorScheme: theme === "dark" ? "dark" : "light",
+          fontFamily: "Roboto, sans-serif",
+          colorScheme,
         }}
       >
         <NotificationsProvider position="bottom-right" transitionDuration={200}>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/results" element={<Results />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Router>
+          <UserContextProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+          </UserContextProvider>
         </NotificationsProvider>
       </MantineProvider>
-    </ThemeContext.Provider>
+    </ColorSchemeProvider>
   );
 }
 
