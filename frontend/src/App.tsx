@@ -11,6 +11,7 @@ import Home from "./Pages/Home/Home";
 import Dashboard from "./Pages/Dashboard/Dashboard";
 import NotFound from "./Pages/404/404";
 import ProtectedRoutes from "./Hooks/ProtectedRoutes/ProtectedRoute";
+import Background from "./Components/Background/Background";
 
 function App() {
   const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
@@ -41,6 +42,8 @@ function App() {
         toggleColorScheme={toggleColorScheme}
       >
         <NotificationsProvider position="bottom-right" transitionDuration={200}>
+          <Background />
+
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/" element={<ProtectedRoutes />}>
