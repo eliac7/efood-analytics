@@ -105,12 +105,12 @@ export interface User {
 
 export type initialStateType = {
   user: User | null;
-  orders: Orders;
+  orders: Orders | null;
   loading: boolean;
 };
 
 export const initialState = {
   user: null,
-  orders: <Orders>{},
+  orders: null,
   loading: true,
 };
