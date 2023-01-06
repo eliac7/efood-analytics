@@ -1,19 +1,16 @@
-import { createContext, useReducer } from "react";
+import { createContext, useReducer, useEffect } from "react";
 
-import { Order, User } from "../../types/app_types";
+import {
+  initialState,
+  initialStateType,
+  Orders,
+  User,
+} from "../../types/app_types";
+import {
+  LOCAL_STORAGE_ORDERS,
+  LOCAL_STORAGE_USER,
+} from "../../utils/constants";
 import { UserReducer } from "../Reducers/UserReducer";
-
-export type initialStateType = {
-  user: User | null;
-  orders: Order[];
-  session_id: string | null;
-};
-
-const initialState = {
-  user: null,
-  orders: [],
-  session_id: null,
-};
 
 export const UserContext = createContext<{
   state: initialStateType;
@@ -29,6 +26,24 @@ export const UserContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [state, dispatch] = useReducer(UserReducer, initialState);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem(LOCAL_STORAGE_USER);
+    if (storedUser) {
+      dispatch({
+        type: "SET_USER",
+        payload: JSON.parse(storedUser),
+      });
+    }
+
+    const storedOrders = localStorage.getItem(LOCAL_STORAGE_ORDERS);
+    if (storedOrders) {
+      dispatch({
+        type: "SET_ORDERS",
+        payload: JSON.parse(storedOrders),
+      });
+    }
+  }, []);
 
   return (
     <UserContext.Provider value={{ state, dispatch }}>

@@ -1,11 +1,10 @@
-import { useContext } from "react";
-import { UserContext } from "../../Services/UserContext/UserContext";
 import logo from "../../Assets/Images/efood-analytics-logo.png";
 import ToggleDarkMode from "../../Components/ToggleDarkMode/ToggleDarkMode";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../Hooks/Auth/useAuth";
 
 function Header() {
-  const { state, dispatch } = useContext(UserContext);
+  const { state: user } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isDashboard = pathname === "/dashboard";
@@ -20,13 +19,12 @@ function Header() {
       </div>
 
       <div className="flex flex-1 gap-4 justify-end">
-        {state.user && isDashboard ? (
+        {user && isDashboard ? (
           <div className="flex-1 flex justify-end items-center">
             <button
               type="button"
               className="inline-block px-4 py-2.5 bg-red-600 text-white font-medium text-xs leading-tight  rounded-full shadow-md hover:bg-red-700 hover:shadow-lg focus:bg-red-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-red-800 active:shadow-lg transition duration-150 ease-in-out"
               onClick={() => {
-                dispatch({ type: "LOGOUT" });
                 navigate("/");
               }}
             >

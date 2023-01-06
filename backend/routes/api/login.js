@@ -1,5 +1,7 @@
-var router = require("express").Router();
-const axios = require("axios");
+import express from "express";
+const router = express.Router();
+import axios from "axios";
+
 async function getUserSession(logins) {
   const efood_url = "https://www.e-food.gr/users/login";
   const efood_headers = {
@@ -14,6 +16,20 @@ async function getUserSession(logins) {
 }
 
 async function login(req, res) {
+  if (process.env.NODE_ENV === "development") {
+    // Simulate a 2 second delay
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        res.status(200).json({
+          session_id: "123456789",
+          name: "John",
+          message: "Logged in successfully",
+        });
+        resolve();
+      }, 2000);
+    });
+  }
+
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
@@ -43,6 +59,13 @@ async function login(req, res) {
     return res.status(400).json({ message: err.message });
   }
 }
+
 router.post("/", login);
 
-module.exports = router;
+router.all("/", (req, res) => {
+  res
+    .status(405)
+    .json({ message: "Method not allowed. Please use POST method." });
+});
+
+export default router;

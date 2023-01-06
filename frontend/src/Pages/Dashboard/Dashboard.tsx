@@ -1,49 +1,56 @@
-import { useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../Services/UserContext/UserContext";
-import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
-import { showNotification } from "@mantine/notifications";
-import { Card, Image, Text, Badge, Button, Group } from "@mantine/core";
+import { Container, Select } from "@mantine/core";
+import Loading from "../../Components/Loading/Loading";
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const { state, dispatch } = useContext(UserContext);
-
-  const getOrders = async () => {
-    try {
-      const { data } = await EfoodAxios.get("orders", {
-        headers: {
-          session_id: state.user?.session_id,
-        },
-      });
-      dispatch({ type: "SET_ORDERS", payload: data });
-    } catch (error: any) {
-      showNotification({
-        title: "Αποτυχία",
-        message: error.response.data.message || error.message,
-        color: "red",
-      });
-      navigate("/");
-    }
+  type years = {
+    label: string;
+    value: string;
   };
 
-  useEffect(() => {
-    if (!state?.user) {
-      navigate("/");
-    } else {
-      getOrders();
-    }
-  }, [state?.user, navigate]);
+  const [years, setYears] = useState<years[]>([]);
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
+
+  // useEffect(() => {
+  //   if (orders) {
+  //     console.log(orders);
+  //     const years = orders.orders.perYear.map((year) => {
+  //       return { label: year.year, value: year.year };
+  //     });
+  //     years.unshift({ label: "Όλα τα έτη", value: "all" });
+  //     setYears(years);
+  //     setSelectedYear(years[0].value);
+  //   }
+  // }, [orders]);
 
   return (
-    <DefaultLayout>
-      <Card shadow="sm" radius="md">
-        <Text size="xl" weight={700}>
-          Παραγγελίες
-        </Text>
-      </Card>
-    </DefaultLayout>
+    <>
+      {/* <Loading isLoading={isLoadingOrders} /> */}
+      <DefaultLayout>
+        <Container
+          className="
+        p-4
+        bg-white
+        dark:bg-slate-800
+        rounded-md
+        shadow-md
+        border
+        border-gray-200
+        dark:border-gray-600
+        
+      "
+        >
+          <Select
+            label="Επιλογή Έτους"
+            placeholder="Επιλογή Έτους"
+            data={years}
+            value={selectedYear}
+            onChange={setSelectedYear}
+          ></Select>
+        </Container>
+      </DefaultLayout>
+    </>
   );
 }
 

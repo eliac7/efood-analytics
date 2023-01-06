@@ -1,13 +1,23 @@
 import { Stack } from "@mantine/core";
-import { useContext } from "react";
-import { UserContext } from "../../Services/UserContext/UserContext";
+import { useAuth } from "../../Hooks/Auth/useAuth";
+import Loading from "../Loading/Loading";
 import AlreadyLoggedIn from "./AlreadyLoggedIn";
 import Login from "./Login";
 
 function Form() {
-  const { state } = useContext(UserContext);
+  const { user, loading } = useAuth();
 
-  return <Stack>{state.user ? <AlreadyLoggedIn /> : <Login />}</Stack>;
+  return (
+    <Stack>
+      {loading ? (
+        <Loading isLoading={loading} />
+      ) : user ? (
+        <AlreadyLoggedIn />
+      ) : (
+        <Login />
+      )}
+    </Stack>
+  );
 }
 
 export default Form;

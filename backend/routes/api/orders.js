@@ -1,15 +1,137 @@
-var router = require("express").Router();
-const checkSession = require("../../middlewares/checkSession.js");
-const checkResStatus = require("../../middlewares/checkResStatus.js");
-const fakeOrders = require("../../tests/postman-orders.json");
-const axios = require("axios");
+import express from "express";
+const router = express.Router();
+import checkSession from "../../middlewares/checkSession.js";
+import checkResStatus from "../../middlewares/checkResStatus.js";
+import { readFile } from "fs/promises";
+
+import axios from "axios";
 
 let arrayOrders = [];
+
+let fakeOrders = async () => {
+  try {
+    return JSON.parse(await readFile("./data/postman-orders.json", "utf-8"));
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 async function manipulateOrders(orders) {
   const years = [
     ...new Set(orders.map((order) => order.submission_date.slice(0, 4))),
   ];
+
+  const findMostOrderedProduct = (data) => {
+    // Create an object to store the total quantity and amount spent on each product
+    const productTotals = {};
+
+    // Loop through the data
+    for (const order of data) {
+      // Loop through the products in the current order
+      for (const product of order.products) {
+        // If the product is not yet in the productTotals object,
+        // add it and set its total quantity and amount spent to 0
+        if (!productTotals[product.item_code]) {
+          productTotals[product.item_code] = {
+            product,
+            quantity: 0,
+            amountSpent: 0,
+          };
+        }
+
+        // Get the current product's total quantity and amount spent
+        const currentTotalQuantity = productTotals[product.item_code].quantity;
+        const currentTotalAmountSpent =
+          productTotals[product.item_code].amountSpent;
+
+        // Calculate the total price for the current product
+        const totalPrice = product.quantity * product.unit_price;
+
+        // Add the quantity and amount spent for the current product to the current totals
+        productTotals[product.item_code].quantity =
+          currentTotalQuantity + product.quantity;
+        productTotals[product.item_code].amountSpent =
+          currentTotalAmountSpent + totalPrice;
+      }
+    }
+
+    // Find the product with the highest total quantity
+    let mostOrderedProduct = null;
+    let highestTotalQuantity = 0;
+    for (const productCode in productTotals) {
+      const productTotal = productTotals[productCode];
+      if (productTotal.quantity > highestTotalQuantity) {
+        mostOrderedProduct = productTotal.product;
+        highestTotalQuantity = productTotal.quantity;
+      }
+    }
+
+    // Return the product name, total quantity, and total amount spent
+    return {
+      name: mostOrderedProduct.name,
+      quantity: highestTotalQuantity,
+      amountSpent:
+        Math.round(
+          productTotals[mostOrderedProduct.item_code].amountSpent * 100
+        ) / 100,
+    };
+  };
+
+  const findRestaurantWithMostMoneySpent = (data) => {
+    // Create an object to store the total money spent at each restaurant
+    const restaurantTotals = {};
+
+    // Loop through the data
+    for (const order of data) {
+      // Get the restaurant for the current order
+      const restaurant = order.restaurant;
+
+      // If the restaurant is not yet in the restaurantTotals object,
+      // add it and set its total to 0
+      if (!restaurantTotals[restaurant.id]) {
+        restaurantTotals[restaurant.id] = {
+          restaurant: {
+            ...restaurant,
+            is_open: order.is_open,
+          },
+          total: 0,
+        };
+      }
+
+      // Get the current restaurant's total
+      const currentTotal = restaurantTotals[restaurant.id].total;
+
+      // Calculate the total price for the current order
+      let totalPrice = 0;
+      for (const product of order.products) {
+        totalPrice += product.quantity * product.unit_price;
+      }
+
+      // Add the total price for the current order to the current total
+      restaurantTotals[restaurant.id].total = currentTotal + totalPrice;
+    }
+
+    // Find the restaurant with the highest total money spent
+    let mostMoneySpent = null;
+    let highestTotal = 0;
+    for (const restaurantId in restaurantTotals) {
+      const restaurantTotal = restaurantTotals[restaurantId];
+      if (restaurantTotal.total > highestTotal) {
+        mostMoneySpent = restaurantTotal.restaurant;
+        highestTotal = restaurantTotal.total;
+      }
+    }
+
+    // Return the restaurant name, total amount spent, and longitude and latitude, logo, and is_open
+    return {
+      name: mostMoneySpent.name,
+      total: Math.round(highestTotal * 100) / 100,
+      longitude: mostMoneySpent.longitude,
+      latitude: mostMoneySpent.latitude,
+      logo: mostMoneySpent.logo,
+      is_open: mostMoneySpent.is_open,
+    };
+  };
 
   const ordersPerYear = years.map((year) => {
     const ordersInYear = orders.filter(
@@ -158,7 +280,59 @@ async function manipulateOrders(orders) {
     };
   });
 
-  return ordersPerYear;
+  const ordersAllTime = ordersPerYear.reduce(
+    (acc, year) => {
+      acc.totalOrders += year.totalOrders;
+      acc.totalPrice += year.totalPrice;
+      acc.couponAmount += year.couponAmount;
+      acc.deliveryCost += year.deliveryCost;
+      acc.totalTips += year.totalTips;
+
+      // add the first and last order
+      acc.firstOrder = ordersPerYear[ordersPerYear.length - 1].firstOrder;
+      acc.lastOrder = ordersPerYear[0].lastOrder;
+
+      // add the platforms and paymentMethods
+      Object.entries(year.platforms).forEach((platform) => {
+        if (acc.platforms[platform[0]]) {
+          acc.platforms[platform[0]] += platform[1];
+        } else {
+          acc.platforms[platform[0]] = platform[1];
+        }
+      });
+      Object.entries(year.paymentMethods).forEach((paymentMethod) => {
+        if (acc.paymentMethods[paymentMethod[0]]) {
+          acc.paymentMethods[paymentMethod[0]] += paymentMethod[1];
+        } else {
+          acc.paymentMethods[paymentMethod[0]] = paymentMethod[1];
+        }
+      });
+
+      acc.RestaurantWithMostMoneySpent =
+        findRestaurantWithMostMoneySpent(orders);
+      acc.MostOrderedProduct = findMostOrderedProduct(orders);
+
+      return acc;
+    },
+    {
+      totalOrders: 0,
+      totalPrice: 0,
+      couponAmount: 0,
+      deliveryCost: 0,
+      totalTips: 0,
+      platforms: {},
+      paymentMethods: {},
+      firstOrder: null,
+      lastOrder: null,
+    }
+  );
+
+  const finalOrders = {
+    all: ordersAllTime,
+    perYear: ordersPerYear,
+  };
+
+  return finalOrders;
 }
 
 async function getUserOrders(session_id, offset) {
@@ -177,23 +351,24 @@ async function orders(req, res) {
   const { session_id, offset = 0 } = req.headers;
 
   try {
-    // const response = await getUserOrders(session_id, offset);
-    // arrayOrders.push(...response.data.data.orders);
-    // if (!response.data.data.hasNext) {
-    //   const newOffset = parseInt(offset) + 100;
-    //   req.headers.offset = newOffset;
-    //   return orders(req, res);
-    // } else {
-    //   const manipulatedOrders = await manipulateOrders(arrayOrders);
-    //   return res.status(200).json({
-    //     orders: manipulatedOrders,
-    //     message: response.data.message,
-    //   });
-    // }
-    return res.status(200).json({
-      orders: fakeOrders,
-      message: "OK",
-    });
+    if (process.env.NODE_ENV === "development") {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return res.status(200).json(await fakeOrders());
+    } else {
+      const response = await getUserOrders(session_id, offset);
+      arrayOrders.push(...response.data.data.orders);
+      if (response.data.data.hasNext) {
+        const newOffset = parseInt(offset) + 100;
+        req.headers.offset = newOffset;
+        return orders(req, res);
+      } else {
+        const manipulatedOrders = await manipulateOrders(arrayOrders);
+        return res.status(200).json({
+          orders: manipulatedOrders,
+          message: response.data.message,
+        });
+      }
+    }
   } catch (err) {
     const statusCode = err?.response?.status;
     if (statusCode === 429) {
@@ -208,5 +383,10 @@ async function orders(req, res) {
 }
 
 router.get("/", [checkSession, checkResStatus], orders);
+router.all("/", (req, res) => {
+  res
+    .status(405)
+    .json({ message: "Method not allowed. Plesae use GET method" });
+});
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const axios = require("axios");
+import axios from "axios";
 
 const axiosfood = axios.create({
   timeout: 1000,
@@ -13,4 +13,4 @@ const axiosfood = axios.create({
   },
 });
 
-module.exports = axiosfood;
+export default axiosfood;

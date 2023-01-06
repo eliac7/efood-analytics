@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import {
   MantineProvider,
   ColorSchemeProvider,
@@ -10,7 +10,8 @@ import { useLocalStorage } from "@mantine/hooks";
 import Home from "./Pages/Home/Home";
 import Dashboard from "./Pages/Dashboard/Dashboard";
 import NotFound from "./Pages/404/404";
-import { UserContextProvider } from "./Services/UserContext/UserContext";
+import ProtectedRoutes from "./Hooks/ProtectedRoutes/ProtectedRoute";
+
 function App() {
   const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
     key: "mantine-color-scheme",
@@ -20,7 +21,6 @@ function App() {
 
   const toggleColorScheme = (value?: ColorScheme) => {
     setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
-    document.documentElement.classList.toggle("dark", colorScheme === "dark");
   };
 
   useEffect(() => {
@@ -28,31 +28,29 @@ function App() {
   }, [colorScheme]);
 
   return (
-    <ColorSchemeProvider
-      colorScheme={colorScheme}
-      toggleColorScheme={toggleColorScheme}
+    <MantineProvider
+      withGlobalStyles
+      withNormalizeCSS
+      theme={{
+        fontFamily: "Roboto, sans-serif",
+        colorScheme,
+      }}
     >
-      <MantineProvider
-        withGlobalStyles
-        withNormalizeCSS
-        theme={{
-          fontFamily: "Roboto, sans-serif",
-          colorScheme,
-        }}
+      <ColorSchemeProvider
+        colorScheme={colorScheme}
+        toggleColorScheme={toggleColorScheme}
       >
         <NotificationsProvider position="bottom-right" transitionDuration={200}>
-          <UserContextProvider>
-            <Router>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Router>
-          </UserContextProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/" element={<ProtectedRoutes />}>
+              <Route path="dashboard" element={<Dashboard />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </NotificationsProvider>
-      </MantineProvider>
-    </ColorSchemeProvider>
+      </ColorSchemeProvider>
+    </MantineProvider>
   );
 }
 

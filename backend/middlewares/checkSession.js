@@ -1,4 +1,4 @@
-module.exports = function checkSession(req, res, next) {
+export default function checkSession(req, res, next) {
   try {
     const session_id = req.headers.session_id;
     if (!session_id) {
@@ -8,4 +8,4 @@ module.exports = function checkSession(req, res, next) {
   } catch (err) {
     res.status(401).json({ message: "Something went wrong" });
   }
-};
+}

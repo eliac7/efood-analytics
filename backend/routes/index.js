@@ -1,5 +1,9 @@
-var router = require("express").Router();
+import express from "express";
+const router = express.Router();
 
-router.use("/api", require("./api"));
+import login from "./api/login.js";
+import orders from "./api/orders.js";
 
-module.exports = router;
+router.use("/login", login);
+router.use("/orders", orders);
+export default router;
