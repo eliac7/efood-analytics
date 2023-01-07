@@ -16,7 +16,7 @@ export const useOrders = () => {
     () => EfoodAxios.get("/orders", { headers: { session_id } }),
     {
       onSuccess: (data) => {
-        dispatch({ type: "SET_ORDERS", payload: data.data });
+        dispatch({ type: "SET_ORDERS", payload: data.data.orders });
       },
       onError: (error: any) => {
         console.log(error);

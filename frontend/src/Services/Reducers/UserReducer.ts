@@ -20,13 +20,13 @@ const setUserAndLocalStorage = (
 export const UserReducer = (state: initialStateType, action: any) => {
   switch (action.type) {
     case "SET_ORDERS":
-      localStorage.setItem(
-        LOCAL_STORAGE_ORDERS,
-        JSON.stringify(action.payload)
-      );
+      const { all, perYear } = action.payload;
+      const orders = { all, perYear };
+
+      localStorage.setItem(LOCAL_STORAGE_ORDERS, JSON.stringify(orders));
       return {
         ...state,
-        orders: action.payload,
+        orders,
       };
 
     case "SET_USER":
