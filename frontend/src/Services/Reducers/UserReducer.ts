@@ -8,13 +8,25 @@ export const UserReducer = (state: initialStateType, action: any) => {
   switch (action.type) {
     case "SET_ORDERS":
       const { all, perYear } = action.payload;
-      const orders = { all, perYear };
+      const timestamp = Date.now();
+      const orders = { all, perYear, timestamp };
 
       localStorage.setItem(LOCAL_STORAGE_ORDERS, JSON.stringify(orders));
       return {
         ...state,
         orders,
       };
+
+    case "SET_ORDERS_TIMESTAMP":
+      if (state.orders) {
+        return {
+          ...state,
+          orders: {
+            ...state.orders,
+            timestamp: action.payload,
+          },
+        };
+      } else return state;
 
     case "SET_USER":
       const { name, session_id } = action.payload;

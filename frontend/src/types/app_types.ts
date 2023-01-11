@@ -6,6 +6,7 @@ export interface Root {
 export interface Orders {
   all: All;
   perYear: PerYear[];
+  timestamp: number;
 }
 
 export interface All {

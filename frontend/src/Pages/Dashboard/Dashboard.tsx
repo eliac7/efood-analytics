@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
-import { Container, Select } from "@mantine/core";
+import { Container, Select, Button, Tooltip } from "@mantine/core";
 import Loading from "../../Components/Loading/Loading";
 import { LOCAL_STORAGE_ORDERS } from "../../utils/constants";
 import { All, Orders, PerYear } from "../../types/app_types";
@@ -15,6 +15,7 @@ import { dateFormat, formatAmount } from "../../utils/helpers";
 import { useQuery } from "@tanstack/react-query";
 import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import { UserContext } from "../../Services/UserContext/UserContext";
+import TimeStampChecker from "../../utils/TimeStampChecker";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
@@ -99,6 +100,7 @@ function Dashboard() {
               onChange={setSelectedYear}
               style={{ zIndex: 401 }}
             ></Select>
+            <TimeStampChecker refetch={refetch} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             <DashboardCard
