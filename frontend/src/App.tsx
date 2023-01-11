@@ -33,7 +33,7 @@ function App() {
       withGlobalStyles
       withNormalizeCSS
       theme={{
-        fontFamily: "Roboto, sans-serif",
+        fontFamily: "Manrope, sans-serif",
         colorScheme,
       }}
     >

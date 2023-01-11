@@ -17,12 +17,16 @@
     "@mantine/modals": "^5.7.1",
     "@mantine/notifications": "^5.8.2",
     "@tanstack/react-query": "^4.19.1",
+    "@types/react-leaflet": "^2.8.2",
     "apexcharts": "^3.36.3",
     "axios": "^1.1.3",
     "embla-carousel-react": "^7.0.5",
+    "leaflet": "^1.9.3",
     "react": "^18.2.0",
     "react-apexcharts": "^1.4.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^4.7.1",
+    "react-leaflet": "^4.2.0",
     "react-router-dom": "^6.4.3"
   },
   "devDependencies": {

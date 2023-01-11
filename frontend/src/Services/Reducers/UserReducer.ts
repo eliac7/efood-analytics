@@ -4,19 +4,6 @@ import {
   LOCAL_STORAGE_USER,
 } from "../../utils/constants";
 
-const setUserAndLocalStorage = (
-  state: initialStateType,
-  {
-    payload: { name, session_id },
-  }: { payload: { name: string; session_id: string } }
-) => {
-  const user = { name, session_id };
-
-  localStorage.setItem(LOCAL_STORAGE_USER, JSON.stringify(user));
-
-  return { ...state, user, loading: false };
-};
-
 export const UserReducer = (state: initialStateType, action: any) => {
   switch (action.type) {
     case "SET_ORDERS":
@@ -30,7 +17,10 @@ export const UserReducer = (state: initialStateType, action: any) => {
       };
 
     case "SET_USER":
-      return setUserAndLocalStorage(state, action);
+      const { name, session_id } = action.payload;
+      const user = { name, session_id };
+      localStorage.setItem(LOCAL_STORAGE_USER, JSON.stringify(user));
+      return { ...state, user, loading: false };
 
     case "SET_LOADING":
       return { ...state, loading: action.payload };
@@ -38,7 +28,7 @@ export const UserReducer = (state: initialStateType, action: any) => {
     case "LOGOUT":
       localStorage.removeItem(LOCAL_STORAGE_USER);
       localStorage.removeItem(LOCAL_STORAGE_ORDERS);
-      return { ...state, user: null, orders: [] };
+      return { ...state, user: null, orders: null };
 
     default:
       return state;

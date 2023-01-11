@@ -77,29 +77,39 @@ async function manipulateOrders(orders) {
     };
   };
 
-  const findRestaurantWithMostMoneySpent = (data) => {
-    // Create an object to store the total money spent at each restaurant
-    const restaurantTotals = {};
+  const calculateRestaurantTotals = (
+    data,
+    mostMoneySpentCallback,
+    allRestaurantsCallback
+  ) => {
+    // Create an array to store the total money spent at each restaurant
+    const restaurantTotals = [];
 
     // Loop through the data
     for (const order of data) {
       // Get the restaurant for the current order
       const restaurant = order.restaurant;
 
-      // If the restaurant is not yet in the restaurantTotals object,
-      // add it and set its total to 0
-      if (!restaurantTotals[restaurant.id]) {
-        restaurantTotals[restaurant.id] = {
+      // Check if the restaurant is already in the restaurantTotals array
+      let existingRestaurant = restaurantTotals.find(
+        (r) => r.id === restaurant.id
+      );
+      if (!existingRestaurant) {
+        // If the restaurant is not yet in the restaurantTotals array,
+        // add it and set its total and orders to 0
+        existingRestaurant = {
+          id: restaurant.id,
+          is_favorite: order.is_favorite,
+          address: restaurant.address,
           restaurant: {
             ...restaurant,
             is_open: order.is_open,
           },
           total: 0,
+          orders: 0,
         };
+        restaurantTotals.push(existingRestaurant);
       }
-
-      // Get the current restaurant's total
-      const currentTotal = restaurantTotals[restaurant.id].total;
 
       // Calculate the total price for the current order
       let totalPrice = 0;
@@ -107,30 +117,43 @@ async function manipulateOrders(orders) {
         totalPrice += product.quantity * product.unit_price;
       }
 
-      // Add the total price for the current order to the current total
-      restaurantTotals[restaurant.id].total = currentTotal + totalPrice;
+      // Add the total price for the current order to the current total, and increment the orders count
+      existingRestaurant.total += totalPrice;
+      existingRestaurant.orders++;
     }
 
-    // Find the restaurant with the highest total money spent
-    let mostMoneySpent = null;
-    let highestTotal = 0;
-    for (const restaurantId in restaurantTotals) {
-      const restaurantTotal = restaurantTotals[restaurantId];
-      if (restaurantTotal.total > highestTotal) {
-        mostMoneySpent = restaurantTotal.restaurant;
-        highestTotal = restaurantTotal.total;
-      }
-    }
+    // Sort the array of restaurants by total money spent in descending order
+    restaurantTotals.sort((a, b) => b.total - a.total);
 
-    // Return the restaurant name, total amount spent, and longitude and latitude, logo, and is_open
-    return {
-      name: mostMoneySpent.name,
-      total: Math.round(highestTotal * 100) / 100,
-      longitude: mostMoneySpent.longitude,
-      latitude: mostMoneySpent.latitude,
-      logo: mostMoneySpent.logo,
-      is_open: mostMoneySpent.is_open,
-    };
+    // Call the mostMoneySpentCallback function with the restaurant with the most money spent as an argument
+    mostMoneySpentCallback({
+      id: restaurantTotals[0].id,
+      name: restaurantTotals[0].restaurant.name,
+      totalPrice: Math.round(restaurantTotals[0].total * 100) / 100,
+      orders: restaurantTotals[0].orders,
+      longitude: restaurantTotals[0].restaurant.longitude,
+      latitude: restaurantTotals[0].restaurant.latitude,
+      logo: restaurantTotals[0].restaurant.logo,
+      is_open: restaurantTotals[0].restaurant.is_open,
+      is_favorite: restaurantTotals[0].is_favorite,
+      address: restaurantTotals[0].address,
+    });
+
+    // Call the allRestaurantsCallback function with the array of all restaurants as an argument
+    allRestaurantsCallback(
+      restaurantTotals.map((r) => ({
+        id: r.id,
+        name: r.restaurant.name,
+        totalPrice: Math.round(r.total * 100) / 100,
+        orders: r.orders,
+        longitude: r.restaurant.longitude,
+        latitude: r.restaurant.latitude,
+        logo: r.restaurant.logo,
+        is_open: r.restaurant.is_open,
+        is_favorite: r.is_favorite,
+        address: r.address,
+      }))
+    );
   };
 
   const ordersPerYear = years.map((year) => {
@@ -197,6 +220,8 @@ async function manipulateOrders(orders) {
         acc[order.restaurant.name].longitude = order.restaurant.longitude;
         acc[order.restaurant.name].latitude = order.restaurant.latitude;
         acc[order.restaurant.name].is_open = order.is_open;
+        acc[order.restaurant.name].is_favorite = order.is_favorite;
+        acc[order.restaurant.name].address = order.restaurant.address;
       } else {
         acc[order.restaurant.name] = {
           orders: 1,
@@ -206,6 +231,8 @@ async function manipulateOrders(orders) {
           longitude: order.restaurant.longitude,
           latitude: order.restaurant.latitude,
           is_open: order.is_open,
+          is_favorite: order.is_favorite,
+          address: order.restaurant.address,
         };
       }
       return acc;
@@ -214,7 +241,7 @@ async function manipulateOrders(orders) {
     restaurants = Object.entries(restaurants)
       .sort((a, b) => b[1].totalPrice - a[1].totalPrice)
       .map((restaurant) => {
-        restaurant[1].totalPrice = restaurant[1].totalPrice.toFixed(2);
+        restaurant[1].totalPrice = restaurant[1].totalPrice;
         return restaurant;
       });
 
@@ -228,6 +255,8 @@ async function manipulateOrders(orders) {
         longitude: restaurant[1].longitude,
         latitude: restaurant[1].latitude,
         is_open: restaurant[1].is_open,
+        is_favorite: restaurant[1].is_favorite,
+        address: restaurant[1].address,
       };
     });
 
@@ -308,8 +337,17 @@ async function manipulateOrders(orders) {
         }
       });
 
-      acc.RestaurantWithMostMoneySpent =
-        findRestaurantWithMostMoneySpent(orders);
+      // Call the calculateRestaurantTotals function to get the most money spent and all restaurants data
+      calculateRestaurantTotals(
+        orders,
+        (mostMoneySpent) => {
+          acc.RestaurantWithMostMoneySpent = mostMoneySpent;
+        },
+        (allRestaurants) => {
+          acc.restaurants = allRestaurants;
+        }
+      );
+
       acc.MostOrderedProduct = findMostOrderedProduct(orders);
 
       return acc;

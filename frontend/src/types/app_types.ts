@@ -1,3 +1,28 @@
+export interface Root {
+  orders: Orders;
+  message: string;
+}
+
+export interface Orders {
+  all: All;
+  perYear: PerYear[];
+}
+
+export interface All {
+  totalOrders: number;
+  totalPrice: number;
+  couponAmount: number;
+  deliveryCost: number;
+  totalTips: number;
+  platforms: Platforms;
+  paymentMethods: PaymentMethods;
+  firstOrder: string;
+  lastOrder: string;
+  RestaurantWithMostMoneySpent: RestaurantWithMostMoneySpent;
+  restaurants: Restaurant[];
+  MostOrderedProduct: MostOrderedProduct;
+}
+
 export interface Platforms {
   web: number;
   android: number;
@@ -13,63 +38,35 @@ export interface PaymentMethods {
 }
 
 export interface RestaurantWithMostMoneySpent {
+  id: number;
   name: string;
-  total: number;
+  totalPrice: number;
+  orders: number;
   longitude: number;
   latitude: number;
   logo: string;
   is_open: boolean;
+  is_favorite: boolean;
+  address: string;
+}
+
+export interface Restaurant {
+  id: number;
+  name: string;
+  totalPrice: number;
+  orders: number;
+  longitude: number;
+  latitude: number;
+  logo: string;
+  is_open: boolean;
+  is_favorite: boolean;
+  address: string;
 }
 
 export interface MostOrderedProduct {
   name: string;
   quantity: number;
   amountSpent: number;
-}
-
-export interface MostOrderedProduct2 {
-  name: string;
-  orders: number;
-  totalPrice: string;
-}
-
-export interface All {
-  totalOrders: number;
-  totalPrice: number;
-  couponAmount: number;
-  deliveryCost: number;
-  totalTips: number;
-  platforms: Platforms;
-  paymentMethods: PaymentMethods;
-  firstOrder: string;
-  lastOrder: string;
-  RestaurantWithMostMoneySpent: RestaurantWithMostMoneySpent;
-  MostOrderedProduct: MostOrderedProduct;
-}
-
-export interface Platforms2 {
-  web: number;
-  android: number;
-  ios?: number;
-}
-
-export interface PaymentMethods2 {
-  cash: number;
-  paypal: number;
-  googlepay: number;
-  credit_card: number;
-  applepay?: number;
-}
-
-export interface Restaurant {
-  name: string;
-  orders: number;
-  totalPrice: string;
-  id: number;
-  logo: string;
-  longitude: number;
-  latitude: number;
-  is_open: boolean;
 }
 
 export interface PerYear {
@@ -83,19 +80,42 @@ export interface PerYear {
   couponAmount: number;
   deliveryCost: number;
   totalTips: number;
-  restaurants: Restaurant[];
+  restaurants: Restaurant2[];
   mostOrderedProduct: MostOrderedProduct2;
   mediumDeliveryTime: number;
 }
 
-export interface Orders {
-  all: All;
-  perYear: PerYear[];
+export interface Platforms2 {
+  web: number;
+  android?: number;
+  ios?: number;
 }
 
-export interface RootObject {
-  orders: Orders;
-  message: string;
+export interface PaymentMethods2 {
+  cash: number;
+  paypal?: number;
+  googlepay?: number;
+  credit_card?: number;
+  applepay?: number;
+}
+
+export interface Restaurant2 {
+  name: string;
+  orders: number;
+  totalPrice: number;
+  id: number;
+  logo: string;
+  longitude: number;
+  latitude: number;
+  is_open: boolean;
+  is_favorite: boolean;
+  address: string;
+}
+
+export interface MostOrderedProduct2 {
+  name: string;
+  orders: number;
+  totalPrice: string;
 }
 
 export interface User {
@@ -103,14 +123,8 @@ export interface User {
   name: string;
 }
 
-export type initialStateType = {
+export interface initialStateType {
   user: User | null;
   orders: Orders | null;
   loading: boolean;
-};
-
-export const initialState = {
-  user: null,
-  orders: null,
-  loading: true,
-};
+}

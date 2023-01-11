@@ -1,27 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
 import { Container, Select } from "@mantine/core";
 import Loading from "../../Components/Loading/Loading";
-import { useOrders } from "../../Hooks/Orders/useOrders";
 import { LOCAL_STORAGE_ORDERS } from "../../utils/constants";
 import { All, Orders, PerYear } from "../../types/app_types";
 import DashboardCard from "./Card/DashboardCard";
+import { AiOutlineShoppingCart, AiOutlineFire } from "react-icons/ai";
+import { BsPiggyBank } from "react-icons/bs";
+import { FaHandsHelping } from "react-icons/fa";
+import { CgRowLast } from "react-icons/cg";
+import { GoGraph } from "react-icons/go";
+import Map from "./Map/Map";
+import { dateFormat, formatAmount } from "../../utils/helpers";
+import { useQuery } from "@tanstack/react-query";
+import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
+import { UserContext } from "../../Services/UserContext/UserContext";
 
 function Dashboard() {
-  type years = {
-    label: string;
-    value: string;
-  };
+  console.log("Rendered");
+  const { state, dispatch } = useContext(UserContext);
+  const { user, orders } = state;
 
-  const [years, setYears] = useState<years[]>([]);
+  const [years, setYears] = useState<
+    {
+      label: string;
+      value: string;
+    }[]
+  >([]);
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
-  const [selectedYearOrders, setSelectedYearOrders] = useState<
-    All | PerYear | undefined
-  >(undefined);
-  const { fetchOrders, isLoadingOrders, data, orders } = useOrders();
+  const [selectedYearOrders, setSelectedYearOrders] = useState<All | PerYear>();
 
   const setYearsState = (orders: Orders) => {
-    const years = orders.perYear.map((year: any) => {
+    const years = orders.perYear.map((year: PerYear) => {
       return { label: year.year, value: year.year };
     });
     years.unshift({ label: "Όλα τα έτη", value: "all" });
@@ -29,71 +39,129 @@ function Dashboard() {
     setSelectedYear(years[0].value);
   };
 
-  // first we need to check if we have orders in local storage
-  // if we have we set the years state with the orders from local storage
-  // if we don't have we fetch the orders from the server and set the years state with the orders from the server
+  async function fetchOrders() {
+    return await EfoodAxios.get("/orders", {
+      headers: {
+        session_id: user?.session_id,
+      },
+    });
+  }
+  const { data, refetch, isInitialLoading, isRefetching } = useQuery(
+    ["orders"],
+    fetchOrders,
+    {
+      refetchOnWindowFocus: false,
+      enabled: false,
+    }
+  );
+
+  const isLoading = isInitialLoading || isRefetching;
 
   useEffect(() => {
-    const orders = localStorage.getItem(LOCAL_STORAGE_ORDERS);
     if (orders) {
-      setYearsState(JSON.parse(orders));
+      setYearsState(orders);
     } else {
-      fetchOrders();
+      refetch();
     }
   }, []);
 
-  // if we have orders from the server we set the years state with the orders from the server
   useEffect(() => {
     if (data) {
-      setYearsState(data.data?.orders);
+      dispatch({ type: "SET_ORDERS", payload: data.data.orders });
+      setYearsState(data.data.orders);
     }
   }, [data]);
 
-  // every time we change the selected year we set the selected year orders state with the orders of the selected year. If the value is all we set the selected year orders state with all the orders
   useEffect(() => {
-    if (selectedYear) {
-      if (selectedYear === "all") {
-        setSelectedYearOrders(orders?.all);
-      } else {
-        const selectedYearOrders = orders?.perYear.find(
-          (year) => year.year === selectedYear
-        );
-        setSelectedYearOrders(selectedYearOrders);
-      }
+    if (selectedYear === "all") {
+      setSelectedYearOrders(orders?.all);
+    } else {
+      setSelectedYearOrders(
+        orders?.perYear.find((year: PerYear) => year.year === selectedYear)
+      );
     }
-  }, [selectedYear, orders]);
+  }, [selectedYear]);
 
   return (
     <>
-      <Loading isLoading={isLoadingOrders} />
+      {isLoading && <Loading isLoading={isLoading} />}
       <DefaultLayout>
         <Container
           className="
-          grow
-          
-        p-4
-        bg-white
-        dark:bg-slate-700
-        rounded-md
-        shadow-md
-        border
-        border-gray-200
-        dark:border-gray-600
-        
+          min-w-[70%]
+          p-4
+         bg-white rounded-md bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-20 shadow-xl
       "
         >
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-              Παραγγελίες
-            </h1>
             <Select
               label="Επιλογή Έτους"
               placeholder="Επιλογή Έτους"
               data={years}
               value={selectedYear}
               onChange={setSelectedYear}
+              style={{ zIndex: 401 }}
             ></Select>
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
+            <DashboardCard
+              title="Πρώτη παραγγελία"
+              value={
+                selectedYearOrders?.firstOrder &&
+                dateFormat(selectedYearOrders?.firstOrder)
+              }
+              icon={<AiOutlineFire size={40} />}
+              color="bg-white-200"
+            />
+            <DashboardCard
+              title="Τελευταία παραγγελία"
+              value={
+                selectedYearOrders?.lastOrder &&
+                dateFormat(selectedYearOrders?.lastOrder)
+              }
+              icon={<CgRowLast size={40} />}
+              color="bg-slate-900"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
+            <DashboardCard
+              title="Συνολικές Παραγγελίες"
+              value={selectedYearOrders?.totalOrders}
+              icon={<AiOutlineShoppingCart size={40} />}
+              color="bg-green-500"
+            />
+            <DashboardCard
+              title="Συνολική Δαπάνη"
+              value={
+                selectedYearOrders?.totalPrice &&
+                formatAmount(selectedYearOrders?.totalPrice)
+              }
+              color="bg-red-600"
+              icon={<BsPiggyBank size={40} />}
+            />
+            <DashboardCard
+              title="Μέσος Όρος / Παραγγελία"
+              value={
+                selectedYearOrders?.totalPrice &&
+                selectedYearOrders?.totalOrders &&
+                formatAmount(
+                  selectedYearOrders?.totalPrice /
+                    selectedYearOrders?.totalOrders
+                )
+              }
+              icon={<GoGraph size={40} />}
+            />
+            <DashboardCard
+              title="Συνολικά φιλοδωρήματα"
+              value={
+                selectedYearOrders?.totalTips &&
+                formatAmount(selectedYearOrders?.totalTips)
+              }
+              icon={<FaHandsHelping size={40} />}
+              color="bg-orange-500"
+            />
+          </div>
+          <Map restaurants={selectedYearOrders?.restaurants} />
         </Container>
       </DefaultLayout>
     </>
