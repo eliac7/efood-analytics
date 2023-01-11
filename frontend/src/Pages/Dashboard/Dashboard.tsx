@@ -14,7 +14,7 @@ import { dateFormat, formatAmount } from "../../utils/helpers";
 import { useQuery } from "@tanstack/react-query";
 import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import { UserContext } from "../../Services/UserContext/UserContext";
-import TimeStampChecker from "../../utils/TimeStampChecker";
+import TimeStampChecker from "./TimeStampChecker/TimeStampChecker";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
