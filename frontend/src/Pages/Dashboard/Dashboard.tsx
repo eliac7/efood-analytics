@@ -17,9 +17,8 @@ import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import { UserContext } from "../../Services/UserContext/UserContext";
 
 function Dashboard() {
-  console.log("Rendered");
   const { state, dispatch } = useContext(UserContext);
-  const { user, orders } = state;
+  const { user, orders: ordersState } = state;
 
   const [years, setYears] = useState<
     {
@@ -51,19 +50,17 @@ function Dashboard() {
     fetchOrders,
     {
       refetchOnWindowFocus: false,
-      enabled: false,
+      enabled: user?.session_id && !ordersState?.all ? true : false,
     }
   );
 
   const isLoading = isInitialLoading || isRefetching;
 
   useEffect(() => {
-    if (orders) {
-      setYearsState(orders);
-    } else {
-      refetch();
+    if (ordersState?.all) {
+      setYearsState(ordersState);
     }
-  }, []);
+  }, [ordersState]);
 
   useEffect(() => {
     if (data) {
@@ -74,10 +71,10 @@ function Dashboard() {
 
   useEffect(() => {
     if (selectedYear === "all") {
-      setSelectedYearOrders(orders?.all);
+      setSelectedYearOrders(ordersState?.all);
     } else {
       setSelectedYearOrders(
-        orders?.perYear.find((year: PerYear) => year.year === selectedYear)
+        ordersState?.perYear.find((year: PerYear) => year.year === selectedYear)
       );
     }
   }, [selectedYear]);
