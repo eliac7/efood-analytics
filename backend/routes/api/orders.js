@@ -70,7 +70,7 @@ async function manipulateOrders(orders) {
     return {
       name: mostOrderedProduct.name,
       quantity: highestTotalQuantity,
-      amountSpent:
+      totalPrice:
         Math.round(
           productTotals[mostOrderedProduct.item_code].amountSpent * 100
         ) / 100,
@@ -285,7 +285,7 @@ async function manipulateOrders(orders) {
     mostOrderedProduct = mostOrderedProduct.map((product) => {
       return {
         name: product[0],
-        orders: product[1].orders,
+        quantity: product[1].orders,
         totalPrice: product[1].totalPrice,
       };
     });

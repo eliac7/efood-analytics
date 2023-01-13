@@ -24,7 +24,7 @@ export default function DashboardCard({
             <Text size="xl" weight={800} ta="left">
               {value}
             </Text>
-            <Text size="sm" weight={600} ta="left" className="mt-1">
+            <Text size="sm" weight={500} ta="left" className="mt-1">
               {title}
             </Text>
           </Flex>

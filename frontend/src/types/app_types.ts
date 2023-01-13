@@ -1,12 +1,6 @@
-export interface Root {
-  orders: Orders;
-  message: string;
-}
-
 export interface Orders {
   all: All;
   perYear: PerYear[];
-  timestamp: number;
 }
 
 export interface All {
@@ -17,38 +11,17 @@ export interface All {
   totalTips: number;
   platforms: Platforms;
   paymentMethods: PaymentMethods;
-  firstOrder: string;
-  lastOrder: string;
-  RestaurantWithMostMoneySpent: RestaurantWithMostMoneySpent;
+  firstOrder: Date;
+  lastOrder: Date;
+  RestaurantWithMostMoneySpent: Restaurant;
   restaurants: Restaurant[];
   MostOrderedProduct: MostOrderedProduct;
 }
 
-export interface Platforms {
-  web: number;
-  android: number;
-  ios: number;
-}
-
-export interface PaymentMethods {
-  cash: number;
-  paypal: number;
-  googlepay: number;
-  credit_card: number;
-  applepay: number;
-}
-
-export interface RestaurantWithMostMoneySpent {
-  id: number;
+export interface MostOrderedProduct {
   name: string;
+  quantity: number;
   totalPrice: number;
-  orders: number;
-  longitude: number;
-  latitude: number;
-  logo: string;
-  is_open: boolean;
-  is_favorite: boolean;
-  address: string;
 }
 
 export interface Restaurant {
@@ -64,59 +37,45 @@ export interface Restaurant {
   address: string;
 }
 
-export interface MostOrderedProduct {
-  name: string;
-  quantity: number;
-  amountSpent: number;
+export interface PaymentMethods {
+  paypal?: number;
+  cash?: number;
+  googlepay?: number;
+  credit_card?: number;
+  applepay?: number;
+}
+
+export interface Platforms {
+  web: number;
+  android?: number;
+  ios?: number;
 }
 
 export interface PerYear {
   year: string;
   totalOrders: number;
   totalPrice: number;
-  platforms: Platforms2;
-  paymentMethods: PaymentMethods2;
-  firstOrder: string;
-  lastOrder: string;
+  platforms: Platforms;
+  paymentMethods: PaymentMethods;
+  firstOrder: Date;
+  lastOrder: Date;
   couponAmount: number;
   deliveryCost: number;
   totalTips: number;
-  restaurants: Restaurant2[];
-  mostOrderedProduct: MostOrderedProduct2;
+  restaurants: Restaurant[];
+  mostOrderedProduct: MostOrderedProductClass;
   mediumDeliveryTime: number;
 }
 
-export interface Platforms2 {
-  web: number;
-  android?: number;
-  ios?: number;
-}
-
-export interface PaymentMethods2 {
-  cash: number;
-  paypal?: number;
-  googlepay?: number;
-  credit_card?: number;
-  applepay?: number;
-}
-
-export interface Restaurant2 {
+export interface MostOrderedProductClass {
   name: string;
-  orders: number;
-  totalPrice: number;
-  id: number;
-  logo: string;
-  longitude: number;
-  latitude: number;
-  is_open: boolean;
-  is_favorite: boolean;
-  address: string;
-}
-
-export interface MostOrderedProduct2 {
-  name: string;
-  orders: number;
+  quantity: number;
   totalPrice: string;
+}
+export interface MostOrderedProduct {
+  name: string;
+  quantity: number;
+  totalPrice: number;
 }
 
 export interface User {

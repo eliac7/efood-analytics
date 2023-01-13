@@ -2,14 +2,11 @@ import { useRef, useEffect } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import * as L from "leaflet";
-import { Restaurant, Restaurant2 } from "../../../types/app_types";
+import { Restaurant } from "../../../types/app_types";
 import { Badge, useMantineColorScheme } from "@mantine/core";
+const maptkn = import.meta.env.VITE_APP_MAPBOX_TOKEN;
 
-const Map = ({
-  restaurants,
-}: {
-  restaurants: Restaurant[] | Restaurant2[] | undefined;
-}) => {
+const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
   const mapRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
 
@@ -85,9 +82,8 @@ const Map = ({
   }, [restaurants]);
 
   const tiles = {
-    light:
-      "https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZWxpYWM3IiwiYSI6ImNsY29yYmoxeTAxOWgzc2xyMDBkcHRqNnEifQ.23Rw0ga3E8B8Z-hITio6CQ",
-    dark: "https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZWxpYWM3IiwiYSI6ImNsY29yYmoxeTAxOWgzc2xyMDBkcHRqNnEifQ.23Rw0ga3E8B8Z-hITio6CQ",
+    light: `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=${maptkn}`,
+    dark: `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${maptkn}`,
   };
 
   return (
@@ -107,7 +103,7 @@ const Map = ({
       <TileLayer
         url={tiles[colorScheme]}
         ref={tileLayerRef}
-        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       {markers}
     </MapContainer>

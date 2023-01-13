@@ -5,7 +5,9 @@ function DefaultLayout({ children }: { children: any }) {
   return (
     <>
       <Header />
-      <main className="flex-1 flex items-center p-10 md:p-0">{children}</main>
+      <main className="flex-1 flex justify-center items-center">
+        {children}
+      </main>
       <Footer />
     </>
   );

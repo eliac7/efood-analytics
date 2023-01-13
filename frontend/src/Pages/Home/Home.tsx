@@ -1,20 +1,21 @@
 import Form from "../../Components/Form/Form.jsx";
 import Gallery from "../../Components/Gallery/Gallery";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
+import { Container, Grid } from "@mantine/core";
 
 function Home() {
   return (
     <DefaultLayout>
-      <div className="container mx-auto rounded-lg overflow-hidden shadow-xl">
-        <div className="flex flex-col lg:flex-row justify-center items-center">
-          <div className="flex-1 flex justify-center items-center bg-slate-600">
+      <Container size="lg">
+        <Grid justify="center" align="stretch" gutter="sm">
+          <Grid.Col sm={12} md={6} className="bg-slate-600">
             <Gallery />
-          </div>
-          <div className="flex-1 self-stretch flex items-center justify-center bg-slate-800 relative">
+          </Grid.Col>
+          <Grid.Col sm={12} md={6} className="bg-slate-900">
             <Form />
-          </div>
-        </div>
-      </div>
+          </Grid.Col>
+        </Grid>
+      </Container>
     </DefaultLayout>
   );
 }

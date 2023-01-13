@@ -29,7 +29,7 @@ function Login() {
         onSubmit={form.onSubmit((values) => {
           login(values.email, values.password);
         })}
-        className="min-w-[500px]"
+        className="w-full"
       >
         <Stack>
           <TextInput
@@ -42,6 +42,7 @@ function Login() {
               form.setFieldValue("email", event.currentTarget.value)
             }
             error={form.errors.email}
+            radius="lg"
           />
 
           <PasswordInput
@@ -57,10 +58,22 @@ function Login() {
               form.errors.password &&
               "Password should include at least 6 characters"
             }
+            radius="lg"
           />
-          <Button type="submit" color="blue" variant="outline">
+
+          <Button
+            type="submit"
+            color="blue"
+            variant="outline"
+            radius="lg"
+            className="w-full md:w-1/2 mx-auto"
+          >
             Σύνδεση
           </Button>
+
+          <p className="text-gray-700 text-center">
+            Ο κωδικός σας δεν κοινοποιείται με τον ιστότοπο.
+          </p>
         </Stack>
       </form>
     </>

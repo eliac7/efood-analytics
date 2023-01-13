@@ -4,9 +4,9 @@ import { Container, Select } from "@mantine/core";
 import Loading from "../../Components/Loading/Loading";
 import { All, Orders, PerYear } from "../../types/app_types";
 import DashboardCard from "./Card/DashboardCard";
-import { AiOutlineShoppingCart, AiOutlineFire } from "react-icons/ai";
+import { AiOutlineShoppingCart } from "react-icons/ai";
 import { BsPiggyBank } from "react-icons/bs";
-import { FaHandsHelping } from "react-icons/fa";
+import { FaHandsHelping, FaMedal } from "react-icons/fa";
 import { CgRowLast } from "react-icons/cg";
 import { GoGraph } from "react-icons/go";
 import Map from "./Map/Map";
@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import { UserContext } from "../../Services/UserContext/UserContext";
 import TimeStampChecker from "./TimeStampChecker/TimeStampChecker";
+import Chart from "react-apexcharts";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
@@ -86,11 +87,12 @@ function Dashboard() {
         <Container
           className="
           min-w-[70%]
+          w-full
           p-4
-         bg-white rounded-md bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-20 shadow-xl
+         bg-white-200 rounded-md bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-20 shadow-xl
       "
         >
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-end">
             <Select
               label="Επιλογή Έτους"
               placeholder="Επιλογή Έτους"
@@ -108,8 +110,8 @@ function Dashboard() {
                 selectedYearOrders?.firstOrder &&
                 dateFormat(selectedYearOrders?.firstOrder)
               }
-              icon={<AiOutlineFire size={40} />}
-              color="bg-white-200"
+              icon={<FaMedal size={40} />}
+              color="bg-yellow-500"
             />
             <DashboardCard
               title="Τελευταία παραγγελία"
@@ -118,7 +120,7 @@ function Dashboard() {
                 dateFormat(selectedYearOrders?.lastOrder)
               }
               icon={<CgRowLast size={40} />}
-              color="bg-slate-900"
+              color="bg-blue-500"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-4">

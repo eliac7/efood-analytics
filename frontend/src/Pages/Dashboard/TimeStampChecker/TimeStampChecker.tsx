@@ -51,9 +51,8 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
         withArrow
         transition="fade"
         transitionDuration={200}
-        disabled={isRefreshAllowed}
       >
-        <button>
+        <div>
           <Button
             onClick={() => {
               refetch();
@@ -63,14 +62,15 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
               });
             }}
             disabled={!isRefreshAllowed}
-            color="blue"
+            color="orange"
             variant="outline"
-            size="sm"
-            style={{ zIndex: 401 }}
+            size="md"
+            compact
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
           >
             <FiRefreshCcw size={20} />
           </Button>
-        </button>
+        </div>
       </Tooltip>
     </>
   );

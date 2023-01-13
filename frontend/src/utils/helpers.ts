@@ -1,4 +1,4 @@
-export const dateFormat = (dateString: string) => {
+export const dateFormat = (dateString: Date) => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat("el-GR", {
     month: "long",
