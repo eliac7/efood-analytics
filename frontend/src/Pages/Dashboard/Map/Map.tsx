@@ -1,6 +1,8 @@
 import { useRef, useEffect } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
+import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import * as L from "leaflet";
 import { Restaurant } from "../../../types/app_types";
 import { Badge, useMantineColorScheme } from "@mantine/core";
@@ -88,7 +90,7 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
 
   return (
     <MapContainer
-      className="w-full h-[500px] rounded-md shadow-md my-6"
+      className="w-full h-[600px] rounded-md shadow-md my-6"
       attributionControl={true}
       zoomControl={true}
       doubleClickZoom={true}
@@ -99,6 +101,7 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
       zoom={7}
       boundsOptions={{ padding: [50, 50] }}
       ref={mapRef}
+      fullscreenControl={true}
     >
       <TileLayer
         url={tiles[colorScheme]}

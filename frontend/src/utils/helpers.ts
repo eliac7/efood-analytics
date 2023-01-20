@@ -15,3 +15,14 @@ export const formatAmount = (amount: number) => {
     currency: "EUR",
   }).format(amount);
 };
+
+export const timeFormat = (time: number) => {
+  // will be given in minutes and will be converted to hours and minutes and will be returned as a string
+  const hours = Math.floor(time / 60);
+  const minutes = time % 60;
+  if (hours === 0) {
+    return `${minutes} λεπτά`;
+  }
+
+  return `${hours} ώρες ${minutes} λεπτά`;
+};

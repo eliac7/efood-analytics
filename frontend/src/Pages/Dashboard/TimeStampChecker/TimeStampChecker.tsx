@@ -58,7 +58,7 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
               refetch();
               dispatch({
                 type: "SET_ORDERS_TIMESTAMP",
-                payload: new Date(),
+                payload: new Date().getTime(),
               });
             }}
             disabled={!isRefreshAllowed}

@@ -3,6 +3,8 @@ import { showNotification } from "@mantine/notifications";
 import { useMutation } from "@tanstack/react-query";
 import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import { UserContext } from "../../Services/UserContext/UserContext";
+import { FiLogIn, FiLogOut } from "react-icons/fi";
+import { User } from "../../types/app_types";
 
 export const useAuth = () => {
   const { state, dispatch } = useContext(UserContext);
@@ -17,6 +19,7 @@ export const useAuth = () => {
           title: "Επιτυχία",
           message: "Επιτυχής σύνδεση",
           color: "green",
+          icon: <FiLogIn />,
         });
       },
       onError: (error: any) => {
@@ -44,6 +47,12 @@ export const useAuth = () => {
 
   const logout = () => {
     dispatch({ type: "LOGOUT" });
+    showNotification({
+      title: "Επιτυχής αποσύνδεση",
+      message: "Ελπίζουμε να σας ξαναδούμε σύντομα",
+      color: "green",
+      icon: <FiLogOut />,
+    });
   };
 
   return { user: state.user, login, logout, loading: state.loading };

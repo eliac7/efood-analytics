@@ -1,10 +1,23 @@
-import { initialStateType } from "../../types/app_types";
+import { All, initialStateType, PerYear, User } from "../../types/app_types";
 import {
   LOCAL_STORAGE_ORDERS,
   LOCAL_STORAGE_USER,
 } from "../../utils/constants";
 
-export const UserReducer = (state: initialStateType, action: any) => {
+export type Action =
+  | { type: "SET_ORDERS"; payload: { all: All; perYear: PerYear } }
+  | { type: "SET_ORDERS_TIMESTAMP"; payload: number }
+  | {
+      type: "SET_USER";
+      payload: {
+        name: string;
+        session_id: string;
+      };
+    }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "LOGOUT" };
+
+export const UserReducer = (state: initialStateType, action: Action) => {
   switch (action.type) {
     case "SET_ORDERS":
       const { all, perYear } = action.payload;
@@ -26,11 +39,9 @@ export const UserReducer = (state: initialStateType, action: any) => {
             timestamp: action.payload,
           },
         };
-      } else return state;
-
+      }
     case "SET_USER":
-      const { name, session_id } = action.payload;
-      const user = { name, session_id };
+      const user = { ...(action.payload as User) };
       localStorage.setItem(LOCAL_STORAGE_USER, JSON.stringify(user));
       return { ...state, user, loading: false };
 

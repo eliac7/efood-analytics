@@ -5,7 +5,6 @@ import checkResStatus from "../../middlewares/checkResStatus.js";
 import { readFile } from "fs/promises";
 
 import axios from "axios";
-
 let arrayOrders = [];
 
 let fakeOrders = async () => {
@@ -66,7 +65,22 @@ async function manipulateOrders(orders) {
       }
     }
 
-    // Return the product name, total quantity, and total amount spent
+    // Check if all keys inside the "images" object are null
+    let isAllNull = true;
+    for (let key in mostOrderedProduct.images) {
+      if (mostOrderedProduct.images[key] !== null) {
+        isAllNull = false;
+        break;
+      }
+    }
+
+    // Set the image field to null if all keys inside the "images" object are null
+    let image = mostOrderedProduct.images;
+    if (isAllNull) {
+      image = null;
+    }
+
+    // Return the product name, total quantity, total amount spent, and image
     return {
       name: mostOrderedProduct.name,
       quantity: highestTotalQuantity,
@@ -74,6 +88,7 @@ async function manipulateOrders(orders) {
         Math.round(
           productTotals[mostOrderedProduct.item_code].amountSpent * 100
         ) / 100,
+      image: image,
     };
   };
 
@@ -269,6 +284,7 @@ async function manipulateOrders(orders) {
           acc[product.name] = {
             orders: product.quantity,
             totalPrice: product.unit_price * product.quantity,
+            image: product.image,
           };
         }
       });
@@ -287,6 +303,7 @@ async function manipulateOrders(orders) {
         name: product[0],
         quantity: product[1].orders,
         totalPrice: product[1].totalPrice,
+        image: product[1].image ? product[1].image : null,
       };
     });
 
@@ -306,6 +323,7 @@ async function manipulateOrders(orders) {
       restaurants,
       mostOrderedProduct,
       mediumDeliveryTime: Math.round(mediumDeliveryTime / ordersInYear.length),
+      RestaurantWithMostMoneySpent: restaurants[0],
     };
   });
 
@@ -320,6 +338,9 @@ async function manipulateOrders(orders) {
       // add the first and last order
       acc.firstOrder = ordersPerYear[ordersPerYear.length - 1].firstOrder;
       acc.lastOrder = ordersPerYear[0].lastOrder;
+
+      // medium delivery time
+      acc.mediumDeliveryTime += year.mediumDeliveryTime;
 
       // add the platforms and paymentMethods
       Object.entries(year.platforms).forEach((platform) => {
@@ -348,7 +369,7 @@ async function manipulateOrders(orders) {
         }
       );
 
-      acc.MostOrderedProduct = findMostOrderedProduct(orders);
+      acc.mostOrderedProduct = findMostOrderedProduct(orders);
 
       return acc;
     },
@@ -362,6 +383,7 @@ async function manipulateOrders(orders) {
       paymentMethods: {},
       firstOrder: null,
       lastOrder: null,
+      mediumDeliveryTime: 0,
     }
   );
 
@@ -374,7 +396,14 @@ async function manipulateOrders(orders) {
 }
 
 async function getUserOrders(session_id, offset) {
-  const orders_url = `https://api.e-food.gr/api/v1/user/orders/history?limit=100&offset=${offset}&mode=extended`;
+  const orders_url = new URL(
+    "https://api.e-food.gr/api/v1/user/orders/history"
+  );
+
+  orders_url.searchParams.append("limit", 100);
+  orders_url.searchParams.append("offset", offset);
+  orders_url.searchParams.append("mode", "extended");
+
   const orders_headers = {
     "Content-Type": "application/json",
     "User-Agent":
@@ -395,12 +424,13 @@ async function orders(req, res) {
     } else {
       const response = await getUserOrders(session_id, offset);
       arrayOrders.push(...response.data.data.orders);
+      const manipulatedOrders = await manipulateOrders(arrayOrders);
       if (response.data.data.hasNext) {
         const newOffset = parseInt(offset) + 100;
         req.headers.offset = newOffset;
         return orders(req, res);
       } else {
-        const manipulatedOrders = await manipulateOrders(arrayOrders);
+        arrayOrders = [];
         return res.status(200).json({
           orders: manipulatedOrders,
           message: response.data.message,

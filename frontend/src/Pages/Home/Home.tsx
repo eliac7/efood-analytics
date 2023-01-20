@@ -7,7 +7,15 @@ function Home() {
   return (
     <DefaultLayout>
       <Container size="lg">
-        <Grid justify="center" align="stretch" gutter="sm">
+        <Grid
+          justify="center"
+          align="stretch"
+          gutter="sm"
+          sx={{
+            minHeight: "500px",
+            minWidth: "500px",
+          }}
+        >
           <Grid.Col sm={12} md={6} className="bg-slate-600">
             <Gallery />
           </Grid.Col>

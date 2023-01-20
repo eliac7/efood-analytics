@@ -1,6 +1,7 @@
 export interface Orders {
   all: All;
   perYear: PerYear[];
+  timestamp: Date;
 }
 
 export interface All {
@@ -15,7 +16,8 @@ export interface All {
   lastOrder: Date;
   RestaurantWithMostMoneySpent: Restaurant;
   restaurants: Restaurant[];
-  MostOrderedProduct: MostOrderedProduct;
+  mostOrderedProduct: MostOrderedProduct;
+  mediumDeliveryTime: number;
 }
 
 export interface MostOrderedProduct {
@@ -63,19 +65,16 @@ export interface PerYear {
   deliveryCost: number;
   totalTips: number;
   restaurants: Restaurant[];
-  mostOrderedProduct: MostOrderedProductClass;
+  mostOrderedProduct: MostOrderedProduct;
   mediumDeliveryTime: number;
+  RestaurantWithMostMoneySpent: Restaurant;
 }
 
-export interface MostOrderedProductClass {
-  name: string;
-  quantity: number;
-  totalPrice: string;
-}
 export interface MostOrderedProduct {
   name: string;
   quantity: number;
   totalPrice: number;
+  image: string;
 }
 
 export interface User {

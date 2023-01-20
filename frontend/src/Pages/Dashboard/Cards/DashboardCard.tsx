@@ -5,22 +5,24 @@ export default function DashboardCard({
   value,
   icon,
   color,
+  hover = true,
 }: {
   title: string;
-  value: string | number | undefined;
+  value: string | number | React.ReactNode | undefined;
   icon?: React.ReactNode;
   color?: string;
+  hover?: boolean;
 }) {
   return (
     <Card
       shadow="sm"
-      className={`h-full w-full  rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm  bg-opacity-25 hover:scale-95 transition duration-300 ease-in-out transform shadow-xl cursor-auto ${
+      className={`h-full w-full  rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm  bg-opacity-25 transition duration-300 ease-in-out transform shadow-xl cursor-auto ${
         color ? color : "bg-sky-400"
-      }`}
+      } ${hover ? "hover:scale-95" : ""} `}
     >
-      <Group position="center">
+      <Group position="center" h="100%">
         <Flex justify="space-between" align="center" className="w-full">
-          <Flex direction={"column"}>
+          <Flex direction={"column"} sx={{ flex: 1 }} className="w-full">
             <Text size="xl" weight={800} ta="left">
               {value}
             </Text>
@@ -28,13 +30,13 @@ export default function DashboardCard({
               {title}
             </Text>
           </Flex>
-          <Flex>
-            {icon && (
+          {icon && (
+            <Flex>
               <Flex align="center" justify="center">
                 {icon}
               </Flex>
-            )}
-          </Flex>
+            </Flex>
+          )}
         </Flex>
       </Group>
     </Card>

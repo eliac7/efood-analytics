@@ -1,5 +1,6 @@
 import { TextInput, PasswordInput, Button, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { BsFillInfoCircleFill } from "react-icons/bs";
 import { useAuth } from "../../Hooks/Auth/useAuth";
 import Loading from "../Loading/Loading";
 
@@ -66,14 +67,10 @@ function Login() {
             color="blue"
             variant="outline"
             radius="lg"
-            className="w-full md:w-1/2 mx-auto"
+            className="w-full md:w-1/2 mx-auto my-5"
           >
             Σύνδεση
           </Button>
-
-          <p className="text-gray-700 text-center">
-            Ο κωδικός σας δεν κοινοποιείται με τον ιστότοπο.
-          </p>
         </Stack>
       </form>
     </>

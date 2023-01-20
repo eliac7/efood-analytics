@@ -1,21 +1,30 @@
 import { useState, useEffect, useContext } from "react";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
-import { Container, Select } from "@mantine/core";
+import { Container, Flex, Select } from "@mantine/core";
 import Loading from "../../Components/Loading/Loading";
 import { All, Orders, PerYear } from "../../types/app_types";
-import DashboardCard from "./Card/DashboardCard";
+import DashboardCard from "./Cards/DashboardCard";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { BsPiggyBank } from "react-icons/bs";
-import { FaHandsHelping, FaMedal } from "react-icons/fa";
+import {
+  FaHandsHelping,
+  FaHourglassHalf,
+  FaMedal,
+  FaTicketAlt,
+  FaTruck,
+} from "react-icons/fa";
 import { CgRowLast } from "react-icons/cg";
 import { GoGraph } from "react-icons/go";
 import Map from "./Map/Map";
-import { dateFormat, formatAmount } from "../../utils/helpers";
+import { dateFormat, formatAmount, timeFormat } from "../../utils/helpers";
 import { useQuery } from "@tanstack/react-query";
 import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import { UserContext } from "../../Services/UserContext/UserContext";
 import TimeStampChecker from "./TimeStampChecker/TimeStampChecker";
-import Chart from "react-apexcharts";
+import { showNotification } from "@mantine/notifications";
+import RestaurantCard from "./Cards/RestaurantCard";
+import OrderCard from "./Cards/OrderCard";
+import PlatformChart from "./Charts/PlatformAndPaymentChart";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
@@ -67,6 +76,12 @@ function Dashboard() {
     if (data) {
       dispatch({ type: "SET_ORDERS", payload: data.data.orders });
       setYearsState(data.data.orders);
+      showNotification({
+        title: `Επιτυχής ανάκτηση δεδομένων`,
+        message: `Βρέθηκαν συνολικά ${data.data.orders.all.totalOrders} παραγγελίες`,
+        color: "green",
+        icon: <GoGraph />,
+      });
     }
   }, [data]);
 
@@ -87,12 +102,11 @@ function Dashboard() {
         <Container
           className="
           min-w-[70%]
-          w-full
           p-4
          bg-white-200 rounded-md bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-20 shadow-xl
       "
         >
-          <div className="flex justify-between items-end">
+          <Flex justify={"space-between"} align={"center"}>
             <Select
               label="Επιλογή Έτους"
               placeholder="Επιλογή Έτους"
@@ -100,9 +114,9 @@ function Dashboard() {
               value={selectedYear}
               onChange={setSelectedYear}
               style={{ zIndex: 401 }}
-            ></Select>
+            />
             <TimeStampChecker refetch={refetch} />
-          </div>
+          </Flex>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             <DashboardCard
               title="Πρώτη παραγγελία"
@@ -161,6 +175,77 @@ function Dashboard() {
               color="bg-orange-500"
             />
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-4">
+            {selectedYearOrders?.deliveryCost ? (
+              <DashboardCard
+                title="Συνολικά Έξοδα Παράδοσης"
+                value={formatAmount(selectedYearOrders?.deliveryCost)}
+                icon={<FaTruck size={40} />}
+                color="bg-purple-500"
+              />
+            ) : (
+              <DashboardCard
+                title="Συνολικά Έξοδα Παράδοσης"
+                value="Δεν υπάρχουν διαθέσιμα δεδομένα"
+                icon={<FaTruck size={40} />}
+                color="bg-purple-500"
+              />
+            )}
+            {selectedYearOrders?.couponAmount ? (
+              <DashboardCard
+                title="Συνολικά Έξοδα Κουπονιών"
+                value={formatAmount(selectedYearOrders?.couponAmount)}
+                icon={<FaTicketAlt size={40} />}
+                color="bg-pink-500"
+              />
+            ) : (
+              <DashboardCard
+                title="Συνολικά Έξοδα Κουπονιών"
+                value="Δεν υπάρχουν διαθέσιμα δεδομένα"
+                icon={<FaTicketAlt size={40} />}
+                color="bg-pink-500"
+              />
+            )}
+            {selectedYearOrders &&
+            "mediumDeliveryTime" in selectedYearOrders ? (
+              <DashboardCard
+                title="Μέσος χρόνος παράδοσης"
+                value={
+                  selectedYearOrders?.mediumDeliveryTime &&
+                  timeFormat(selectedYearOrders?.mediumDeliveryTime)
+                }
+                icon={<FaHourglassHalf size={40} />}
+                color="bg-indigo-500"
+              />
+            ) : null}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
+            {selectedYearOrders?.RestaurantWithMostMoneySpent && (
+              <RestaurantCard
+                data={selectedYearOrders?.RestaurantWithMostMoneySpent}
+              />
+            )}
+            {selectedYearOrders?.mostOrderedProduct && (
+              <OrderCard data={selectedYearOrders?.mostOrderedProduct} />
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
+            {selectedYearOrders?.platforms && (
+              <PlatformChart
+                data={selectedYearOrders?.platforms}
+                title="Πλατφόρμες παραγγελιών"
+                color="bg-blue-500"
+              />
+            )}
+            {selectedYearOrders?.paymentMethods && (
+              <PlatformChart
+                data={selectedYearOrders?.paymentMethods}
+                title="Τρόποι Πληρωμής"
+                color="bg-green-500"
+              />
+            )}
+          </div>
+
           <Map restaurants={selectedYearOrders?.restaurants} />
         </Container>
       </DefaultLayout>
