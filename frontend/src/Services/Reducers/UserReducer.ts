@@ -9,20 +9,20 @@ export type Action =
   | { type: "SET_ORDERS_TIMESTAMP"; payload: number }
   | {
       type: "SET_USER";
-      payload: {
-        name: string;
-        session_id: string;
-      };
+      payload: User;
     }
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "LOGOUT" };
 
-export const UserReducer = (state: initialStateType, action: Action) => {
+export const UserReducer = (
+  state: initialStateType,
+  action: Action
+): initialStateType => {
   switch (action.type) {
     case "SET_ORDERS":
       const { all, perYear } = action.payload;
-      const timestamp = Date.now();
-      const orders = { all, perYear, timestamp };
+      const timestamp = new Date();
+      const orders = { all, perYear: [perYear], timestamp };
 
       localStorage.setItem(LOCAL_STORAGE_ORDERS, JSON.stringify(orders));
       return {
@@ -36,10 +36,11 @@ export const UserReducer = (state: initialStateType, action: Action) => {
           ...state,
           orders: {
             ...state.orders,
-            timestamp: action.payload,
+            timestamp: new Date(action.payload),
           },
         };
       }
+
     case "SET_USER":
       const user = { ...(action.payload as User) };
       localStorage.setItem(LOCAL_STORAGE_USER, JSON.stringify(user));
