@@ -74,10 +74,15 @@ async function manipulateOrders(orders) {
       }
     }
 
-    // Set the image field to null if all keys inside the "images" object are null
-    let image = mostOrderedProduct.images;
-    if (isAllNull) {
-      image = null;
+    // If all keys inside the "images" object are null, set the image to null othwerise set it to the first image in the "images" object that is not null
+    let image = null;
+    if (!isAllNull) {
+      for (let key in mostOrderedProduct.images) {
+        if (mostOrderedProduct.images[key] !== null) {
+          image = mostOrderedProduct.images[key];
+          break;
+        }
+      }
     }
 
     // Return the product name, total quantity, total amount spent, and image
