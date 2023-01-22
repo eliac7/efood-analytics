@@ -12,8 +12,8 @@ function Header() {
   const isDashboard = pathname === "/dashboard";
 
   return (
-    <header className="flex flex-col md:flex-row justify-between items-center bg-transparent p-5 pb-10">
-      <div className="flex"></div>
+    <header className="flex flex-col md:flex-row justify-between items-center bg-transparent p-5 pb-10 h-56 md:h-fit">
+      <div className="hidden md:flex"></div>
 
       {isDashboard && (
         <Link to="/">

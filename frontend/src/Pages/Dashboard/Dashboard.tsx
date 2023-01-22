@@ -104,6 +104,7 @@ function Dashboard() {
           max-w-7xl mx-auto
           p-4
          bg-white-200 rounded-md bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-20 shadow-xl
+         firefox:bg-opacity-100 firefox:backdrop-filter-none firefox:bg-gray-600
       "
         >
           <Flex justify={"space-between"} align="flex-end">

@@ -1,7 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+const plugin = require("tailwindcss/plugin");
+
 module.exports = {
   darkMode: "class",
   content: ["./*.html", "./src/**/*.tsx"],
+  corePlugins: {
+    preflight: false,
+  },
+
   theme: {
     extend: {
       fontFamily: {
@@ -35,5 +41,22 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // firefox only modifier
+    plugin(({ addVariant, e, postcss }) => {
+      addVariant("firefox", ({ container, separator }) => {
+        const isFirefoxRule = postcss.atRule({
+          name: "supports",
+          params: "(-moz-appearance:none)",
+        });
+        isFirefoxRule.append(container.nodes);
+        container.append(isFirefoxRule);
+        isFirefoxRule.walkRules((rule) => {
+          rule.selector = `.${e(
+            `firefox${separator}${rule.selector.slice(1).replaceAll("\\", "")}`
+          )}`;
+        });
+      });
+    }),
+  ],
 };
