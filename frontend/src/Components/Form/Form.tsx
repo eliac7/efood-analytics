@@ -15,10 +15,11 @@ function Form() {
         justify="center"
         direction="column"
         align="center"
+        gap={20}
         className="h-full w-full md:p-5 bg-ebony-clay-900 rounded-xl relative overflow-hidden shadow-2xl"
       >
         <FormBackground />
-        <Flex justify="center" align="center" className="w-full h-full z-10">
+        <Flex justify="center" align="start" className="w-full h-full z-10">
           <Link to="/">
             <img
               src={logo}
@@ -34,7 +35,17 @@ function Form() {
         >
           {user ? <AlreadyLoggedIn /> : <Login />}
         </Flex>
-        <Flex justify="center" align="center" className="w-full h-1/2"></Flex>
+        <Flex
+          justify="center"
+          align="center"
+          className="w-full h-full z-10 p-5"
+        >
+          <h6 className="text-gray-500 text-center">
+            Efood Analytics is a separate service from e-food.gr. We don't save
+            or store any personal information. We're not endorsed or supported
+            by e-food.gr.
+          </h6>
+        </Flex>
       </Flex>
     </>
   );

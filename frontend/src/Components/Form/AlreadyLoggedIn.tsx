@@ -11,7 +11,7 @@ function AlreadyLoggedIn() {
       </h1>
 
       <Link to="/dashboard" className="w-full text-center">
-        <Button color="blue" variant="filled" className="max-w-[15rem]">
+        <Button color="blue" variant="filled" className="max-w-[15rem] w-full">
           Δες τα στατιστικά σου
         </Button>
       </Link>
