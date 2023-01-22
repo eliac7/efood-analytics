@@ -22,7 +22,7 @@ export const UserReducer = (
     case "SET_ORDERS":
       const { all, perYear } = action.payload;
       const timestamp = new Date();
-      const orders = { all, perYear: [perYear], timestamp };
+      const orders = { all, perYear, timestamp };
 
       localStorage.setItem(LOCAL_STORAGE_ORDERS, JSON.stringify(orders));
       return {

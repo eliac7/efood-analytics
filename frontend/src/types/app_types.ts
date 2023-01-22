@@ -1,6 +1,6 @@
 export interface Orders {
   all: All;
-  perYear: PerYear[];
+  perYear: PerYear;
   timestamp: Date;
 }
 
@@ -74,7 +74,7 @@ export interface MostOrderedProduct {
   name: string;
   quantity: number;
   totalPrice: number;
-  image: string;
+  image: string | null;
 }
 
 export interface User {

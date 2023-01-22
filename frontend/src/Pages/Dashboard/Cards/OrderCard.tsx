@@ -18,7 +18,7 @@ function OrderCard({ data }: { data: MostOrderedProduct }) {
               <img
                 src={data.image || noAvatar}
                 alt="logo"
-                className="rounded-full h-10 w-10"
+                className="rounded-full h-20 w-20 object-cover"
               />
             </div>
 
