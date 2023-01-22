@@ -41,9 +41,9 @@ function Form() {
           className="w-full h-full z-10 p-5"
         >
           <h6 className="text-gray-500 text-center">
-            Efood Analytics is a separate service from e-food.gr. We don't save
-            or store any personal information. We're not endorsed or supported
-            by e-food.gr.
+            Το Efood Analytics είναι μια ξεχωριστή υπηρεσία από το e-food.gr.
+            Δεν αποθηκεύουμε προσωπικές πληροφορίες. Δεν υποστηριζόμαστε από το
+            e-food.gr.
           </h6>
         </Flex>
       </Flex>
