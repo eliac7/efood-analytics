@@ -10,8 +10,8 @@ function AlreadyLoggedIn() {
         Καλώς ήρθες {user?.name}
       </h1>
 
-      <Link to="/dashboard" className="w-full">
-        <Button color="blue" variant="outline" className="w-full">
+      <Link to="/dashboard" className="w-full text-center">
+        <Button color="blue" variant="filled" className="max-w-[15rem]">
           Δες τα στατιστικά σου
         </Button>
       </Link>

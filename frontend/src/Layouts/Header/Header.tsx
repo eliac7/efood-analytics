@@ -12,33 +12,32 @@ function Header() {
   const isDashboard = pathname === "/dashboard";
 
   return (
-    <header className="flex-1 flex flex-col md:flex-row justify-center items-center px-4 bg-transparent text-white md:pb-10 h-28">
-      <div className="flex-1"></div>
-      <Link to="/">
-        <div className="flex-1 h-20 mb-10 md:mb-0 bg-white rounded-b-xl max-w-[200px] select-none shadow-[_-10px_10px_0px_0px_#ff4c4c,_-15px_15px_0px_0px_#ff7f7f,_-20px_20px_0px_0px_#ff9999,_-25px_25px_0px_0px_#ffcccc]">
-          <img src={logo} alt="logo" className="w-full" />
-        </div>
-      </Link>
+    <header className="flex flex-col md:flex-row justify-between items-center bg-transparent p-5 pb-10">
+      <div className="flex"></div>
 
-      <div className="flex flex-1 gap-4 justify-end">
-        <div className="flex-1 flex justify-end items-center">
-          {user && (
-            <Button
-              color="red"
-              className="select-none p-2 bg-red-800 rounded-full hover:bg-red-900 transition-all duration-300 "
-              onClick={() => {
-                logout();
-                navigate("/");
-              }}
-            >
-              <FiLogOut size="20" />
-            </Button>
-          )}
-        </div>
+      {isDashboard && (
+        <Link to="/">
+          <img
+            src={logo}
+            alt="logo"
+            className="h-full w-full max-w-[15rem] mr-2 object-contain shadow-[_-10px_10px_0px_0px_#ff4c4c,_-15px_15px_0px_0px_#ff7f7f,_-20px_20px_0px_0px_#ff9999,_-25px_25px_0px_0px_#ffcccc] bg-white rounded-xl"
+          />
+        </Link>
+      )}
 
-        <div className="flex items-center justify-end">
-          <ToggleDarkMode />
-        </div>
+      <div className="flex items-center">
+        <ToggleDarkMode />
+        <Button
+          variant="filled"
+          color="red"
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
+          className="ml-4 rounded-full w-25 h-25"
+        >
+          <FiLogOut />
+        </Button>
       </div>
     </header>
   );

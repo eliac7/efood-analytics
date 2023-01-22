@@ -75,7 +75,7 @@ function RestaurantCard({ data }: { data: Restaurant }) {
               </p>
               <div className="flex items-center">
                 <a
-                  className="text-sm cursor-pointer hover:underline"
+                  className="text-sm cursor-pointer no-underline hover:underline text-gray-500 dark:text-gray-900"
                   href={`https://maps.google.com/?q=${data.latitude},${data.longitude}`}
                   target="_blank"
                   rel="noreferrer"

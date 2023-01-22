@@ -1,7 +1,7 @@
 import Footer from "../Footer/Footer";
 import Header from "../Header/Header";
 
-function DefaultLayout({ children }: { children: any }) {
+function DefaultLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
