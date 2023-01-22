@@ -5,7 +5,10 @@ import {
 } from "../../utils/constants";
 
 export type Action =
-  | { type: "SET_ORDERS"; payload: { all: All; perYear: PerYear } }
+  | {
+      type: "SET_ORDERS";
+      payload: { all: All; perYear: PerYear[] };
+    }
   | { type: "SET_ORDERS_TIMESTAMP"; payload: number }
   | {
       type: "SET_USER";
@@ -21,6 +24,7 @@ export const UserReducer = (
   switch (action.type) {
     case "SET_ORDERS":
       const { all, perYear } = action.payload;
+
       const timestamp = new Date();
       const orders = { all, perYear, timestamp };
 
@@ -29,7 +33,6 @@ export const UserReducer = (
         ...state,
         orders,
       };
-
     case "SET_ORDERS_TIMESTAMP":
       if (state.orders) {
         return {

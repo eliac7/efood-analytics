@@ -12,7 +12,7 @@ function Header() {
   const isDashboard = pathname === "/dashboard";
 
   return (
-    <header className="flex flex-col md:flex-row justify-center items-center px-4 bg-transparent text-white md:pb-10 h-28">
+    <header className="flex-1 flex flex-col md:flex-row justify-center items-center px-4 bg-transparent text-white md:pb-10 h-28">
       <div className="flex-1"></div>
       <Link to="/">
         <div className="flex-1 h-20 mb-10 md:mb-0 bg-white rounded-b-xl max-w-[200px] select-none shadow-[_-10px_10px_0px_0px_#ff4c4c,_-15px_15px_0px_0px_#ff7f7f,_-20px_20px_0px_0px_#ff9999,_-25px_25px_0px_0px_#ffcccc]">

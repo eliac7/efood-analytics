@@ -1,6 +1,6 @@
 export interface Orders {
   all: All;
-  perYear: PerYear;
+  perYear: PerYear[];
   timestamp: Date;
 }
 

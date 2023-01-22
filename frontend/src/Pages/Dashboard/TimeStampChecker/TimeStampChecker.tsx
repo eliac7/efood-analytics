@@ -1,14 +1,16 @@
 import { useContext, useEffect, useState } from "react";
+import { Button, Tooltip } from "@mantine/core";
 import { UserContext } from "../../../Services/UserContext/UserContext";
 import { FiRefreshCcw } from "react-icons/fi";
-
-import { Button, Tooltip } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 
 function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
   const { state, dispatch } = useContext(UserContext);
   const [timeLeft, setTimeLeft] = useState<number>();
   const [isRefreshAllowed, setRefreshAllowed] = useState(true);
   const TimestampState = state?.orders?.timestamp || 0;
+
+  const mediaQuery = useMediaQuery("(max-width: 430px)");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -51,6 +53,7 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
         withArrow
         transition="fade"
         transitionDuration={200}
+        multiline={mediaQuery ? true : false}
       >
         <div>
           <Button

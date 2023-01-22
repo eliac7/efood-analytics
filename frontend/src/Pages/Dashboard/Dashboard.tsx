@@ -101,12 +101,12 @@ function Dashboard() {
       <DefaultLayout>
         <Container
           className="
-          min-w-[70%]
+          max-w-7xl mx-auto
           p-4
          bg-white-200 rounded-md bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-20 shadow-xl
       "
         >
-          <Flex justify={"space-between"} align={"center"}>
+          <Flex justify={"space-between"} align="flex-end">
             <Select
               label="Επιλογή Έτους"
               placeholder="Επιλογή Έτους"
@@ -175,7 +175,7 @@ function Dashboard() {
               color="bg-orange-500"
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 my-4">
             {selectedYearOrders?.deliveryCost ? (
               <DashboardCard
                 title="Συνολικά Έξοδα Παράδοσης"
