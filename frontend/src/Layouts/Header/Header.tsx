@@ -27,17 +27,19 @@ function Header() {
 
       <div className="flex items-center">
         <ToggleDarkMode />
-        <Button
-          variant="filled"
-          color="red"
-          onClick={() => {
-            logout();
-            navigate("/");
-          }}
-          className="ml-4 rounded-full w-25 h-25"
-        >
-          <FiLogOut />
-        </Button>
+        {user && (
+          <Button
+            variant="filled"
+            color="red"
+            onClick={() => {
+              logout();
+              navigate("/");
+            }}
+            className="ml-4 rounded-full w-25 h-25"
+          >
+            <FiLogOut />
+          </Button>
+        )}
       </div>
     </header>
   );
