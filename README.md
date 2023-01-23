@@ -55,7 +55,7 @@
 ## About The Project
 <p align="center">
   <a href="https://bit.ly/efood-analytics" target="_blank">
-    <img src="https://github.com/eliac7/efood-analytics/blob/efood-2022-client/Preview.gif?raw=true" alt="Efood analytics GIF "/>
+    <img src="https://i.imgur.com/FIQtp9N.png" alt="Efood analytics "/>
   </a>
 </p>
 
@@ -69,10 +69,9 @@
      <li>Number of tips</li>
      <li>Most frequent store</li>
      <li>Most frequent product </li>
-     <li> Payement types ( Credit Card, Cash, PayPal)</li>
+     <li> Payement types ( Credit Card, Cash, PayPal, Google Pay, Apple Pay)</li>
      <li>Chart with statistics for orders per year alongside spendings per year </li>
-     <li>Latest 10 Orders with modal of the products</li>
-     <li>Map with all the stores you bought from apace with number of orders and total spending on each store*</li>
+     <li>Map with all the stores you bought from, with number of orders and total spending on each store</li>
    </ul>
 
 
@@ -84,12 +83,12 @@
 
 * [Node.js](https://nodejs.org/en/)
 * [Expressjs](https://expressjs.com/)
-* [Chart.js](https://www.chartjs.org/)
-* [Leafletjs](https://leafletjs.com/)
-* [Bootstrap](https://getbootstrap.com)
-* [Toastify](https://aleab.github.io/toastify/)
-* [FontAwesome](https://fontawesome.com/)
-* Vanilla JS
+* [React.js](https://reactjs.org/)
+* [Mantine](https://mantine.dev/)
+* [TailwindCSS](https://tailwindcss.com/)
+* [ApexCharts](https://apexcharts.com/)
+* [React Leaflet](https://react-leaflet.js.org/)
+* [React-Icons](https://react-icons.github.io/react-icons/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -114,15 +113,13 @@ This is an example of how to list things you need to use the software and how to
    ```sh
    git clone https://github.com/eliac7/efood-analytics.git
    ```
-2. Install NPM packages
+2. Install NPM packages for the outer folder, frontend and backend
    ```sh
    npm install
    ```
 3. Open a terminal on the folder and enter:
-   ```node index.js```
-   
-4. Open the below URL on your browser
-```http://localhost:3000/```
+   ```npm run dev```
+  
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
