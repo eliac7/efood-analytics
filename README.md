@@ -37,7 +37,7 @@
     Built with <b>Node.js</b> and <b>Express.js</b> to serve the data from an endpoint of REST API. For the frontend part, built with <b>React.js</b> , <b>Mantine</b> and <b>Tailwind</b> to build a minimal design by me. Includes dynamic Chart and interactive map filled with the stores you have bought from.
     <br />
     <br />
-    <a href="https://bit.ly/react-efood-analytics">View Demo</a>
+    <a href="https://cutt.ly/efood-analytics">View Demo</a>
     ·
     <a href="https://github.com/eliac7/efood-analytics/issues">Report Bug</a>
     ·
@@ -54,7 +54,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 <p align="center">
-  <a href="https://bit.ly/efood-analytics" target="_blank">
+  <a href="https://cutt.ly/efood-analytics" target="_blank">
     <img src="https://i.imgur.com/FIQtp9N.png" alt="Efood analytics "/>
   </a>
 </p>
