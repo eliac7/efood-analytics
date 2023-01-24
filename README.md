@@ -84,6 +84,7 @@
 * [Node.js](https://nodejs.org/en/)
 * [Expressjs](https://expressjs.com/)
 * [React.js](https://reactjs.org/)
+* [React Query](https://react-query-v3.tanstack.com/)
 * [Mantine](https://mantine.dev/)
 * [TailwindCSS](https://tailwindcss.com/)
 * [ApexCharts](https://apexcharts.com/)
