@@ -220,7 +220,7 @@ async function manipulateOrders(orders) {
       return acc;
     }, 0);
 
-    const mediumDeliveryTime = ordersInYear.reduce((acc, order) => {
+    const averageDeliveryTime = ordersInYear.reduce((acc, order) => {
       return acc + order.delivery_time;
     }, 0);
 
@@ -327,7 +327,9 @@ async function manipulateOrders(orders) {
       totalTips,
       restaurants,
       mostOrderedProduct,
-      mediumDeliveryTime: Math.round(mediumDeliveryTime / ordersInYear.length),
+      averageDeliveryTime: Math.round(
+        averageDeliveryTime / ordersInYear.length
+      ),
       RestaurantWithMostMoneySpent: restaurants[0],
     };
   });
@@ -345,7 +347,7 @@ async function manipulateOrders(orders) {
       acc.lastOrder = ordersPerYear[0].lastOrder;
 
       // medium delivery time
-      acc.mediumDeliveryTime += year.mediumDeliveryTime;
+      acc.averageDeliveryTime += year.averageDeliveryTime;
 
       // add the platforms and paymentMethods
       Object.entries(year.platforms).forEach((platform) => {
@@ -388,8 +390,11 @@ async function manipulateOrders(orders) {
       paymentMethods: {},
       firstOrder: null,
       lastOrder: null,
-      mediumDeliveryTime: 0,
+      averageDeliveryTime: 0,
     }
+  );
+  ordersAllTime.averageDeliveryTime = Math.round(
+    ordersAllTime.averageDeliveryTime / ordersPerYear.length
   );
 
   const finalOrders = {

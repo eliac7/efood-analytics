@@ -208,12 +208,12 @@ function Dashboard() {
               />
             )}
             {selectedYearOrders &&
-            "mediumDeliveryTime" in selectedYearOrders ? (
+            "averageDeliveryTime" in selectedYearOrders ? (
               <DashboardCard
                 title="Μέσος χρόνος παράδοσης"
                 value={
-                  selectedYearOrders?.mediumDeliveryTime &&
-                  timeFormat(selectedYearOrders?.mediumDeliveryTime)
+                  selectedYearOrders?.averageDeliveryTime &&
+                  timeFormat(selectedYearOrders?.averageDeliveryTime)
                 }
                 icon={<FaHourglassHalf size={40} />}
                 color="bg-indigo-500"
