@@ -12,6 +12,7 @@ import {
   FaMedal,
   FaTicketAlt,
   FaTruck,
+  FaUtensils,
 } from "react-icons/fa";
 import { CgRowLast } from "react-icons/cg";
 import { GoGraph } from "react-icons/go";
@@ -176,7 +177,7 @@ function Dashboard() {
               color="bg-orange-500"
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 my-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4 my-4">
             {selectedYearOrders?.deliveryCost ? (
               <DashboardCard
                 title="Συνολικά Έξοδα Παράδοσης"
@@ -217,6 +218,14 @@ function Dashboard() {
                 }
                 icon={<FaHourglassHalf size={40} />}
                 color="bg-indigo-500"
+              />
+            ) : null}
+            {selectedYearOrders && "uniqueRestaurants" in selectedYearOrders ? (
+              <DashboardCard
+                title="Μοναδικά Εστιατόρια"
+                value={selectedYearOrders?.uniqueRestaurants}
+                icon={<FaUtensils size={40} />}
+                color="bg-yellow-500"
               />
             ) : null}
           </div>

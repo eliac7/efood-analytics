@@ -100,15 +100,19 @@ async function manipulateOrders(orders) {
   const calculateRestaurantTotals = (
     data,
     mostMoneySpentCallback,
-    allRestaurantsCallback
+    allRestaurantsCallback,
+    uniqueRestaurantsCallback
   ) => {
     // Create an array to store the total money spent at each restaurant
     const restaurantTotals = [];
+    const uniqueRestaurants = new Set();
 
     // Loop through the data
     for (const order of data) {
       // Get the restaurant for the current order
       const restaurant = order.restaurant;
+
+      uniqueRestaurants.add(restaurant.id);
 
       // Check if the restaurant is already in the restaurantTotals array
       let existingRestaurant = restaurantTotals.find(
@@ -174,6 +178,8 @@ async function manipulateOrders(orders) {
         address: r.address,
       }))
     );
+
+    uniqueRestaurantsCallback(uniqueRestaurants.size);
   };
 
   const ordersPerYear = years.map((year) => {
@@ -230,6 +236,12 @@ async function manipulateOrders(orders) {
       }
       return acc;
     }, 0);
+
+    const uniqueRestaurants = new Set();
+
+    for (const order of ordersInYear) {
+      uniqueRestaurants.add(order.restaurant.id);
+    }
 
     let restaurants = ordersInYear.reduce((acc, order) => {
       if (acc[order.restaurant.name]) {
@@ -331,6 +343,7 @@ async function manipulateOrders(orders) {
         averageDeliveryTime / ordersInYear.length
       ),
       RestaurantWithMostMoneySpent: restaurants[0],
+      uniqueRestaurants: uniqueRestaurants.size,
     };
   });
 
@@ -373,6 +386,9 @@ async function manipulateOrders(orders) {
         },
         (allRestaurants) => {
           acc.restaurants = allRestaurants;
+        },
+        (uniqueRestaurants) => {
+          acc.uniqueRestaurants = uniqueRestaurants;
         }
       );
 

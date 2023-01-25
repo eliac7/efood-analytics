@@ -17,6 +17,19 @@ function PlatformAndPaymentChart({
       labels: Object.keys(data).map(
         (key) => key.charAt(0).toUpperCase() + key.slice(1)
       ),
+      tooltip: {
+        enabled: true,
+      },
+      responsive: [
+        {
+          breakpoint: 768,
+          options: {
+            legend: {
+              position: "bottom",
+            },
+          },
+        },
+      ],
     },
 
     series: Object.values(data),
@@ -25,6 +38,7 @@ function PlatformAndPaymentChart({
   useEffect(() => {
     setOptions({
       options: {
+        ...options.options,
         labels: Object.keys(data).map(
           (key) => key.charAt(0).toUpperCase() + key.slice(1)
         ),

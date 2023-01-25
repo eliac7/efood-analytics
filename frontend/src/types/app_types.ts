@@ -18,6 +18,7 @@ export interface All {
   restaurants: Restaurant[];
   mostOrderedProduct: MostOrderedProduct;
   averageDeliveryTime: number;
+  uniqueRestaurants: number;
 }
 
 export interface MostOrderedProduct {
@@ -68,6 +69,7 @@ export interface PerYear {
   mostOrderedProduct: MostOrderedProduct;
   averageDeliveryTime: number;
   RestaurantWithMostMoneySpent: Restaurant;
+  uniqueRestaurants: number;
 }
 
 export interface MostOrderedProduct {

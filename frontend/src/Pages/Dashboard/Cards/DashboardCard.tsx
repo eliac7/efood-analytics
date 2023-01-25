@@ -21,7 +21,12 @@ export default function DashboardCard({
       } ${hover ? "hover:scale-95" : ""} `}
     >
       <Group position="center" h="100%">
-        <Flex justify="space-between" align="center" className="w-full">
+        <Flex
+          justify="space-between"
+          align="center"
+          className="w-full"
+          gap={20}
+        >
           <Flex direction={"column"} sx={{ flex: 1 }} className="w-full">
             <Text size="xl" weight={800} ta="left">
               {value}
