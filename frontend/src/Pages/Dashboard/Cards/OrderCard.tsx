@@ -1,4 +1,4 @@
-import { Card, Stack, Tooltip } from "@mantine/core";
+import { Card, Stack } from "@mantine/core";
 import { AiFillDollarCircle } from "react-icons/ai";
 import { MostOrderedProduct } from "../../../types/app_types";
 import { formatAmount } from "../../../utils/helpers";

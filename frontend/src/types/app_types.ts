@@ -20,6 +20,7 @@ export interface All {
   averageDeliveryTime: number;
   uniqueRestaurants: number;
   weekdays: { [key: string]: number };
+  phases: Phases;
 }
 
 export interface MostOrderedProduct {
@@ -72,6 +73,14 @@ export interface PerYear {
   RestaurantWithMostMoneySpent: Restaurant;
   uniqueRestaurants: number;
   weekdays: { [key: string]: number };
+  phases: Phases;
+}
+
+export interface Phases {
+  morning: number;
+  noon: number;
+  afternoon: number;
+  night: number;
 }
 
 export interface MostOrderedProduct {

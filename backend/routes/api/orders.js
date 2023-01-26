@@ -248,6 +248,7 @@ async function manipulateOrders(orders) {
     }, 0);
 
     const uniqueRestaurants = new Set();
+    let phases = { morning: 0, noon: 0, afternoon: 0, night: 0 };
     let weekdays = {};
 
     for (const order of ordersInYear) {
@@ -259,7 +260,30 @@ async function manipulateOrders(orders) {
       } else {
         weekdays[dayName] = 1;
       }
+      const submissionTime = new Date(order.submission_date);
+      const hour = submissionTime.getHours();
+      if (hour >= 6 && hour < 12) {
+        phases.morning += 1;
+      }
+      if (hour >= 12 && hour < 17) {
+        phases.noon += 1;
+      }
+      if (hour >= 17 && hour < 20) {
+        phases.afternoon += 1;
+      }
+
+      if (hour >= 20 || hour < 6) {
+        phases.night += 1;
+      }
     }
+
+    // sort phases by number
+    phases = Object.keys(phases)
+      .sort((a, b) => phases[b] - phases[a])
+      .reduce((acc, key) => {
+        acc[key] = phases[key];
+        return acc;
+      }, {});
 
     // sort weekdays by weekdaysName, so that the order is always the same (Sunday, Monday, Tuesday, etc.)
     weekdays = Object.keys(weekdays)
@@ -371,6 +395,7 @@ async function manipulateOrders(orders) {
       RestaurantWithMostMoneySpent: restaurants[0],
       uniqueRestaurants: uniqueRestaurants.size,
       weekdays,
+      phases,
     };
   });
 
@@ -435,6 +460,20 @@ async function manipulateOrders(orders) {
         )
       );
 
+      // add time of day
+      Object.entries(year.phases).forEach(([time, orders]) => {
+        if (acc.phases[time] && typeof orders === "number") {
+          acc.phases[time] += orders;
+        } else {
+          acc.phases[time] = orders;
+        }
+      });
+
+      // Sort them by number of orders in descending order
+      acc.phases = Object.fromEntries(
+        Object.entries(acc.phases).sort((a, b) => b[1] - a[1])
+      );
+
       return acc;
     },
     {
@@ -453,6 +492,7 @@ async function manipulateOrders(orders) {
       mostOrderedProduct: null,
       uniqueRestaurants: 0,
       weekdays: {},
+      phases: {},
     }
   );
   ordersAllTime.averageDeliveryTime = Math.round(

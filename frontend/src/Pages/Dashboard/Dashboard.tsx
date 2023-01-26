@@ -7,6 +7,7 @@ import DashboardCard from "./Cards/DashboardCard";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { BsPiggyBank } from "react-icons/bs";
 import {
+  FaClock,
   FaHandsHelping,
   FaHourglassHalf,
   FaMedal,
@@ -27,6 +28,7 @@ import RestaurantCard from "./Cards/RestaurantCard";
 import OrderCard from "./Cards/OrderCard";
 import PlatformChart from "./Charts/PlatformAndPaymentChart";
 import WeekdayChart from "./Charts/WeekdayChart";
+import HourCard from "./Cards/HourCard";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
@@ -242,6 +244,21 @@ function Dashboard() {
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
+            {selectedYearOrders?.weekdays && (
+              <WeekdayChart
+                data={selectedYearOrders?.weekdays}
+                title="Παραγγελίες ανά ημέρα"
+              />
+            )}
+            {selectedYearOrders?.phases && (
+              <HourCard
+                title="Ώρα με τις περισσότερες παραγγελίες"
+                value={selectedYearOrders?.phases}
+                icon={<FaClock size={40} />}
+              />
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             {selectedYearOrders?.platforms && (
               <PlatformChart
                 data={selectedYearOrders?.platforms}
@@ -257,14 +274,7 @@ function Dashboard() {
               />
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
-            {selectedYearOrders?.weekdays && (
-              <WeekdayChart
-                data={selectedYearOrders?.weekdays}
-                title="Παραγγελίες ανά ημέρα"
-              />
-            )}
-          </div>
+
           <Map restaurants={selectedYearOrders?.restaurants} />
         </Container>
       </DefaultLayout>
