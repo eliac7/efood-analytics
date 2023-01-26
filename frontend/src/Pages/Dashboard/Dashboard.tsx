@@ -26,6 +26,7 @@ import { showNotification } from "@mantine/notifications";
 import RestaurantCard from "./Cards/RestaurantCard";
 import OrderCard from "./Cards/OrderCard";
 import PlatformChart from "./Charts/PlatformAndPaymentChart";
+import WeekdayChart from "./Charts/WeekdayChart";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
@@ -101,8 +102,9 @@ function Dashboard() {
       {isLoading && <Loading isLoading={isLoading} />}
       <DefaultLayout>
         <Container
+          fluid={true}
           className="
-          max-w-7xl mx-auto
+          w-full md:max-w-7xl 
           p-4
          bg-white-200 rounded-md bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-20 shadow-xl
          firefox:bg-opacity-100 firefox:backdrop-filter-none firefox:bg-gray-600
@@ -255,7 +257,14 @@ function Dashboard() {
               />
             )}
           </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
+            {selectedYearOrders?.weekdays && (
+              <WeekdayChart
+                data={selectedYearOrders?.weekdays}
+                title="Παραγγελίες ανά ημέρα"
+              />
+            )}
+          </div>
           <Map restaurants={selectedYearOrders?.restaurants} />
         </Container>
       </DefaultLayout>

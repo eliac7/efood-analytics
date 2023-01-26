@@ -19,6 +19,7 @@ export interface All {
   mostOrderedProduct: MostOrderedProduct;
   averageDeliveryTime: number;
   uniqueRestaurants: number;
+  weekdays: { [key: string]: number };
 }
 
 export interface MostOrderedProduct {
@@ -70,6 +71,7 @@ export interface PerYear {
   averageDeliveryTime: number;
   RestaurantWithMostMoneySpent: Restaurant;
   uniqueRestaurants: number;
+  weekdays: { [key: string]: number };
 }
 
 export interface MostOrderedProduct {

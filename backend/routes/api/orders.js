@@ -20,6 +20,16 @@ async function manipulateOrders(orders) {
     ...new Set(orders.map((order) => order.submission_date.slice(0, 4))),
   ];
 
+  const weekdaysName = [
+    "Δευτέρα",
+    "Τρίτη",
+    "Τετάρτη",
+    "Πέμπτη",
+    "Παρασκευή",
+    "Σάββατο",
+    "Κυριακή",
+  ];
+
   const findMostOrderedProduct = (data) => {
     // Create an object to store the total quantity and amount spent on each product
     const productTotals = {};
@@ -238,10 +248,26 @@ async function manipulateOrders(orders) {
     }, 0);
 
     const uniqueRestaurants = new Set();
+    let weekdays = {};
 
     for (const order of ordersInYear) {
       uniqueRestaurants.add(order.restaurant.id);
+      const day = new Date(order.submission_date).getDay();
+      const dayName = weekdaysName[day];
+      if (weekdays[dayName]) {
+        weekdays[dayName] += 1;
+      } else {
+        weekdays[dayName] = 1;
+      }
     }
+
+    // sort weekdays by weekdaysName, so that the order is always the same (Sunday, Monday, Tuesday, etc.)
+    weekdays = Object.keys(weekdays)
+      .sort((a, b) => weekdaysName.indexOf(a) - weekdaysName.indexOf(b))
+      .reduce((acc, key) => {
+        acc[key] = weekdays[key];
+        return acc;
+      }, {});
 
     let restaurants = ordersInYear.reduce((acc, order) => {
       if (acc[order.restaurant.name]) {
@@ -344,6 +370,7 @@ async function manipulateOrders(orders) {
       ),
       RestaurantWithMostMoneySpent: restaurants[0],
       uniqueRestaurants: uniqueRestaurants.size,
+      weekdays,
     };
   });
 
@@ -394,6 +421,20 @@ async function manipulateOrders(orders) {
 
       acc.mostOrderedProduct = findMostOrderedProduct(orders);
 
+      Object.entries(year.weekdays).forEach(([day, orders]) => {
+        if (acc.weekdays[day] && typeof orders === "number") {
+          acc.weekdays[day] += orders;
+        } else {
+          acc.weekdays[day] = orders;
+        }
+      });
+
+      acc.weekdays = Object.fromEntries(
+        Object.entries(acc.weekdays).sort(
+          (a, b) => weekdaysName.indexOf(a[0]) - weekdaysName.indexOf(b[0])
+        )
+      );
+
       return acc;
     },
     {
@@ -407,6 +448,11 @@ async function manipulateOrders(orders) {
       firstOrder: null,
       lastOrder: null,
       averageDeliveryTime: 0,
+      RestaurantWithMostMoneySpent: null,
+      restaurants: [],
+      mostOrderedProduct: null,
+      uniqueRestaurants: 0,
+      weekdays: {},
     }
   );
   ordersAllTime.averageDeliveryTime = Math.round(
