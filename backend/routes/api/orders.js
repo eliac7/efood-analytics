@@ -19,7 +19,6 @@ async function manipulateOrders(orders) {
   const years = [
     ...new Set(orders.map((order) => order.submission_date.slice(0, 4))),
   ];
-
   const weekdaysName = [
     "Δευτέρα",
     "Τρίτη",
@@ -28,6 +27,21 @@ async function manipulateOrders(orders) {
     "Παρασκευή",
     "Σάββατο",
     "Κυριακή",
+  ];
+
+  const monthsName = [
+    "Ιανουάριος",
+    "Φεβρουάριος",
+    "Μάρτιος",
+    "Απρίλιος",
+    "Μάϊος",
+    "Ιούνιος",
+    "Ιούλιος",
+    "Αύγουστος",
+    "Σεπτέμβριος",
+    "Οκτώβριος",
+    "Νοέμβριος",
+    "Δεκέμβριος",
   ];
 
   const findMostOrderedProduct = (data) => {
@@ -250,10 +264,21 @@ async function manipulateOrders(orders) {
     const uniqueRestaurants = new Set();
     let phases = { morning: 0, noon: 0, afternoon: 0, night: 0 };
     let weekdays = {};
+    let months = {};
+    let cities = {};
 
     for (const order of ordersInYear) {
       uniqueRestaurants.add(order.restaurant.id);
       const day = new Date(order.submission_date).getDay();
+      const month = new Date(order.submission_date).getMonth();
+
+      const monthName = monthsName[month];
+      if (months[monthName]) {
+        months[monthName] += 1;
+      } else {
+        months[monthName] = 1;
+      }
+
       const dayName = weekdaysName[day];
       if (weekdays[dayName]) {
         weekdays[dayName] += 1;
@@ -275,7 +300,29 @@ async function manipulateOrders(orders) {
       if (hour >= 20 || hour < 6) {
         phases.night += 1;
       }
+      const city = order.restaurant.address.split(",")[1].trim();
+      if (cities[city]) {
+        cities[city] += 1;
+      } else {
+        cities[city] = 1;
+      }
     }
+
+    // sort cities by number of orders
+    cities = Object.keys(cities)
+      .sort((a, b) => cities[b] - cities[a])
+      .reduce((acc, key) => {
+        acc[key] = cities[key];
+        return acc;
+      }, {});
+
+    // sort months by monthsName, so that the order is always the same (January, February, March, etc.)
+    months = Object.keys(months)
+      .sort((a, b) => monthsName.indexOf(a) - monthsName.indexOf(b))
+      .reduce((acc, key) => {
+        acc[key] = months[key];
+        return acc;
+      }, {});
 
     // sort phases by number
     phases = Object.keys(phases)
@@ -396,6 +443,8 @@ async function manipulateOrders(orders) {
       uniqueRestaurants: uniqueRestaurants.size,
       weekdays,
       phases,
+      months,
+      cities,
     };
   });
 
@@ -446,14 +495,19 @@ async function manipulateOrders(orders) {
 
       acc.mostOrderedProduct = findMostOrderedProduct(orders);
 
-      Object.entries(year.weekdays).forEach(([day, orders]) => {
-        if (acc.weekdays[day] && typeof orders === "number") {
-          acc.weekdays[day] += orders;
+      const entries = Object.entries(year.weekdays);
+      const accWeekdays = acc.weekdays;
+
+      entries.forEach(([day, orders]) => {
+        const isNumber = typeof orders === "number";
+        const isDay = accWeekdays[day];
+
+        if (isDay && isNumber) {
+          accWeekdays[day] += orders;
         } else {
-          acc.weekdays[day] = orders;
+          accWeekdays[day] = orders;
         }
       });
-
       acc.weekdays = Object.fromEntries(
         Object.entries(acc.weekdays).sort(
           (a, b) => weekdaysName.indexOf(a[0]) - weekdaysName.indexOf(b[0])
@@ -470,8 +524,41 @@ async function manipulateOrders(orders) {
       });
 
       // Sort them by number of orders in descending order
+      // sort phases by number of orders
       acc.phases = Object.fromEntries(
         Object.entries(acc.phases).sort((a, b) => b[1] - a[1])
+      );
+
+      Object.entries(year.months).forEach(([month, orders]) => {
+        if (acc.months[month] && typeof orders === "number") {
+          acc.months[month] += orders;
+        } else {
+          acc.months[month] = orders;
+        }
+      });
+
+      // Sort them by keeping the order of the monthsName array
+      //Creating the object
+      acc.months = Object.fromEntries(
+        //Sorting the entries
+        Object.entries(acc.months).sort(
+          //Sorting the months
+          (a, b) => monthsName.indexOf(a[0]) - monthsName.indexOf(b[0])
+        )
+      );
+
+      Object.entries(year.cities).forEach(([city, orders]) => {
+        if (acc.cities[city] && typeof orders === "number") {
+          acc.cities[city] += orders;
+        } else {
+          acc.cities[city] = orders;
+        }
+      });
+
+      // Sort them by number of orders in descending order
+
+      acc.cities = Object.fromEntries(
+        Object.entries(acc.cities).sort((a, b) => b[1] - a[1])
       );
 
       return acc;
@@ -493,6 +580,8 @@ async function manipulateOrders(orders) {
       uniqueRestaurants: 0,
       weekdays: {},
       phases: {},
+      months: {},
+      cities: {},
     }
   );
   ordersAllTime.averageDeliveryTime = Math.round(

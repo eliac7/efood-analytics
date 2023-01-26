@@ -1,49 +1,18 @@
 import { Card, Text, Group, Flex } from "@mantine/core";
 import { Phases } from "../../../types/app_types";
 
-export default function HourCard({
+export default function MapCard({
   title,
   value,
   icon,
+  color,
 }: {
   title: string;
-  value: Phases;
+  value: { [key: string]: number };
   icon?: React.ReactNode;
   hover?: boolean;
+  color?: string;
 }) {
-  let time = Object.keys(value)[0];
-  const orders = Object.values(value)[0];
-  let color = "";
-  let hour = "";
-
-  switch (time) {
-    case "morning":
-      time = "πρωί";
-      hour = "06:00-12:00";
-      color = "bg-yellow-500";
-
-      break;
-    case "noon":
-      time = "μεσημέρι";
-      hour = "12:00-17:00";
-      color = "bg-orange-500";
-      break;
-    case "afternoon":
-      time = "απόγευμα";
-      hour = "17:00-20:00";
-      color = "bg-orange-500";
-      break;
-    case "night":
-      time = "νύχτα";
-      hour = "20:00-06:00";
-      color = "bg-indigo-500";
-      break;
-    default:
-      time = "πρωί";
-      hour = "06:00-12:00";
-      color = "bg-yellow-500";
-  }
-
   return (
     <Card
       shadow="sm"
@@ -60,12 +29,9 @@ export default function HourCard({
         >
           <Flex direction={"column"} className="w-full h-full">
             <Text size="xl" weight={400} ta="left" className="flex-1">
-              Τις περισσότερες φορές, λιγουρεύτηκες{" "}
-              {time === "νύχτα" ? "τη " : "το "}
-              <b>
-                {time} ({hour})
-              </b>{" "}
-              με <b>{orders}</b> παραγγελίες συνολικά
+              Η πολή στην οποία πραγματοποιήσατε τις περισσότερες παραγγελίες
+              είναι η πολή <b>"{Object.keys(value)[0]}"</b> με{" "}
+              <b>{Object.values(value)[0]}</b> παραγγελίες.
             </Text>
             <Text
               size="sm"

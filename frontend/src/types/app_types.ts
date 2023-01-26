@@ -21,6 +21,8 @@ export interface All {
   uniqueRestaurants: number;
   weekdays: { [key: string]: number };
   phases: Phases;
+  months: { [key: string]: number };
+  cities: { [key: string]: number };
 }
 
 export interface MostOrderedProduct {
@@ -74,6 +76,8 @@ export interface PerYear {
   uniqueRestaurants: number;
   weekdays: { [key: string]: number };
   phases: Phases;
+  months: { [key: string]: number };
+  cities: { [key: string]: number };
 }
 
 export interface Phases {

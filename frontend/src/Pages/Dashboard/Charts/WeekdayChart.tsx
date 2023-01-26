@@ -5,9 +5,11 @@ import DashboardCard from "../Cards/DashboardCard";
 function WeekdayChart({
   data,
   title,
+  color,
 }: {
   data: { [key: string]: number };
   title: string;
+  color: string;
 }) {
   const [options, setOptions] = useState({
     options: {
@@ -65,7 +67,7 @@ function WeekdayChart({
     <DashboardCard
       title={title}
       hover={false}
-      color="bg-emerald-800"
+      color={color}
       value={
         <ReactApexChart
           type="heatmap"

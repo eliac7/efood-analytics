@@ -7,6 +7,7 @@ import DashboardCard from "./Cards/DashboardCard";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { BsPiggyBank } from "react-icons/bs";
 import {
+  FaCity,
   FaClock,
   FaHandsHelping,
   FaHourglassHalf,
@@ -29,6 +30,7 @@ import OrderCard from "./Cards/OrderCard";
 import PlatformChart from "./Charts/PlatformAndPaymentChart";
 import WeekdayChart from "./Charts/WeekdayChart";
 import HourCard from "./Cards/HourCard";
+import MapCard from "./Cards/MapCard";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
@@ -101,7 +103,11 @@ function Dashboard() {
 
   return (
     <>
-      {isLoading && <Loading isLoading={isLoading} />}
+      {isLoading && (
+        <div className="fixed top-0 left-0 w-full h-full z-50">
+          <Loading isLoading={isLoading} />
+        </div>
+      )}
       <DefaultLayout>
         <Container
           fluid={true}
@@ -244,12 +250,6 @@ function Dashboard() {
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
-            {selectedYearOrders?.weekdays && (
-              <WeekdayChart
-                data={selectedYearOrders?.weekdays}
-                title="Παραγγελίες ανά ημέρα"
-              />
-            )}
             {selectedYearOrders?.phases && (
               <HourCard
                 title="Ώρα με τις περισσότερες παραγγελίες"
@@ -257,7 +257,32 @@ function Dashboard() {
                 icon={<FaClock size={40} />}
               />
             )}
+            {selectedYearOrders?.cities && (
+              <MapCard
+                title="Πόλη με τις περισσότερες παραγγελίες"
+                value={selectedYearOrders?.cities}
+                color="bg-teal-600"
+                icon={<FaCity size={40} />}
+              />
+            )}
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
+            {selectedYearOrders?.months && (
+              <WeekdayChart
+                data={selectedYearOrders?.months}
+                title="Παραγγελίες ανά μήνα"
+                color="bg-blue-500"
+              />
+            )}
+            {selectedYearOrders?.weekdays && (
+              <WeekdayChart
+                data={selectedYearOrders?.weekdays}
+                title="Παραγγελίες ανά ημέρα"
+                color="bg-green-500"
+              />
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             {selectedYearOrders?.platforms && (
               <PlatformChart
