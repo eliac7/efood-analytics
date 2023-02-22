@@ -4,12 +4,11 @@ import { useMutation } from "@tanstack/react-query";
 import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import { UserContext } from "../../Services/UserContext/UserContext";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
-import { User } from "../../types/app_types";
 
 export const useAuth = () => {
   const { state, dispatch } = useContext(UserContext);
 
-  const { mutate, isLoading } = useMutation(
+  const { mutate: loginWithEmail, isLoading: isEmailLoading } = useMutation(
     (values: { email: string; password: string }) =>
       EfoodAxios.post("/login", values),
     {
@@ -33,16 +32,43 @@ export const useAuth = () => {
     }
   );
 
+  const { mutate: loginWithSession, isLoading: isSessionLoading } = useMutation(
+    (session_id: string) => EfoodAxios.post("/login/session", { session_id }),
+    {
+      onSuccess: (data) => {
+        dispatch({ type: "SET_USER", payload: data.data });
+        showNotification({
+          title: "Επιτυχία",
+          message: "Επιτυχής σύνδεση χρησιμοποιώντας το id σας",
+          color: "green",
+          icon: <FiLogIn />,
+        });
+      },
+      onError: (error: any) => {
+        console.log(error);
+        showNotification({
+          title: "Σφάλμα",
+          message: error.response.data.message,
+          color: "red",
+        });
+      },
+    }
+  );
+
   useEffect(() => {
-    if (isLoading) {
+    if (isEmailLoading || isSessionLoading) {
       dispatch({ type: "SET_LOADING", payload: true });
     } else {
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  }, [isLoading]);
+  }, [isEmailLoading, isSessionLoading]);
 
   const login = (email: string, password: string) => {
-    mutate({ email, password });
+    loginWithEmail({ email, password });
+  };
+
+  const loginWithSessionId = (sessionId: string) => {
+    loginWithSession(sessionId);
   };
 
   const logout = () => {
@@ -55,5 +81,11 @@ export const useAuth = () => {
     });
   };
 
-  return { user: state.user, login, logout, loading: state.loading };
+  return {
+    user: state.user,
+    login,
+    loginWithSessionId,
+    logout,
+    loading: state.loading,
+  };
 };

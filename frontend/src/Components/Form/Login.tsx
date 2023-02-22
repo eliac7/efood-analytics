@@ -1,78 +1,61 @@
-import { TextInput, PasswordInput, Button, Stack } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { BsFillInfoCircleFill } from "react-icons/bs";
+import { useState } from "react";
+import { Radio, Flex } from "@mantine/core";
 import { useAuth } from "../../Hooks/Auth/useAuth";
 import Loading from "../Loading/Loading";
+import LoginFormWithEmail from "./LoginFormWithEmail";
+import LoginFormWithID from "./LoginFormWithID";
 
 function Login() {
-  const { login, loading } = useAuth();
+  const { loading } = useAuth();
+  const [selectedLoginOption, setSelectedLoginOption] = useState<
+    "email" | "userid"
+  >("email");
 
-  const form = useForm({
-    initialValues: {
-      email: "",
-      password: "",
-    },
-    validate: {
-      email: (value) =>
-        /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
-          ? null
-          : "Παρακαλώ εισάγετε ένα έγκυρο email",
-      password: (value) =>
-        value.length > 0 ? null : "Παρακαλώ εισάγετε έναν κωδικό",
-    },
-  });
+  const handleLoginOptionChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setSelectedLoginOption(event as unknown as "email" | "userid");
+  };
 
   return (
     <>
       <Loading isLoading={loading} />
-
-      <form
-        onSubmit={form.onSubmit((values) => {
-          login(values.email, values.password);
-        })}
-        className="w-full"
-      >
-        <Stack>
-          <TextInput
-            required
-            label="Email"
-            labelProps={{ style: { color: "white" } }}
-            placeholder="Your email"
-            value={form.values.email}
-            onChange={(event) =>
-              form.setFieldValue("email", event.currentTarget.value)
-            }
-            error={form.errors.email}
-            radius="lg"
+      <Flex justify="center" direction="column" w={"100%"}>
+        <Radio.Group
+          name="selectedLoginOption"
+          label="Επιλέξτε τον τρόπο σύνδεσης"
+          labelProps={{ style: { color: "white" } }}
+          withAsterisk
+          value={selectedLoginOption}
+          onChange={handleLoginOptionChange as any}
+          className="w-full flex flex-col justify-center items-center"
+        >
+          <Radio
+            value="email"
+            label="E-mail"
+            sx={{
+              ".mantine-Radio-label": {
+                color: "white",
+              },
+            }}
           />
-
-          <PasswordInput
-            required
-            label="Password"
-            labelProps={{ style: { color: "white" } }}
-            placeholder="Your password"
-            value={form.values.password}
-            onChange={(event) =>
-              form.setFieldValue("password", event.currentTarget.value)
-            }
-            error={
-              form.errors.password &&
-              "Password should include at least 6 characters"
-            }
-            radius="lg"
+          <Radio
+            value="userid"
+            label="ID"
+            sx={{
+              ".mantine-Radio-label": {
+                color: "white",
+              },
+            }}
           />
+        </Radio.Group>
 
-          <Button
-            type="submit"
-            color="blue"
-            variant="outline"
-            radius="lg"
-            className="w-full md:w-1/2 mx-auto my-5"
-          >
-            Σύνδεση
-          </Button>
-        </Stack>
-      </form>
+        {selectedLoginOption === "email" ? (
+          <LoginFormWithEmail />
+        ) : (
+          <LoginFormWithID />
+        )}
+      </Flex>
     </>
   );
 }
