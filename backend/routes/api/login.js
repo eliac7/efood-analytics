@@ -104,7 +104,9 @@ async function loginWithSessionId(req, res, next) {
     return;
   }
 
-  const { session_id } = req.body;
+  let { session_id } = req.body;
+
+  session_id = session_id.replace(/['"]+/g, "").trim();
 
   if (!session_id) {
     return res.status(400).json({ message: "Session ID is required" });

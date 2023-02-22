@@ -15,7 +15,8 @@ function LoginFormWithID() {
     },
     validate: {
       id: (value) => {
-        value = value.replace(/\s/g, "");
+        value = value.replace(/\s/g, "").replace(/['"]+/g, "");
+
         if (!value) return "Το ID είναι υποχρεωτικό";
         if (
           !/^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$/.test(

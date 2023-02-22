@@ -52,6 +52,11 @@ async function manipulateOrders(orders) {
     for (const order of data) {
       // Loop through the products in the current order
       for (const product of order.products) {
+        // If the product is an offer, skip it
+        if (product.is_offer) {
+          continue;
+        }
+
         // If the product is not yet in the productTotals object,
         // add it and set its total quantity and amount spent to 0
         if (!productTotals[product.item_code]) {
@@ -109,9 +114,9 @@ async function manipulateOrders(orders) {
       }
     }
 
-    // Return the product name, total quantity, total amount spent, and image
+    // Return the product name, total quantity, total amount spent and image
     return {
-      name: mostOrderedProduct.name,
+      name: mostOrderedProduct.name || mostOrderedProduct.offer_title,
       quantity: highestTotalQuantity,
       totalPrice:
         Math.round(
