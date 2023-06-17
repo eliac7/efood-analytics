@@ -9,7 +9,7 @@ function Login() {
   const { loading } = useAuth();
   const [selectedLoginOption, setSelectedLoginOption] = useState<
     "email" | "userid"
-  >("email");
+  >("userid");
 
   const handleLoginOptionChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -38,6 +38,7 @@ function Login() {
                 color: "white",
               },
             }}
+            disabled
           />
           <Radio
             value="userid"
