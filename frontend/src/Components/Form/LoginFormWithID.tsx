@@ -55,11 +55,10 @@ function LoginFormWithID() {
                 withArrow
                 position="right"
               >
-                <div className="flex items-center justify-center">
+                <div className="animate-pulse flex items-center justify-center cursor-pointer">
                   <RiInformationLine
                     size="20"
                     fill="currentColor"
-                    className="cursor-pointer"
                     onClick={() => setOpenModal(true)}
                   />
                 </div>
