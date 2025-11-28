@@ -1,12 +1,47 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap");
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-mid-gray-50: #b8b9c2;
+  --color-mid-gray-100: #adaeb9;
+  --color-mid-gray-200: #9798a6;
+  --color-mid-gray-300: #818393;
+  --color-mid-gray-400: #6d6e7f;
+  --color-mid-gray-500: #5a5b69;
+  --color-mid-gray-600: #40414b;
+  --color-mid-gray-700: #26272d;
+  --color-mid-gray-800: #0c0c0e;
+  --color-mid-gray-900: #000000;
+
+  --color-ebony-clay-50: #f6f6f9;
+  --color-ebony-clay-100: #ececf2;
+  --color-ebony-clay-200: #d4d5e3;
+  --color-ebony-clay-300: #aeb1cb;
+  --color-ebony-clay-400: #8287ae;
+  --color-ebony-clay-500: #626795;
+  --color-ebony-clay-600: #4e527b;
+  --color-ebony-clay-700: #404264;
+  --color-ebony-clay-800: #373855;
+  --color-ebony-clay-900: #2e2f43;
+
+  --font-Manrope: "Manrope", sans-serif;
+}
 
 @layer base {
   a {
     @apply text-gray-700 no-underline hover:underline;
+  }
+
+  /* Firefox variant support */
+  @supports (-moz-appearance: none) {
+    .firefox\:bg-opacity-100 {
+      background-opacity: 1;
+    }
+    .firefox\:backdrop-filter-none {
+      backdrop-filter: none;
+    }
+    .firefox\:bg-gray-600 {
+      background-color: rgb(75 85 99);
+    }
   }
 }
 

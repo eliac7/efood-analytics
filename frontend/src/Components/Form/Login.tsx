@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Radio, Flex } from "@mantine/core";
+import { Radio, Flex, Group, CheckIcon } from "@mantine/core";
 import { useAuth } from "../../Hooks/Auth/useAuth";
 import Loading from "../Loading/Loading";
 import LoginFormWithEmail from "./LoginFormWithEmail";
@@ -28,27 +28,25 @@ function Login() {
           withAsterisk
           value={selectedLoginOption}
           onChange={handleLoginOptionChange as any}
-          className="w-full flex flex-col justify-center items-center"
+          className="w-full"
         >
-          <Radio
-            value="email"
-            label="E-mail"
-            sx={{
-              ".mantine-Radio-label": {
-                color: "white",
-              },
-            }}
-            disabled
-          />
-          <Radio
-            value="userid"
-            label="ID"
-            sx={{
-              ".mantine-Radio-label": {
-                color: "white",
-              },
-            }}
-          />
+          <Group justify="center" mt="xs">
+            <Radio
+              value="email"
+              label="E-mail"
+              checked={selectedLoginOption === "email"}
+              className="text-white"
+              icon={CheckIcon}
+            />
+            <Radio
+              value="userid"
+              checked={selectedLoginOption === "userid"}
+              label="ID"
+              className="text-white"
+              icon={CheckIcon}
+            />
+
+          </Group>
         </Radio.Group>
 
         {selectedLoginOption === "email" ? (

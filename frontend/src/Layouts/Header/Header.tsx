@@ -20,7 +20,7 @@ function Header() {
           <img
             src={logo}
             alt="logo"
-            className="h-full w-full max-w-[15rem] mr-2 object-contain shadow-[_-10px_10px_0px_0px_#ff4c4c,_-15px_15px_0px_0px_#ff7f7f,_-20px_20px_0px_0px_#ff9999,_-25px_25px_0px_0px_#ffcccc] bg-white rounded-xl"
+            className="h-full w-full max-w-60 mr-2 object-contain shadow-[-10px_10px_0px_0px_#ff4c4c,-15px_15px_0px_0px_#ff7f7f,-20px_20px_0px_0px_#ff9999,-25px_25px_0px_0px_#ffcccc] bg-white rounded-xl"
           />
         </Link>
       )}
@@ -31,11 +31,12 @@ function Header() {
           <Button
             variant="filled"
             color="red"
+            radius="xl"
             onClick={() => {
               logout();
               navigate("/");
             }}
-            className="ml-4 rounded-full w-25 h-25"
+            className="ml-4 w-10 h-10"
           >
             <FiLogOut />
           </Button>

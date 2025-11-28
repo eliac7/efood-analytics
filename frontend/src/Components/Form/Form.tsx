@@ -1,10 +1,10 @@
-import { Flex } from "@mantine/core/";
 import { useAuth } from "../../Hooks/Auth/useAuth";
 import AlreadyLoggedIn from "./AlreadyLoggedIn";
 import Login from "./Login";
 import logo from "../../Assets/Images/efood-analytics-logo.png";
 import { Link } from "react-router-dom";
 import FormBackground from "./FormBackground";
+import { Flex } from "@mantine/core";
 
 function Form() {
   const { user } = useAuth();
@@ -24,7 +24,7 @@ function Form() {
             <img
               src={logo}
               alt="logo"
-              className="h-full xs: max-w-[12rem] md:max-w-[15rem] mr-2 object-contain shadow-[_-10px_10px_0px_0px_#ff4c4c,_-15px_15px_0px_0px_#ff7f7f,_-20px_20px_0px_0px_#ff9999,_-25px_25px_0px_0px_#ffcccc] bg-white rounded-xl"
+              className="h-full xs: max-w-48 md:max-w-60 mr-2 object-contain shadow-[-10px_10px_0px_0px_#ff4c4c,-15px_15px_0px_0px_#ff7f7f,-20px_20px_0px_0px_#ff9999,-25px_25px_0px_0px_#ffcccc] bg-white rounded-xl"
             />
           </Link>
         </Flex>

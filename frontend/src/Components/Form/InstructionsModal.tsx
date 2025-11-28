@@ -1,25 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
-import { Modal, Group, Image, Progress, createStyles } from "@mantine/core";
-import { Carousel, Embla } from "@mantine/carousel";
+import { Modal, Group, Image, Progress } from "@mantine/core";
+import { Carousel } from "@mantine/carousel";
+import type { UseEmblaCarouselType } from "embla-carousel-react";
 import step1 from "../../Assets/Images/Instructions/step_1.webp";
 import step2 from "../../Assets/Images/Instructions/step_2.webp";
 import step3 from "../../Assets/Images/Instructions/step_3.webp";
-
-const useStyles = createStyles((_theme, _params, getRef) => ({
-  controls: {
-    ref: getRef("controls"),
-    transition: "opacity 150ms ease",
-    opacity: 0,
-  },
-
-  root: {
-    "&:hover": {
-      [`& .${getRef("controls")}`]: {
-        opacity: 1,
-      },
-    },
-  },
-}));
 
 export default function InstructionsMoal({
   open,
@@ -29,8 +14,7 @@ export default function InstructionsMoal({
   onClose: () => void;
 }) {
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [embla, setEmbla] = useState<Embla | null>(null);
-  const { classes } = useStyles();
+  const [embla, setEmbla] = useState<UseEmblaCarouselType[1] | null>(null);
 
   const handleScroll = useCallback(() => {
     if (!embla) return;
@@ -54,9 +38,16 @@ export default function InstructionsMoal({
         size="lg"
         centered
       >
-        <Carousel mx="auto" getEmblaApi={setEmbla} classNames={classes}>
+        <Carousel
+          mx="auto"
+          getEmblaApi={setEmbla}
+          classNames={{
+            controls: "opacity-0 transition-opacity duration-150 ease-in-out",
+            root: "hover:[&_.mantine-Carousel-controls]:opacity-100",
+          }}
+        >
           <Carousel.Slide className="flex items-center justify-center">
-            <Group position="center">
+            <Group justify="center">
               <Image src={step1} alt="Βήμα 1" height="100%" width="100%" />
               <p className="text-center">
                 Επισκεφθείτε την ιστοσελίδα του{" "}
@@ -73,7 +64,7 @@ export default function InstructionsMoal({
             </Group>
           </Carousel.Slide>
           <Carousel.Slide>
-            <Group position="center">
+            <Group justify="center">
               <Image
                 src={step2}
                 alt="Βήμα 2"
@@ -90,7 +81,7 @@ export default function InstructionsMoal({
             </Group>
           </Carousel.Slide>
           <Carousel.Slide>
-            <Group position="center">
+            <Group justify="center">
               <Image src={step3} alt="Βήμα 3" height="100%" width="100%" />
               <p>
                 Αφού συνδεθείτε επιτυχώς, ανοίξτε τον Dev Tools του περιηγητή
@@ -118,7 +109,7 @@ export default function InstructionsMoal({
         <Progress
           value={scrollProgress}
           styles={{
-            bar: { transitionDuration: "0ms" },
+            section: { transitionDuration: "0ms" },
             root: { maxWidth: 320 },
           }}
           size="sm"

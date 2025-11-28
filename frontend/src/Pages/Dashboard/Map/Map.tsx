@@ -83,7 +83,7 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
     }
   }, [restaurants]);
 
-  const tiles = {
+  const tiles: Record<string, string> = {
     light: `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=${maptkn}`,
     dark: `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${maptkn}`,
   };
@@ -104,7 +104,7 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
       fullscreenControl={true}
     >
       <TileLayer
-        url={tiles[colorScheme]}
+        url={tiles[colorScheme] || tiles.light}
         ref={tileLayerRef}
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />

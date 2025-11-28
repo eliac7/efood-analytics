@@ -9,9 +9,8 @@ const Loading: React.FC<LoadingProps> = ({ isLoading }) => {
   return (
     <LoadingOverlay
       visible={isLoading}
-      overlayBlur={2}
-      transitionDuration={0.2}
-      overlayColor={"rgba(0, 0, 0, 0.5)"}
+      overlayProps={{ blur: 2, color: "rgba(0, 0, 0, 0.5)" }}
+      transitionProps={{ duration: 200 }}
       loaderProps={{
         color: "red",
         size: 50,

@@ -51,8 +51,7 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
         }
         position="top"
         withArrow
-        transition="fade"
-        transitionDuration={200}
+        transitionProps={{ duration: 200 }}
         multiline={mediaQuery ? true : false}
       >
         <div>
@@ -68,7 +67,6 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
             color="orange"
             variant="outline"
             size="md"
-            compact
             style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
           >
             <FiRefreshCcw size={20} />

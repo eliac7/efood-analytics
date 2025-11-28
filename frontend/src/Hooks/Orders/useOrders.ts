@@ -11,18 +11,16 @@ export const useOrders = () => {
   const {
     data,
     mutate,
-    isLoading: isLoadingOrders,
-  } = useMutation(
-    () => EfoodAxios.get("/orders", { headers: { session_id } }),
-    {
-      onSuccess: (data) => {
-        dispatch({ type: "SET_ORDERS", payload: data.data.orders });
-      },
-      onError: (error: any) => {
-        console.log(error);
-      },
-    }
-  );
+    isPending: isLoadingOrders,
+  } = useMutation({
+    mutationFn: () => EfoodAxios.get("/orders", { headers: { session_id } }),
+    onSuccess: (data: any) => {
+      dispatch({ type: "SET_ORDERS", payload: data.data.orders });
+    },
+    onError: (error: any) => {
+      console.log(error);
+    },
+  });
 
   const fetchOrders = () => {
     mutate();

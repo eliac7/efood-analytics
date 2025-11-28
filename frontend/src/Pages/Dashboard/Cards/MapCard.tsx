@@ -16,11 +16,12 @@ export default function MapCard({
   return (
     <Card
       shadow="sm"
-      className={`h-full min-h-[10rem] w-full  rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm  bg-opacity-25 transition duration-300 ease-in-out transform shadow-xl cursor-auto ${
-        color ? color : "bg-sky-400"
-      }`}
+      style={{
+        backgroundColor: color || "rgba(14, 165, 233, 0.25)",
+      }}
+      className="h-full min-h-40 w-full rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm transition duration-300 ease-in-out transform shadow-xl cursor-auto"
     >
-      <Group position="center" h="100%">
+      <Group justify="center" h="100%">
         <Flex
           justify="space-between"
           align="center"
@@ -28,14 +29,14 @@ export default function MapCard({
           gap={20}
         >
           <Flex direction={"column"} className="w-full h-full">
-            <Text size="xl" weight={400} ta="left" className="flex-1">
+            <Text size="xl" fw={400} ta="left" className="flex-1">
               Η πολή στην οποία πραγματοποιήσατε τις περισσότερες παραγγελίες
               είναι η πολή <b>"{Object.keys(value)[0]}"</b> με{" "}
               <b>{Object.values(value)[0]}</b> παραγγελίες.
             </Text>
             <Text
               size="sm"
-              weight={500}
+              fw={500}
               ta="left"
               className="flex-1 flex items-end"
             >

@@ -9,7 +9,10 @@ function OrderCard({ data }: { data: MostOrderedProduct }) {
   return (
     <Card
       shadow="sm"
-      className={`h-full w-full  rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm  bg-opacity-25 shadow-xl cursor-auto bg-sky-400`}
+      style={{ 
+        backgroundColor: "rgba(14, 165, 233, 0.25)",
+      }}
+      className="h-full w-full rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm shadow-xl cursor-auto"
     >
       <Stack className="h-full">
         <div className="flex flex-col justify-between items-center md:flex-row h-full">

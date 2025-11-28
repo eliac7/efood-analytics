@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ReactApexChart from "react-apexcharts";
+import { useMantineColorScheme } from "@mantine/core";
 import DashboardCard from "../Cards/DashboardCard";
 
 function WeekdayChart({
@@ -11,6 +12,9 @@ function WeekdayChart({
   title: string;
   color: string;
 }) {
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === "dark";
+
   const [options, setOptions] = useState({
     options: {
       dataLabels: {
@@ -28,7 +32,7 @@ function WeekdayChart({
         toolbar: {
           show: false,
         },
-        foreColor: "#fff",
+        foreColor: isDark ? "#fff" : "#2E4053",
       },
     },
     series: [
@@ -48,6 +52,10 @@ function WeekdayChart({
     setOptions({
       options: {
         ...options.options,
+        chart: {
+          ...options.options.chart,
+          foreColor: isDark ? "#fff" : "#2E4053",
+        },
       },
       series: [
         {
@@ -61,7 +69,7 @@ function WeekdayChart({
         },
       ],
     });
-  }, [data]);
+  }, [data, isDark]);
 
   return (
     <DashboardCard

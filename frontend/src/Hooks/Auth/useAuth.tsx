@@ -8,52 +8,48 @@ import { FiLogIn, FiLogOut } from "react-icons/fi";
 export const useAuth = () => {
   const { state, dispatch } = useContext(UserContext);
 
-  const { mutate: loginWithEmail, isLoading: isEmailLoading } = useMutation(
-    (values: { email: string; password: string }) =>
+  const { mutate: loginWithEmail, isPending: isEmailLoading } = useMutation({
+    mutationFn: (values: { email: string; password: string }) =>
       EfoodAxios.post("/login", values),
-    {
-      onSuccess: (data) => {
-        dispatch({ type: "SET_USER", payload: data.data });
-        showNotification({
-          title: "Επιτυχία",
-          message: "Επιτυχής σύνδεση",
-          color: "green",
-          icon: <FiLogIn />,
-        });
-      },
-      onError: (error: any) => {
-        console.log(error);
-        showNotification({
-          title: "Σφάλμα",
-          message: error.response.data.message,
-          color: "red",
-        });
-      },
-    }
-  );
+    onSuccess: (data: any) => {
+      dispatch({ type: "SET_USER", payload: data.data });
+      showNotification({
+        title: "Επιτυχία",
+        message: "Επιτυχής σύνδεση",
+        color: "green",
+        icon: <FiLogIn />,
+      });
+    },
+    onError: (error: any) => {
+      console.log(error);
+      showNotification({
+        title: "Σφάλμα",
+        message: error.response.data.message,
+        color: "red",
+      });
+    },
+  });
 
-  const { mutate: loginWithSession, isLoading: isSessionLoading } = useMutation(
-    (session_id: string) => EfoodAxios.post("/login/session", { session_id }),
-    {
-      onSuccess: (data) => {
-        dispatch({ type: "SET_USER", payload: data.data });
-        showNotification({
-          title: "Επιτυχία",
-          message: "Επιτυχής σύνδεση χρησιμοποιώντας το id σας",
-          color: "green",
-          icon: <FiLogIn />,
-        });
-      },
-      onError: (error: any) => {
-        console.log(error);
-        showNotification({
-          title: "Σφάλμα",
-          message: error.response.data.message,
-          color: "red",
-        });
-      },
-    }
-  );
+  const { mutate: loginWithSession, isPending: isSessionLoading } = useMutation({
+    mutationFn: (session_id: string) => EfoodAxios.post("/login/session", { session_id }),
+    onSuccess: (data: any) => {
+      dispatch({ type: "SET_USER", payload: data.data });
+      showNotification({
+        title: "Επιτυχία",
+        message: "Επιτυχής σύνδεση χρησιμοποιώντας το id σας",
+        color: "green",
+        icon: <FiLogIn />,
+      });
+    },
+    onError: (error: any) => {
+      console.log(error);
+      showNotification({
+        title: "Σφάλμα",
+        message: error.response.data.message,
+        color: "red",
+      });
+    },
+  });
 
   useEffect(() => {
     if (isEmailLoading || isSessionLoading) {

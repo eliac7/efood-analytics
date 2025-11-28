@@ -51,7 +51,7 @@ function LoginFormWithID() {
               <Tooltip
                 label="Πληροφορίες για το πως να αποκτήσετε το ID σας"
                 multiline
-                width={200}
+                w={200}
                 withArrow
                 position="right"
               >
