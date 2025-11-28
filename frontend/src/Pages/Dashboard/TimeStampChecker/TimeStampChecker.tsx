@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Button, Tooltip } from "@mantine/core";
+import { Button, Tooltip, useMantineColorScheme } from "@mantine/core";
 import { UserContext } from "../../../Services/UserContext/UserContext";
 import { FiRefreshCcw } from "react-icons/fi";
 import { useMediaQuery } from "@mantine/hooks";
@@ -9,6 +9,8 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
   const [timeLeft, setTimeLeft] = useState<number>();
   const [isRefreshAllowed, setRefreshAllowed] = useState(true);
   const TimestampState = state?.orders?.timestamp || 0;
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === "dark";
 
   const mediaQuery = useMediaQuery("(max-width: 430px)");
 
@@ -39,11 +41,11 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
       <Tooltip
         label={
           isRefreshAllowed ? (
-            <span className="text-white text-center">
+            <span className={`${!isDark ? 'text-white' : 'text-gray-900'} text-center`}>
               Ανανέωση παραγγελιών{" "}
             </span>
           ) : (
-            <span className="text-white text-center">
+            <span className={`${!isDark ? 'text-white' : 'text-gray-900'} text-center`}>
               Μπορείτε να ανανεώσετε τις παραγγελίες σας σε{" "}
               <span className="text-red-500">{timeLeft}</span> λεπτά
             </span>
@@ -67,7 +69,11 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
             color="orange"
             variant="outline"
             size="md"
-            style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
+            style={{
+              backgroundColor: isDark
+                ? "rgba(255, 255, 255, 0.1)"
+                : "rgba(0, 0, 0, 0.05)"
+            }}
           >
             <FiRefreshCcw size={20} />
           </Button>
