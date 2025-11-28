@@ -27,7 +27,7 @@ import TimeStampChecker from "./TimeStampChecker/TimeStampChecker";
 import { showNotification } from "@mantine/notifications";
 import RestaurantCard from "./Cards/RestaurantCard";
 import OrderCard from "./Cards/OrderCard";
-import PlatformChart from "./Charts/PlatformAndPaymentChart";
+import PlatformAndPaymentChart from "./Charts/PlatformAndPaymentChart";
 import WeekdayChart from "./Charts/WeekdayChart";
 import HourCard from "./Cards/HourCard";
 import MapCard from "./Cards/MapCard";
@@ -283,14 +283,14 @@ function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             {selectedYearOrders?.platforms && (
-              <PlatformChart
+              <PlatformAndPaymentChart
                 data={selectedYearOrders?.platforms}
                 title="Πλατφόρμες παραγγελιών"
                 color="bg-blue-500"
               />
             )}
             {selectedYearOrders?.paymentMethods && (
-              <PlatformChart
+              <PlatformAndPaymentChart
                 data={selectedYearOrders?.paymentMethods}
                 title="Τρόποι Πληρωμής"
                 color="bg-green-500"
