@@ -1,118 +1,97 @@
 import express from "express";
+import {
+  loginWithCredentials,
+  validateSession,
+  getMockUserData,
+} from "../../services/authService.js";
+import {
+  isValidSessionId,
+  isValidEmail,
+  validatePassword,
+} from "../../constants/validation.js";
+import {
+  getSafeErrorMessage,
+  handleRateLimitError,
+} from "../../utils/errorHandler.js";
+
 const router = express.Router();
-import axios from "axios";
 
-function errorHandler(err, req, res, next) {
-  const statusCode = err.response ? err.response.status : 400;
-  if (statusCode === 429) {
-    const retryAfter = err.response.headers["retry-after"];
-    const retryAfterInMinutes = Math.ceil(retryAfter / 60);
-    return res.status(429).json({
-      message: `Too many requests. Please try again in ${retryAfterInMinutes} minutes`,
-    });
-  }
-  return res.status(statusCode).json({ message: err.message });
-}
-function simulateDelay() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, 2000);
-  });
-}
+const USE_MOCK_AUTH = process.env.MOCK_AUTH === "true" && process.env.NODE_ENV === "development";
 
-async function postRequest(url, data, headers) {
-  try {
-    const response = await axios.post(url, data, { headers });
-    return response.data;
-  } catch (err) {
-    throw err;
-  }
-}
-
-async function getRequest(url, headers) {
-  try {
-    const response = await axios.get(url, { headers });
-    return response.data;
-  } catch (err) {
-    throw err;
-  }
-}
-
-async function getUserSessionWithEmail(logins) {
-  const efoodUrl = "https://www.e-food.gr/users/login";
-  const efoodHeaders = {
-    "Content-Type": "application/json",
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-  };
-  return postRequest(efoodUrl, logins, efoodHeaders);
-}
-
-async function getUserSessionWithID(sessionId) {
-  const efoodUrl = "https://api.e-food.gr/api/v1/user/account";
-  const efoodHeaders = {
-    "Content-Type": "application/json",
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
-    "x-core-session-id": sessionId,
-  };
-
-  return getRequest(efoodUrl, efoodHeaders);
-}
-
-async function loginWithEmail(req, res, next) {
-  if (process.env.NODE_ENV === "development") {
-    await simulateDelay();
-    res.status(200).json({
-      session_id: "123456789",
-      name: "John",
-      message: "Logged in successfully",
-    });
-    return;
+/**
+ * POST /api/login
+ * Login with email and password
+ */
+async function handleLoginWithEmail(req, res, next) {
+  // Development mock mode
+  if (USE_MOCK_AUTH) {
+    return res.status(200).json(getMockUserData());
   }
 
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+
+  // Validate email
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({ message: "Το email είναι απαραίτητο" });
   }
+
+  // Validate password
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.valid) {
+    return res.status(400).json({ message: passwordValidation.message });
+  }
+
   try {
-    const response = await getUserSessionWithEmail({ email, password });
+    const response = await loginWithCredentials(email.trim(), password);
 
     if (response?.status === "error") {
       return res.status(401).json({ message: response.message });
-    } else {
-      return res.status(200).json({
-        session_id: response.data.session_id,
-        name: response.data.user.first_name_in_vocative,
-        message: response.message,
+    }
+
+    return res.status(200).json({
+      session_id: response.data.session_id,
+      name: response.data.user.first_name_in_vocative,
+      message: response.message,
+    });
+  } catch (err) {
+    // Handle rate limiting
+    const { isRateLimited, retryAfterMinutes } = handleRateLimitError(err);
+    if (isRateLimited) {
+      return res.status(429).json({
+        message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${retryAfterMinutes} λεπτά`,
       });
     }
-  } catch (err) {
-    next(err);
+
+    // Handle other errors
+    const statusCode = err.response?.status || 400;
+    const message = getSafeErrorMessage(err);
+    return res.status(statusCode).json({ message });
   }
 }
 
-async function loginWithSessionId(req, res, next) {
-  if (process.env.NODE_ENV === "development") {
-    await simulateDelay();
-    res.status(200).json({
-      session_id: "123456789",
-      name: "John",
-      message: "Logged in successfully",
-    });
-    return;
+/**
+ * POST /api/login/session
+ * Login with existing session ID
+ */
+async function handleLoginWithSessionId(req, res, next) {
+  if (USE_MOCK_AUTH) {
+    return res.status(200).json(getMockUserData());
   }
 
   let { session_id } = req.body;
 
-  session_id = session_id.replace(/['"]+/g, "").trim();
-
-  if (!session_id) {
-    return res.status(400).json({ message: "Session ID is required" });
+  if (session_id) {
+    session_id = session_id.replace(/['"]+/g, "").trim();
   }
+
+  if (!session_id || !isValidSessionId(session_id)) {
+    return res.status(400).json({
+      message: "Το ID της συνεδρίας είναι απαραίτητο. Format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+    });
+  }
+
   try {
-    const response = await getUserSessionWithID(session_id);
+    const response = await validateSession(session_id);
 
     if (response?.status === "error") {
       return res.status(401).json({ message: response.message });
@@ -121,21 +100,33 @@ async function loginWithSessionId(req, res, next) {
     return res.status(200).json({
       session_id,
       name: response.data.first_name_in_vocative,
-      message: response.data.message,
+      message: response.message || "Η συνεδρία επαληθεύτηκε επιτυχώς",
     });
   } catch (err) {
-    next(err);
+    const { isRateLimited, retryAfterMinutes } = handleRateLimitError(err);
+    if (isRateLimited) {
+      return res.status(429).json({
+        message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${retryAfterMinutes} λεπτά`,
+      });
+    }
+
+    const statusCode = err.response?.status || 400;
+    const message = getSafeErrorMessage(err);
+    return res.status(statusCode).json({ message });
   }
 }
 
-router.post("/", loginWithEmail);
+// Route definitions
+router.post("/", handleLoginWithEmail);
+router.post("/session", handleLoginWithSessionId);
 
-router.post("/session", loginWithSessionId);
-
+// Handle unsupported methods
 router.all("/", (req, res) => {
-  res
-    .status(405)
-    .json({ message: "Method not allowed. Please use POST method." });
+  res.status(405).json({ message: "Method not allowed. Please use POST method." });
+});
+
+router.all("/session", (req, res) => {
+  res.status(405).json({ message: "Method not allowed. Please use POST method." });
 });
 
 export default router;
