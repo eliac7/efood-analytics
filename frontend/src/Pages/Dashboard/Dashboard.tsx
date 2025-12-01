@@ -122,7 +122,12 @@ function Dashboard() {
               placeholder="Επιλογή Έτους"
               data={years}
               value={selectedYear}
-              onChange={setSelectedYear}
+              onChange={(value) => {
+                if (value) {
+                  setSelectedYear(value);
+                }
+              }}
+              clearable={false}
               style={{ zIndex: 401 }}
             />
             <TimeStampChecker refetch={refetch} />
