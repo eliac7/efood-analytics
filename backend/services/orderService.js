@@ -2,6 +2,7 @@ import axios from "axios";
 
 const EFOOD_ORDERS_URL = "https://api.e-food.gr/api/v1/user/orders/history";
 const ORDERS_PER_PAGE = 100;
+const PARALLEL_BATCH_SIZE = 10;
 
 const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
@@ -13,7 +14,7 @@ const DEFAULT_HEADERS = {
  * Fetch a page of user orders from e-food API
  * @param {string} sessionId - E-food session ID
  * @param {number} offset - Pagination offset
- * @returns {Promise<Object>} - API response with orders
+ * @returns {Promise<Object>} - API response with orders and hasNext flag
  */
 export async function fetchOrdersPage(sessionId, offset = 0) {
   const url = new URL(EFOOD_ORDERS_URL);
@@ -28,28 +29,54 @@ export async function fetchOrdersPage(sessionId, offset = 0) {
     },
   });
 
-  return response.data;
+  return response.data.data;
 }
 
 /**
- * Fetch all user orders by paginating through the API
+ * Fetch all user orders using speculative parallel batching
+ * Since the API doesn't provide a total count, we fetch pages in parallel batches
  * @param {string} sessionId - E-food session ID
  * @returns {Promise<Array>} - All user orders
  */
 export async function fetchAllOrders(sessionId) {
   const allOrders = [];
-  let offset = 0;
-  let hasNext = true;
+  let currentOffset = 0;
+  let hasMorePages = true;
 
-  while (hasNext) {
-    const response = await fetchOrdersPage(sessionId, offset);
-    const { orders, hasNext: morePages } = response.data;
+  while (hasMorePages) {
+    const batchPromises = [];
+    for (let i = 0; i < PARALLEL_BATCH_SIZE; i++) {
+      const offset = currentOffset + i * ORDERS_PER_PAGE;
+      batchPromises.push(
+        fetchOrdersPage(sessionId, offset).catch((err) => {
+          console.log(
+            `Error fetching offset ${offset}:`,
+            err.response?.status,
+            err.message
+          );
+          if (err.response?.status === 404) {
+            return { orders: [], hasNext: false };
+          }
+          throw err;
+        })
+      );
+    }
 
-    allOrders.push(...orders);
-    hasNext = morePages;
-    offset += ORDERS_PER_PAGE;
+    const batchResults = await Promise.all(batchPromises);
+
+    hasMorePages = false;
+    for (let i = 0; i < batchResults.length; i++) {
+      const result = batchResults[i];
+      if (result.orders && result.orders.length > 0) {
+        allOrders.push(...result.orders);
+      }
+      if (result.orders?.length > 0 && result.hasNext) {
+        hasMorePages = true;
+      }
+    }
+
+    currentOffset += PARALLEL_BATCH_SIZE * ORDERS_PER_PAGE;
   }
 
   return allOrders;
 }
-
