@@ -43,6 +43,7 @@ export const UserReducer = (
           },
         };
       }
+      return state;
 
     case "SET_USER":
       const user = { ...(action.payload as User) };

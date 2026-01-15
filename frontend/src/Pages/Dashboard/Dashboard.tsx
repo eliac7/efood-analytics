@@ -61,7 +61,12 @@ function Dashboard() {
       },
     });
   }
-  const { data, refetch, isLoading: isInitialLoading, isRefetching } = useQuery({
+  const {
+    data,
+    refetch,
+    isLoading: isInitialLoading,
+    isRefetching,
+  } = useQuery({
     queryKey: ["orders"],
     queryFn: fetchOrders,
     refetchOnWindowFocus: false,
@@ -77,7 +82,7 @@ function Dashboard() {
   }, [ordersState]);
 
   useEffect(() => {
-    if (data && 'data' in data && data.data) {
+    if (data && "data" in data && data.data) {
       const responseData = data.data as any;
       dispatch({ type: "SET_ORDERS", payload: responseData.orders });
       setYearsState(responseData.orders);
@@ -98,7 +103,7 @@ function Dashboard() {
         ordersState?.perYear.find((year: PerYear) => year.year === selectedYear)
       );
     }
-  }, [selectedYear]);
+  }, [selectedYear, ordersState]);
 
   return (
     <>
@@ -175,7 +180,7 @@ function Dashboard() {
                 selectedYearOrders?.totalOrders &&
                 formatAmount(
                   selectedYearOrders?.totalPrice /
-                  selectedYearOrders?.totalOrders
+                    selectedYearOrders?.totalOrders
                 )
               }
               icon={<GoGraph size={40} />}
@@ -222,7 +227,7 @@ function Dashboard() {
               />
             )}
             {selectedYearOrders &&
-              "averageDeliveryTime" in selectedYearOrders ? (
+            "averageDeliveryTime" in selectedYearOrders ? (
               <DashboardCard
                 title="Μέσος χρόνος παράδοσης"
                 value={
