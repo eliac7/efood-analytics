@@ -46,7 +46,7 @@ export const UserReducer = (
       return state;
 
     case "SET_USER":
-      const user = { ...(action.payload as User) };
+      const user = { ...(action.payload as User), loginAt: Date.now() };
       localStorage.setItem(LOCAL_STORAGE_USER, JSON.stringify(user));
       return { ...state, user, loading: false };
 

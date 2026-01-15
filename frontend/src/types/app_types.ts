@@ -97,6 +97,7 @@ export interface MostOrderedProduct {
 export interface User {
   session_id: string;
   name: string;
+  loginAt?: number;
 }
 
 export interface initialStateType {
