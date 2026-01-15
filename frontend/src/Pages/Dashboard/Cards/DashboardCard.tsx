@@ -29,10 +29,10 @@ export default function DashboardCard({
           gap={20}
         >
           <Flex direction={"column"} style={{ flex: 1 }} className="w-full">
-            <Text size="xl" fw={800} ta="left">
+            <Text component="div" size="xl" fw={800} ta="left">
               {value}
             </Text>
-            <Text size="sm" fw={500} ta="left" className="mt-1">
+            <Text component="div" size="sm" fw={500} ta="left" className="mt-1">
               {title}
             </Text>
           </Flex>
