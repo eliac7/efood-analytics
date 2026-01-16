@@ -91,7 +91,7 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
 
   return (
     <MapContainer
-      className="w-full h-[600px] rounded-md shadow-md my-6"
+      className="w-full h-150 rounded-md shadow-md my-6"
       attributionControl={true}
       zoomControl={true}
       doubleClickZoom={true}

@@ -48,7 +48,8 @@ export function findMostOrderedProduct(orders) {
   return {
     name: mostOrdered.name || mostOrdered.offer_title,
     quantity: highestQuantity,
-    totalPrice: Math.round(productTotals[mostOrdered.item_code].amountSpent * 100) / 100,
+    totalPrice:
+      Math.round(productTotals[mostOrdered.item_code].amountSpent * 100) / 100,
     image,
   };
 }
@@ -105,7 +106,9 @@ export function calculateRestaurantStats(orders) {
   });
 
   return {
-    mostMoneySpent: sortedRestaurants[0] ? formatRestaurant(sortedRestaurants[0]) : null,
+    mostMoneySpent: sortedRestaurants[0]
+      ? formatRestaurant(sortedRestaurants[0])
+      : null,
     allRestaurants: sortedRestaurants.map(formatRestaurant),
     uniqueCount: uniqueRestaurants.size,
   };
@@ -117,11 +120,14 @@ export function calculateRestaurantStats(orders) {
  * @returns {string} - Phase name
  */
 const getTimePhase = (hour) => {
-  if (hour >= TIME_PHASES.morning.start && hour < TIME_PHASES.morning.end) return "morning";
-  if (hour >= TIME_PHASES.noon.start && hour < TIME_PHASES.noon.end) return "noon";
-  if (hour >= TIME_PHASES.afternoon.start && hour < TIME_PHASES.afternoon.end) return "afternoon";
+  if (hour >= TIME_PHASES.morning.start && hour < TIME_PHASES.morning.end)
+    return "morning";
+  if (hour >= TIME_PHASES.noon.start && hour < TIME_PHASES.noon.end)
+    return "noon";
+  if (hour >= TIME_PHASES.afternoon.start && hour < TIME_PHASES.afternoon.end)
+    return "afternoon";
   return "night";
-}
+};
 
 /**
  * Calculate time-based statistics for orders
@@ -227,8 +233,10 @@ export function calculateYearStats(orders, year) {
     totalTips: aggregateStats.totalTips,
     restaurants: restaurantStats.allRestaurants,
     mostOrderedProduct,
-    averageDeliveryTime: Math.round(aggregateStats.totalDeliveryTime / orders.length),
-    RestaurantWithMostMoneySpent: restaurantStats.mostMoneySpent,
+    averageDeliveryTime: Math.round(
+      aggregateStats.totalDeliveryTime / orders.length
+    ),
+    restaurantWithMostMoneySpent: restaurantStats.mostMoneySpent,
     uniqueRestaurants: restaurantStats.uniqueCount,
     weekdays: timeStats.weekdays,
     phases: timeStats.phases,
@@ -293,8 +301,10 @@ export function calculateAllTimeStats(yearStats, allOrders) {
     totalTips: allTime.totalTips,
     restaurants: restaurantStats.allRestaurants,
     mostOrderedProduct,
-    averageDeliveryTime: Math.round(allTime.totalDeliveryTime / yearStats.length),
-    RestaurantWithMostMoneySpent: restaurantStats.mostMoneySpent,
+    averageDeliveryTime: Math.round(
+      allTime.totalDeliveryTime / yearStats.length
+    ),
+    restaurantWithMostMoneySpent: restaurantStats.mostMoneySpent,
     uniqueRestaurants: restaurantStats.uniqueCount,
     weekdays: timeStats.weekdays,
     phases: timeStats.phases,
@@ -310,7 +320,9 @@ export function calculateAllTimeStats(yearStats, allOrders) {
  */
 export function analyzeOrders(orders) {
   // Get unique years
-  const years = [...new Set(orders.map((order) => order.submission_date.slice(0, 4)))];
+  const years = [
+    ...new Set(orders.map((order) => order.submission_date.slice(0, 4))),
+  ];
 
   // Calculate stats for each year
   const perYear = years.map((year) => {
@@ -324,4 +336,3 @@ export function analyzeOrders(orders) {
 
   return { all, perYear };
 }
-

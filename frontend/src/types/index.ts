@@ -14,7 +14,7 @@ export interface OrderStats {
   paymentMethods: PaymentMethods;
   firstOrder: string;
   lastOrder: string;
-  RestaurantWithMostMoneySpent: Restaurant;
+  restaurantWithMostMoneySpent: Restaurant;
   restaurants: Restaurant[];
   mostOrderedProduct: MostOrderedProduct;
   averageDeliveryTime: number;
