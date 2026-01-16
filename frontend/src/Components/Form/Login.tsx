@@ -11,8 +11,10 @@ function Login() {
     "email" | "userid"
   >("userid");
 
-  const handleLoginOptionChange = (value: string) => {
-    setSelectedLoginOption(value as "email" | "userid");
+  const handleLoginOptionChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setSelectedLoginOption(event.target.value as "email" | "userid");
   };
 
   return (
@@ -25,7 +27,7 @@ function Login() {
           labelProps={{ style: { color: "white" } }}
           withAsterisk
           value={selectedLoginOption}
-          onChange={handleLoginOptionChange}
+          onChange={handleLoginOptionChange as any}
           className="w-full"
         >
           <Group justify="center" mt="xs">

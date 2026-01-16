@@ -1,5 +1,5 @@
 import { Card, Text, Group, Flex } from "@mantine/core";
-import { Phases } from "../../../types/app_types";
+import { Phases } from "../../../types";
 
 export default function HourCard({
   title,

@@ -30,26 +30,29 @@ export const useAuth = () => {
     },
   });
 
-  const { mutate: loginWithSession, isPending: isSessionLoading } = useMutation({
-    mutationFn: (session_id: string) => EfoodAxios.post("/login/session", { session_id }),
-    onSuccess: (data: { data: { session_id: string; name: string } }) => {
-      dispatch({ type: "SET_USER", payload: data.data });
-      showNotification({
-        title: "Επιτυχία",
-        message: "Επιτυχής σύνδεση χρησιμοποιώντας το id σας",
-        color: "green",
-        icon: <FiLogIn />,
-      });
-    },
-    onError: (error: { response?: { data?: { message?: string } } }) => {
-      console.log(error);
-      showNotification({
-        title: "Σφάλμα",
-        message: error.response?.data?.message || "Ένα σφάλμα προέκυψε",
-        color: "red",
-      });
-    },
-  });
+  const { mutate: loginWithSession, isPending: isSessionLoading } = useMutation(
+    {
+      mutationFn: (session_id: string) =>
+        EfoodAxios.post("/login/session", { session_id }),
+      onSuccess: (data: { data: { session_id: string; name: string } }) => {
+        dispatch({ type: "SET_USER", payload: data.data });
+        showNotification({
+          title: "Επιτυχία",
+          message: "Επιτυχής σύνδεση χρησιμοποιώντας το id σας",
+          color: "green",
+          icon: <FiLogIn />,
+        });
+      },
+      onError: (error: { response?: { data?: { message?: string } } }) => {
+        console.log(error);
+        showNotification({
+          title: "Σφάλμα",
+          message: error.response?.data?.message || "Ένα σφάλμα προέκυψε",
+          color: "red",
+        });
+      },
+    }
+  );
 
   useEffect(() => {
     if (isEmailLoading || isSessionLoading) {

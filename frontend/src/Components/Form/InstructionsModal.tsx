@@ -56,8 +56,8 @@ export default function InstructionsMoal({
           }}
         >
           <Carousel.Slide>
-            <div className="flex flex-col items-center justify-start gap-4 text-center px-4 h-[440px]">
-              <div className="flex items-center justify-center w-full h-[280px] shrink-0">
+            <div className="flex flex-col items-center justify-start gap-4 text-center px-4 h-110">
+              <div className="flex items-center justify-center w-full h-70 shrink-0">
                 <Image
                   src={step1}
                   alt="Βήμα 1"
@@ -85,8 +85,8 @@ export default function InstructionsMoal({
 
           {/* Slide 2 */}
           <Carousel.Slide>
-            <div className="flex flex-col items-center justify-start gap-4 text-center px-4 h-[440px]">
-              <div className="flex items-center justify-center w-full h-[280px] shrink-0">
+            <div className="flex flex-col items-center justify-start gap-4 text-center px-4 h-110">
+              <div className="flex items-center justify-center w-full h-70shrink-0">
                 <Image
                   src={step2}
                   alt="Βήμα 2"
@@ -106,8 +106,8 @@ export default function InstructionsMoal({
           </Carousel.Slide>
 
           <Carousel.Slide>
-            <div className="flex flex-col items-center justify-start gap-4 text-center px-4 h-[440px]">
-              <div className="flex items-center justify-center w-full h-[280px] shrink-0">
+            <div className="flex flex-col items-center justify-start gap-4 text-center px-4 h-110">
+              <div className="flex items-center justify-center w-full h-70 shrink-0">
                 <Image
                   src={step3}
                   alt="Βήμα 3"

@@ -1,10 +1,10 @@
 export interface Orders {
-  all: All;
+  all: OrderStats;
   perYear: PerYear[];
   timestamp: Date;
 }
 
-export interface All {
+export interface OrderStats {
   totalOrders: number;
   totalPrice: number;
   couponAmount: number;
@@ -12,8 +12,8 @@ export interface All {
   totalTips: number;
   platforms: Platforms;
   paymentMethods: PaymentMethods;
-  firstOrder: Date;
-  lastOrder: Date;
+  firstOrder: string;
+  lastOrder: string;
   RestaurantWithMostMoneySpent: Restaurant;
   restaurants: Restaurant[];
   mostOrderedProduct: MostOrderedProduct;
@@ -25,10 +25,8 @@ export interface All {
   cities: { [key: string]: number };
 }
 
-export interface MostOrderedProduct {
-  name: string;
-  quantity: number;
-  totalPrice: number;
+export interface PerYear extends OrderStats {
+  year: string;
 }
 
 export interface Restaurant {
@@ -58,28 +56,6 @@ export interface Platforms {
   ios?: number;
 }
 
-export interface PerYear {
-  year: string;
-  totalOrders: number;
-  totalPrice: number;
-  platforms: Platforms;
-  paymentMethods: PaymentMethods;
-  firstOrder: Date;
-  lastOrder: Date;
-  couponAmount: number;
-  deliveryCost: number;
-  totalTips: number;
-  restaurants: Restaurant[];
-  mostOrderedProduct: MostOrderedProduct;
-  averageDeliveryTime: number;
-  RestaurantWithMostMoneySpent: Restaurant;
-  uniqueRestaurants: number;
-  weekdays: { [key: string]: number };
-  phases: Phases;
-  months: { [key: string]: number };
-  cities: { [key: string]: number };
-}
-
 export interface Phases {
   morning: number;
   noon: number;
@@ -98,6 +74,12 @@ export interface User {
   session_id: string;
   name: string;
   loginAt?: number;
+}
+
+export interface LoginResponse {
+  session_id: string;
+  name: string;
+  message: string;
 }
 
 export interface initialStateType {

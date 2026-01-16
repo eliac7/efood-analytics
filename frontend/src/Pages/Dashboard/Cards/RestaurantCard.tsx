@@ -2,7 +2,7 @@ import { Card, Stack, Tooltip } from "@mantine/core";
 import { AiFillDollarCircle, AiFillHeart } from "react-icons/ai";
 import { FaShoppingBasket } from "react-icons/fa";
 import { GiForkKnifeSpoon, GiKnifeFork } from "react-icons/gi";
-import { Restaurant } from "../../../types/app_types";
+import { Restaurant } from "../../../types";
 import { formatAmount } from "../../../utils/helpers";
 
 function RestaurantCard({ data }: { data: Restaurant }) {

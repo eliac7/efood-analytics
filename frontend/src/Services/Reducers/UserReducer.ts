@@ -1,4 +1,4 @@
-import { All, initialStateType, PerYear, User } from "../../types/app_types";
+import { initialStateType, OrderStats, PerYear, User } from "../../types";
 import {
   LOCAL_STORAGE_ORDERS,
   LOCAL_STORAGE_USER,
@@ -7,7 +7,7 @@ import {
 export type Action =
   | {
       type: "SET_ORDERS";
-      payload: { all: All; perYear: PerYear[] };
+      payload: { all: OrderStats; perYear: PerYear[] };
     }
   | { type: "SET_ORDERS_TIMESTAMP"; payload: number }
   | {

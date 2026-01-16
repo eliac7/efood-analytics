@@ -15,36 +15,39 @@ function WeekdayChart({
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
 
-  const options = useMemo(() => ({
-    options: {
-      dataLabels: {
-        enabled: true,
-        style: {
-          colors: ["#2E4053"],
+  const options = useMemo(
+    () => ({
+      options: {
+        dataLabels: {
+          enabled: true,
+          style: {
+            colors: ["#2E4053"],
+          },
+        },
+        tooltip: {
+          enabled: false,
+        },
+        chart: {
+          toolbar: {
+            show: false,
+          },
+          foreColor: isDark ? "#fff" : "#2E4053",
         },
       },
-      tooltip: {
-        enabled: false,
-      },
-      chart: {
-        toolbar: {
-          show: false,
+      series: [
+        {
+          name: "Παραγγελίες",
+          data: Object.keys(data).map((key) => {
+            return {
+              x: key,
+              y: data[key],
+            };
+          }),
         },
-        foreColor: isDark ? "#fff" : "#2E4053",
-      },
-    },
-    series: [
-      {
-        name: "Παραγγελίες",
-        data: Object.keys(data).map((key) => {
-          return {
-            x: key,
-            y: data[key],
-          };
-        }),
-      },
-    ],
-  }), [data, isDark]);
+      ],
+    }),
+    [data, isDark]
+  );
 
   return (
     <DashboardCard

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import ReactApexChart from "react-apexcharts";
-import { PaymentMethods, Platforms } from "../../../types/app_types";
+import { PaymentMethods, Platforms } from "../../../types";
 import DashboardCard from "../Cards/DashboardCard";
 import { useMantineColorScheme } from "@mantine/core";
 

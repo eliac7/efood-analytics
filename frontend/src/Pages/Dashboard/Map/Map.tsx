@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
 import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import * as L from "leaflet";
-import { Restaurant } from "../../../types/app_types";
+import { Restaurant } from "../../../types";
 import { Badge, useMantineColorScheme } from "@mantine/core";
 const maptkn = import.meta.env.VITE_APP_MAPBOX_TOKEN;
 

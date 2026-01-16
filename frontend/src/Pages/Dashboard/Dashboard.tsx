@@ -2,7 +2,7 @@ import { useState, useContext, useCallback, useMemo } from "react";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
 import { Container, Flex, Select } from "@mantine/core";
 import Loading from "../../Components/Loading/Loading";
-import { Orders, PerYear } from "../../types/app_types";
+import { Orders, PerYear } from "../../types";
 import DashboardCard from "./Cards/DashboardCard";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { BsPiggyBank } from "react-icons/bs";

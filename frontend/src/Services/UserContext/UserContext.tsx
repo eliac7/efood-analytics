@@ -1,5 +1,5 @@
 import { createContext, useReducer, useEffect } from "react";
-import { initialStateType, Orders, User } from "../../types/app_types";
+import { initialStateType, Orders, User } from "../../types";
 import { Action, UserReducer } from "../Reducers/UserReducer";
 import {
   LOCAL_STORAGE_USER,

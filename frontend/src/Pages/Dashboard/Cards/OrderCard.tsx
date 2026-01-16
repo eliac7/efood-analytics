@@ -1,6 +1,6 @@
 import { Card, Stack } from "@mantine/core";
 import { AiFillDollarCircle } from "react-icons/ai";
-import { MostOrderedProduct } from "../../../types/app_types";
+import { MostOrderedProduct } from "../../../types";
 import { formatAmount } from "../../../utils/helpers";
 import noAvatar from "../../../Assets/Images/no-avatar.webp";
 import { FaShoppingBasket } from "react-icons/fa";
