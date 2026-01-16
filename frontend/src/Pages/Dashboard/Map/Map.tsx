@@ -25,8 +25,8 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
         className: "rounded-full",
       })}
     >
-      <Popup>
-        <div className="flex flex-col items-center">
+      <Popup minWidth={300} maxWidth={500}>
+        <div className="flex flex-col items-center min-w-[200px]">
           <img
             src={restaurant.logo}
             alt={restaurant.name}
@@ -74,7 +74,7 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
       restaurants.map((restaurant) => [
         restaurant.latitude,
         restaurant.longitude,
-      ])
+      ]),
     );
   }, [restaurants]);
 
