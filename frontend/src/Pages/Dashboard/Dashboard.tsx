@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useContext, useCallback, useMemo } from "react";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
 import { Container, Flex, Select } from "@mantine/core";
 import Loading from "../../Components/Loading/Loading";
@@ -36,74 +36,72 @@ function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
   const { user, orders: ordersState } = state;
 
-  const [years, setYears] = useState<
-    {
-      label: string;
-      value: string;
-    }[]
-  >([]);
-  const [selectedYear, setSelectedYear] = useState<string | null>(null);
-  const [selectedYearOrders, setSelectedYearOrders] = useState<All | PerYear>();
-
-  const setYearsState = (orders: Orders) => {
-    const years = orders.perYear.map((year: PerYear) => {
+  const years = useMemo(() => {
+    if (!ordersState?.perYear) return [];
+    const yearsList = ordersState.perYear.map((year: PerYear) => {
       return { label: year.year, value: year.year };
     });
-    years.unshift({ label: "Όλα τα έτη", value: "all" });
-    setYears(years);
-    setSelectedYear(years[0].value);
-  };
+    yearsList.unshift({ label: "Όλα τα έτη", value: "all" });
+    return yearsList;
+  }, [ordersState?.perYear]);
 
-  async function fetchOrders() {
-    return await EfoodAxios.get("/orders", {
+  const defaultSelectedYear = useMemo(() => {
+    return years.length > 0 ? years[0].value : null;
+  }, [years]);
+
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
+
+  const effectiveSelectedYear = selectedYear ?? defaultSelectedYear;
+
+  const fetchOrders = useCallback(async () => {
+    if (!user?.session_id) {
+      throw new Error("Session ID is required");
+    }
+    const response = await EfoodAxios.get("/orders", {
       headers: {
-        session_id: user?.session_id,
+        session_id: user.session_id,
       },
     });
-  }
+
+    if (response && "data" in response && response.data) {
+      const responseData = response.data as { orders: Orders };
+      if (responseData.orders) {
+        dispatch({ type: "SET_ORDERS", payload: responseData.orders });
+        showNotification({
+          title: `Επιτυχής ανάκτηση δεδομένων`,
+          message: `Βρέθηκαν συνολικά ${responseData.orders.all.totalOrders} παραγγελίες`,
+          color: "green",
+          icon: <GoGraph />,
+        });
+      }
+    }
+
+    return response;
+  }, [user?.session_id, dispatch]);
+
   const {
     data,
     refetch,
     isLoading: isInitialLoading,
     isRefetching,
   } = useQuery({
-    queryKey: ["orders"],
+    queryKey: ["orders", user?.session_id],
     queryFn: fetchOrders,
     refetchOnWindowFocus: false,
-    enabled: user?.session_id && !ordersState?.all ? true : false,
+    enabled: !!user?.session_id && !ordersState?.all,
   });
 
   const isLoading = isInitialLoading || isRefetching;
 
-  useEffect(() => {
-    if (ordersState?.all) {
-      setYearsState(ordersState);
+  const selectedYearOrders = useMemo(() => {
+    if (!ordersState) return undefined;
+    if (effectiveSelectedYear === "all") {
+      return ordersState.all;
     }
-  }, [ordersState]);
-
-  useEffect(() => {
-    if (data && "data" in data && data.data) {
-      const responseData = data.data as any;
-      dispatch({ type: "SET_ORDERS", payload: responseData.orders });
-      setYearsState(responseData.orders);
-      showNotification({
-        title: `Επιτυχής ανάκτηση δεδομένων`,
-        message: `Βρέθηκαν συνολικά ${responseData.orders.all.totalOrders} παραγγελίες`,
-        color: "green",
-        icon: <GoGraph />,
-      });
-    }
-  }, [data]);
-
-  useEffect(() => {
-    if (selectedYear === "all") {
-      setSelectedYearOrders(ordersState?.all);
-    } else {
-      setSelectedYearOrders(
-        ordersState?.perYear.find((year: PerYear) => year.year === selectedYear)
-      );
-    }
-  }, [selectedYear, ordersState]);
+    return ordersState.perYear.find(
+      (year: PerYear) => year.year === effectiveSelectedYear
+    );
+  }, [effectiveSelectedYear, ordersState]);
 
   return (
     <>
@@ -126,7 +124,7 @@ function Dashboard() {
               label="Επιλογή Έτους"
               placeholder="Επιλογή Έτους"
               data={years}
-              value={selectedYear}
+              value={effectiveSelectedYear}
               onChange={(value) => {
                 if (value) {
                   setSelectedYear(value);
