@@ -43,6 +43,7 @@ const initialState: initialStateType = {
   loading: false,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const UserContext = createContext<{
   state: initialStateType;
   dispatch: React.Dispatch<Action>;
@@ -61,8 +62,7 @@ export const UserContextProvider = ({
   useEffect(() => {
     if (!state.user?.loginAt) return;
 
-    const remainingMs =
-      USER_SESSION_TTL_MS - (Date.now() - state.user.loginAt);
+    const remainingMs = USER_SESSION_TTL_MS - (Date.now() - state.user.loginAt);
 
     if (remainingMs <= 0) {
       dispatch({ type: "LOGOUT" });

@@ -12,7 +12,7 @@ function LoginFormWithEmail() {
     },
     validate: {
       email: (value) =>
-        /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
+        /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
           ? null
           : "Παρακαλώ εισάγετε ένα έγκυρο email",
       password: (value) =>

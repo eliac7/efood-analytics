@@ -22,7 +22,7 @@ export const UserReducer = (
   action: Action
 ): initialStateType => {
   switch (action.type) {
-    case "SET_ORDERS":
+    case "SET_ORDERS": {
       const { all, perYear } = action.payload;
 
       const timestamp = new Date();
@@ -33,6 +33,7 @@ export const UserReducer = (
         ...state,
         orders,
       };
+    }
     case "SET_ORDERS_TIMESTAMP":
       if (state.orders) {
         return {
@@ -45,10 +46,11 @@ export const UserReducer = (
       }
       return state;
 
-    case "SET_USER":
+    case "SET_USER": {
       const user = { ...(action.payload as User), loginAt: Date.now() };
       localStorage.setItem(LOCAL_STORAGE_USER, JSON.stringify(user));
       return { ...state, user, loading: false };
+    }
 
     case "SET_LOADING":
       return { ...state, loading: action.payload };

@@ -1,7 +1,5 @@
 import { Carousel } from "@mantine/carousel";
 import general from "../../Assets/Images/general.png";
-import map from "../../Assets/Images/map.png";
-import bar from "../../Assets/Images/bar.png";
 
 function Gallery() {
   return (

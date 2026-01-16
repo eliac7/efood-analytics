@@ -11,10 +11,8 @@ function Login() {
     "email" | "userid"
   >("userid");
 
-  const handleLoginOptionChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setSelectedLoginOption(event as unknown as "email" | "userid");
+  const handleLoginOptionChange = (value: string) => {
+    setSelectedLoginOption(value as "email" | "userid");
   };
 
   return (
@@ -27,7 +25,7 @@ function Login() {
           labelProps={{ style: { color: "white" } }}
           withAsterisk
           value={selectedLoginOption}
-          onChange={handleLoginOptionChange as any}
+          onChange={handleLoginOptionChange}
           className="w-full"
         >
           <Group justify="center" mt="xs">
@@ -45,7 +43,6 @@ function Login() {
               className="text-white"
               icon={CheckIcon}
             />
-
           </Group>
         </Radio.Group>
 

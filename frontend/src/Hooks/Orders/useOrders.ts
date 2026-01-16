@@ -14,10 +14,10 @@ export const useOrders = () => {
     isPending: isLoadingOrders,
   } = useMutation({
     mutationFn: () => EfoodAxios.get("/orders", { headers: { session_id } }),
-    onSuccess: (data: any) => {
+    onSuccess: (data: { data: { orders: { all: unknown; perYear: unknown[] } } }) => {
       dispatch({ type: "SET_ORDERS", payload: data.data.orders });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.log(error);
     },
   });

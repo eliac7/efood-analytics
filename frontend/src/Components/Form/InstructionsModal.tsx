@@ -36,7 +36,7 @@ export default function InstructionsMoal({
       embla.on("scroll", handleScroll);
       handleScroll();
     }
-  }, [embla]);
+  }, [embla, handleScroll]);
 
   return (
     <Modal
@@ -98,8 +98,8 @@ export default function InstructionsMoal({
               <div className="flex-1 flex flex-col justify-center">
                 <p className="text-sm leading-relaxed">
                   Συνδεθείτε με οποιαδήποτε διαθέσιμη υπηρεσία (Facebook, Apple,
-                  Google). Αν έχετε λογαριασμό με e-mail και κωδικό, κλείστε αυτό
-                  το παράθυρο και επιλέξτε ως τρόπο σύνδεσης το "E-mail".
+                  Google). Αν έχετε λογαριασμό με e-mail και κωδικό, κλείστε
+                  αυτό το παράθυρο και επιλέξτε ως τρόπο σύνδεσης το "E-mail".
                 </p>
               </div>
             </div>

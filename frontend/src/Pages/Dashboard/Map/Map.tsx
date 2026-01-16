@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
@@ -68,20 +68,21 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
     </Marker>
   ));
 
-  const bounds =
-    restaurants &&
-    new L.LatLngBounds(
+  const bounds = useMemo(() => {
+    if (!restaurants) return null;
+    return new L.LatLngBounds(
       restaurants.map((restaurant) => [
         restaurant.latitude,
         restaurant.longitude,
       ])
     );
+  }, [restaurants]);
 
   useEffect(() => {
-    if (mapRef.current && restaurants) {
+    if (mapRef.current && bounds) {
       mapRef.current.fitBounds(bounds as L.LatLngBoundsExpression);
     }
-  }, [restaurants]);
+  }, [bounds]);
 
   const tiles: Record<string, string> = {
     light: `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=${maptkn}`,

@@ -1,5 +1,4 @@
 import { Card, Text, Group, Flex } from "@mantine/core";
-import { Phases } from "../../../types/app_types";
 
 export default function MapCard({
   title,

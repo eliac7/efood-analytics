@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import ReactApexChart from "react-apexcharts";
 import { PaymentMethods, Platforms } from "../../../types/app_types";
 import DashboardCard from "../Cards/DashboardCard";
@@ -15,9 +15,12 @@ function PlatformAndPaymentChart({
 }) {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
-  const [options, setOptions] = useState({
+  
+  const options = useMemo(() => ({
     options: {
-      labels: Object.keys(data).map((key) => key),
+      labels: Object.keys(data).map(
+        (key) => key.charAt(0).toUpperCase() + key.slice(1)
+      ),
       tooltip: {
         enabled: true,
       },
@@ -35,25 +38,8 @@ function PlatformAndPaymentChart({
         },
       ],
     },
-
     series: Object.values(data),
-  });
-
-  useEffect(() => {
-    setOptions({
-      options: {
-        ...options.options,
-        labels: Object.keys(data).map(
-          (key) => key.charAt(0).toUpperCase() + key.slice(1)
-        ),
-        chart: {
-          foreColor: isDark ? "#fff" : "#2E4053",
-        },
-      },
-
-      series: Object.values(data),
-    });
-  }, [data, isDark]);
+  }), [data, isDark]);
 
   return (
     <DashboardCard

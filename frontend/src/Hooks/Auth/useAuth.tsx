@@ -11,7 +11,7 @@ export const useAuth = () => {
   const { mutate: loginWithEmail, isPending: isEmailLoading } = useMutation({
     mutationFn: (values: { email: string; password: string }) =>
       EfoodAxios.post("/login", values),
-    onSuccess: (data: any) => {
+    onSuccess: (data: { data: { session_id: string; name: string } }) => {
       dispatch({ type: "SET_USER", payload: data.data });
       showNotification({
         title: "Επιτυχία",
@@ -20,11 +20,11 @@ export const useAuth = () => {
         icon: <FiLogIn />,
       });
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       console.log(error);
       showNotification({
         title: "Σφάλμα",
-        message: error.response.data.message,
+        message: error.response?.data?.message || "Ένα σφάλμα προέκυψε",
         color: "red",
       });
     },
@@ -32,7 +32,7 @@ export const useAuth = () => {
 
   const { mutate: loginWithSession, isPending: isSessionLoading } = useMutation({
     mutationFn: (session_id: string) => EfoodAxios.post("/login/session", { session_id }),
-    onSuccess: (data: any) => {
+    onSuccess: (data: { data: { session_id: string; name: string } }) => {
       dispatch({ type: "SET_USER", payload: data.data });
       showNotification({
         title: "Επιτυχία",
@@ -41,11 +41,11 @@ export const useAuth = () => {
         icon: <FiLogIn />,
       });
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       console.log(error);
       showNotification({
         title: "Σφάλμα",
-        message: error.response.data.message,
+        message: error.response?.data?.message || "Ένα σφάλμα προέκυψε",
         color: "red",
       });
     },
@@ -57,7 +57,7 @@ export const useAuth = () => {
     } else {
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  }, [isEmailLoading, isSessionLoading]);
+  }, [isEmailLoading, isSessionLoading, dispatch]);
 
   const login = (email: string, password: string) => {
     loginWithEmail({ email, password });
