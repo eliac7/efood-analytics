@@ -4,7 +4,7 @@ function Footer() {
   const currentYear = new Date().getFullYear();
   return (
     <footer className="h-20 flex flex-col-reverse gap-2 md:flex-row justify-center items-center text-dark bg-transparent py-2">
-      <div className="flex-1 bg-white max-w-max	 rounded select-none p-2 shadow-[_5px_5px_0px_0px_#289fed,_10px_10px_0px_0px_#5fb8ff,_15px_15px_0px_0px_#a1d8ff,_20px_20px_0px_0px_#cae6ff,_25px_25px_0px_0px_#e1eeff,_5px_5px_15px_5px_rgb(0_0_0_/_0%)]">
+      <div className="flex-1 bg-white max-w-max	 rounded select-none p-2 shadow-[5px_5px_0px_0px_#289fed,10px_10px_0px_0px_#5fb8ff,15px_15px_0px_0px_#a1d8ff,20px_20px_0px_0px_#cae6ff,25px_25px_0px_0px_#e1eeff,5px_5px_15px_5px_rgb(0_0_0/0%)]">
         <a
           href="https://www.iliasdev.com"
           target="_blank"
