@@ -6,7 +6,7 @@ const ProtectedRoutes = (props: Record<string, unknown>) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <Loading isLoading={loading} />;
+    return <Loading isLoading={loading} variant="login" />;
   }
 
   if (!user) {

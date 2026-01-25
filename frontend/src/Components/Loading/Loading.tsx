@@ -3,10 +3,11 @@ import { Loader } from "@mantine/core";
 
 interface LoadingProps {
   isLoading: boolean;
+  variant?: "analytics" | "login";
 }
 
-const Loading: React.FC<LoadingProps> = ({ isLoading }) => {
-  const messages = useMemo(
+const Loading: React.FC<LoadingProps> = ({ isLoading, variant = "analytics" }) => {
+  const analyticsMessages = useMemo(
     () => [
       "Φέρνουμε το ιστορικό παραγγελιών σου…",
       "Υπολογίζουμε σύνολο δαπανών και φιλοδωρημάτων…",
@@ -17,6 +18,21 @@ const Loading: React.FC<LoadingProps> = ({ isLoading }) => {
     ],
     []
   );
+
+  const loginMessages = useMemo(
+    () => [
+      "Επαληθεύουμε τα στοιχεία σου…",
+      "Προετοιμάζουμε το προφίλ σου…",
+      "Σε λίγο θα είσαι μέσα…",
+    ],
+    []
+  );
+
+  const messages = variant === "analytics" ? analyticsMessages : loginMessages;
+  const title =
+    variant === "analytics"
+      ? "Φορτώνουμε τα analytics σου…"
+      : "Σύνδεση σε εξέλιξη…";
 
   const [messageIndex, setMessageIndex] = useState(0);
 
@@ -37,7 +53,7 @@ const Loading: React.FC<LoadingProps> = ({ isLoading }) => {
       <div className="flex flex-col items-center gap-4 text-center px-6 py-5 rounded-lg bg-white/5 shadow-lg border border-white/10">
         <Loader color="red" size="lg" />
         <div className="space-y-1">
-          <p className="text-white text-lg font-semibold">Φορτώνουμε τα analytics σου…</p>
+          <p className="text-white text-lg font-semibold">{title}</p>
           <p className="text-white/80 text-sm" aria-live="polite">
             {messages[messageIndex]}
           </p>

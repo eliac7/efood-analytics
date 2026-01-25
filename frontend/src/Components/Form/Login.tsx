@@ -19,7 +19,7 @@ function Login() {
 
   return (
     <>
-      <Loading isLoading={loading} />
+      <Loading isLoading={loading} variant="login" />
       <Flex justify="center" direction="column" w={"100%"}>
         <Radio.Group
           name="selectedLoginOption"
