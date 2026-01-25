@@ -43,7 +43,7 @@ function Dashboard() {
     });
     yearsList.unshift({ label: "Όλα τα έτη", value: "all" });
     return yearsList;
-  }, [ordersState?.perYear]);
+  }, [ordersState]);
 
   const defaultSelectedYear = useMemo(() => {
     return years.length > 0 ? years[0].value : null;
@@ -77,7 +77,7 @@ function Dashboard() {
     }
 
     return response;
-  }, [user?.session_id, dispatch]);
+  }, [user, dispatch]);
 
   const {
     refetch,
@@ -101,6 +101,7 @@ function Dashboard() {
       (year: PerYear) => year.year === effectiveSelectedYear
     );
   }, [effectiveSelectedYear, ordersState]);
+
 
   return (
     <>
@@ -250,6 +251,7 @@ function Dashboard() {
                 data={selectedYearOrders?.restaurantWithMostMoneySpent}
               />
             )}
+            
             {selectedYearOrders?.mostOrderedProduct && (
               <OrderCard data={selectedYearOrders?.mostOrderedProduct} />
             )}
