@@ -34,7 +34,9 @@ export default function InstructionsMoal({
   useEffect(() => {
     if (embla) {
       embla.on("scroll", handleScroll);
-      handleScroll();
+      return () => {
+        embla.off("scroll", handleScroll);
+      };
     }
   }, [embla, handleScroll]);
 

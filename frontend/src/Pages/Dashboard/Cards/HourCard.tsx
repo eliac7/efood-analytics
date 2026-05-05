@@ -13,8 +13,8 @@ export default function HourCard({
 }) {
   let time = Object.keys(value)[0];
   const orders = Object.values(value)[0];
-  let color = "";
-  let hour = "";
+  let color: string;
+  let hour: string;
 
   switch (time) {
     case "morning":
