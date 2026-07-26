@@ -31,7 +31,7 @@ export function calculateTimeStats(orders) {
   for (const order of orders) {
     const date = parseSubmissionDate(order.submission_date);
     if (!date) continue;
-    const day = date.getDay();
+    const day = date.getDay() === 0 ? 6 : date.getDay() - 1;
     const month = date.getMonth();
     const hour = date.getHours();
 

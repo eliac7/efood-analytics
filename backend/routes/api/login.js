@@ -14,15 +14,13 @@ import {
   handleRateLimitError,
 } from "../../utils/errorHandler.js";
 
-const router = express.Router();
-
 const USE_MOCK_AUTH = process.env.MOCK_AUTH === "true" && process.env.NODE_ENV === "development";
 
 /**
  * POST /api/login
  * Login with email and password
  */
-async function handleLoginWithEmail(req, res, next) {
+async function handleLoginWithEmail(req, res, authService) {
   // Development mock mode
   if (USE_MOCK_AUTH) {
     return res.status(200).json(getMockUserData());
@@ -42,7 +40,7 @@ async function handleLoginWithEmail(req, res, next) {
   }
 
   try {
-    const response = await loginWithCredentials(email.trim(), password);
+    const response = await authService.loginWithCredentials(email.trim(), password);
 
     if (response?.status === "error") {
       return res.status(401).json({ message: response.message });
@@ -73,7 +71,7 @@ async function handleLoginWithEmail(req, res, next) {
  * POST /api/login/session
  * Login with existing session ID
  */
-async function handleLoginWithSessionId(req, res, next) {
+async function handleLoginWithSessionId(req, res, authService) {
   if (USE_MOCK_AUTH) {
     return res.status(200).json(getMockUserData());
   }
@@ -91,7 +89,7 @@ async function handleLoginWithSessionId(req, res, next) {
   }
 
   try {
-    const response = await validateSession(session_id);
+    const response = await authService.validateSession(session_id);
 
     if (response?.status === "error") {
       return res.status(401).json({ message: response.message });
@@ -116,17 +114,28 @@ async function handleLoginWithSessionId(req, res, next) {
   }
 }
 
-// Route definitions
-router.post("/", handleLoginWithEmail);
-router.post("/session", handleLoginWithSessionId);
+export function createLoginRouter(
+  authService = { loginWithCredentials, validateSession }
+) {
+  const router = express.Router();
 
-// Handle unsupported methods
-router.all("/", (req, res) => {
-  res.status(405).json({ message: "Method not allowed. Please use POST method." });
-});
+  // Route definitions
+  router.post("/", (req, res) => handleLoginWithEmail(req, res, authService));
+  router.post("/session", (req, res) =>
+    handleLoginWithSessionId(req, res, authService)
+  );
 
-router.all("/session", (req, res) => {
-  res.status(405).json({ message: "Method not allowed. Please use POST method." });
-});
+  // Handle unsupported methods
+  router.all("/", (req, res) => {
+    res.status(405).json({ message: "Method not allowed. Please use POST method." });
+  });
 
+  router.all("/session", (req, res) => {
+    res.status(405).json({ message: "Method not allowed. Please use POST method." });
+  });
+
+  return router;
+}
+
+const router = createLoginRouter();
 export default router;

@@ -10,8 +10,8 @@ export const parseSubmissionDate = (s) => {
 };
 
 export const getYearFromSubmission = (order) => {
-  const s = order?.submission_date;
-  return typeof s === "string" && s.length >= 4 ? s.slice(0, 4) : "Unknown";
+  const date = parseSubmissionDate(order?.submission_date);
+  return date ? String(date.getFullYear()) : "Unknown";
 };
 
 export const getCityFromOrder = (order) =>

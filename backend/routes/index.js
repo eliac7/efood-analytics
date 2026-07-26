@@ -1,11 +1,19 @@
 import express from "express";
-const router = express.Router();
 
-import login from "./api/login.js";
-import orders from "./api/orders.js";
+import login, { createLoginRouter } from "./api/login.js";
+import orders, { createOrdersRouter } from "./api/orders.js";
 import health from "./api/health.js";
 
-router.use("/login", login);
-router.use("/orders", orders);
-router.use("/health", health);
+export function createApiRouter({ loginRouter = login, ordersRouter = orders } = {}) {
+  const router = express.Router();
+
+  router.use("/login", loginRouter);
+  router.use("/orders", ordersRouter);
+  router.use("/health", health);
+
+  return router;
+}
+
+const router = createApiRouter();
+
 export default router;

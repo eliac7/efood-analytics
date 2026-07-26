@@ -8,7 +8,8 @@
   "scripts": {
     "server": "npm run dev --prefix backend",
     "client": "npm run dev --prefix frontend",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "test:run": "npm run test:run --prefix backend && npm run test:run --prefix frontend"
   },
   "keywords": [],
   "author": "",
