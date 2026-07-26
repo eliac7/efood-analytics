@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserContextProvider } from "./Services/UserContext/UserContext";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router";
 import App from "./App";
 import "@mantine/core/styles.css";
 import "@mantine/carousel/styles.css";

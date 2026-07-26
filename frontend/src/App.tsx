@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router";
 import {
   MantineProvider,
   createTheme,

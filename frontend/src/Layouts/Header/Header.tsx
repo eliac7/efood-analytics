@@ -1,5 +1,5 @@
 import { Button } from "@mantine/core";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../Hooks/Auth/useAuth";
 import ToggleDarkMode from "../../Components/ToggleDarkMode/ToggleDarkMode";
 import logo from "../../Assets/Images/efood-analytics-logo.png";

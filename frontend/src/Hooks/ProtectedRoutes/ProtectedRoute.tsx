@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router";
 import Loading from "../../Components/Loading/Loading";
 import { useAuth } from "../../Hooks/Auth/useAuth";
 

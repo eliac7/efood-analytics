@@ -2,7 +2,7 @@ import { useAuth } from "../../Hooks/Auth/useAuth";
 import AlreadyLoggedIn from "./AlreadyLoggedIn";
 import Login from "./Login";
 import logo from "../../Assets/Images/efood-analytics-logo.png";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import FormBackground from "./FormBackground";
 import { Flex } from "@mantine/core";
 
