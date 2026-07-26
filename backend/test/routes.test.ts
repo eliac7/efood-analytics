@@ -4,10 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 import { createApp, createApiRouter } from "../app.js";
 import { createLoginRouter } from "../routes/api/login.js";
 import { createOrdersRouter } from "../routes/api/orders.js";
+import type { AuthService, OrderService } from "../types.js";
 
 const validSessionId = "00000000-0000-0000-0000-000000000000";
 
-function createTestApp({ authService, orderService } = {}) {
+function createTestApp({
+  authService,
+  orderService,
+}: { authService?: AuthService; orderService?: OrderService } = {}) {
   return createApp({
     apiRouter: createApiRouter({
       loginRouter: createLoginRouter(authService),

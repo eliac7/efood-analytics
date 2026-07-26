@@ -1,3 +1,5 @@
+import type { ValidationResult } from "../types.js";
+
 // UUID v4 pattern for e-food session IDs
 // Format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 export const SESSION_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -14,7 +16,7 @@ export const PASSWORD_MAX_LENGTH = 128;
  * @param {string} sessionId - The session ID to validate
  * @returns {boolean} - True if valid UUID format
  */
-export function isValidSessionId(sessionId) {
+export function isValidSessionId(sessionId: unknown): sessionId is string {
   if (!sessionId || typeof sessionId !== "string") {
     return false;
   }
@@ -26,7 +28,7 @@ export function isValidSessionId(sessionId) {
  * @param {string} email - The email to validate
  * @returns {boolean} - True if valid email format
  */
-export function isValidEmail(email) {
+export function isValidEmail(email: unknown): email is string {
   if (!email || typeof email !== "string") {
     return false;
   }
@@ -38,7 +40,7 @@ export function isValidEmail(email) {
  * @param {string} password - The password to validate
  * @returns {{ valid: boolean, message?: string }} - Validation result
  */
-export function validatePassword(password) {
+export function validatePassword(password: unknown): ValidationResult {
   if (!password || typeof password !== "string") {
     return { valid: false, message: "Ο κωδικός είναι απαραίτητος" };
   }

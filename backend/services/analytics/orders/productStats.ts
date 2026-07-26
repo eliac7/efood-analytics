@@ -1,10 +1,20 @@
+import type { EfoodOrder, EfoodProduct, MostOrderedProduct } from "../../../types.js";
+
+interface ProductTotal {
+  product: EfoodProduct;
+  quantity: number;
+  amountSpent: number;
+}
+
 /**
  * Find the most ordered product from order data
  * @param {Array} orders - Array of orders
  * @returns {Object} - Most ordered product info
  */
-export function findMostOrderedProduct(orders) {
-  const productTotals = {};
+export function findMostOrderedProduct(
+  orders: Array<Pick<EfoodOrder, "products">>
+): MostOrderedProduct | null {
+  const productTotals: Record<string, ProductTotal> = {};
 
   for (const order of orders) {
     for (const product of order.products) {
@@ -25,7 +35,7 @@ export function findMostOrderedProduct(orders) {
   }
 
   // Find product with highest quantity
-  let mostOrdered = null;
+  let mostOrdered: EfoodProduct | null = null;
   let highestQuantity = 0;
 
   for (const productCode in productTotals) {
@@ -39,7 +49,7 @@ export function findMostOrderedProduct(orders) {
 
   // Get first non-null image
   const image = mostOrdered.images
-    ? Object.values(mostOrdered.images).find((img) => img !== null) || null
+    ? Object.values(mostOrdered.images).find((img): img is string => img !== null) || null
     : null;
 
   return {

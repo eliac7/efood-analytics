@@ -1,14 +1,24 @@
+import type { ErrorRequestHandler } from "express";
+import type { HttpErrorLike } from "../types.js";
+
+export function toHttpError(err: unknown): HttpErrorLike {
+  if (!err || typeof err !== "object") {
+    return {};
+  }
+  return err as HttpErrorLike;
+}
+
 /**
  * Creates a safe error message for client responses
  * In production, sensitive error details are hidden
  * @param {Error} err - The error object
  * @returns {string} - Safe error message
  */
-export function getSafeErrorMessage(err) {
+export function getSafeErrorMessage(err: unknown): string {
   if (process.env.NODE_ENV === "production") {
     return "Προέκυψε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά αργότερα.";
   }
-  return err?.message || "Προέκυψε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά αργότερα.";
+  return toHttpError(err).message || "Προέκυψε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά αργότερα.";
 }
 
 /**
@@ -17,8 +27,8 @@ export function getSafeErrorMessage(err) {
  * @param {number} defaultCode - Default status code
  * @returns {number} - HTTP status code
  */
-export function getErrorStatusCode(err, defaultCode = 400) {
-  return err?.response?.status || defaultCode;
+export function getErrorStatusCode(err: unknown, defaultCode = 400): number {
+  return toHttpError(err).response?.status || defaultCode;
 }
 
 /**
@@ -26,12 +36,14 @@ export function getErrorStatusCode(err, defaultCode = 400) {
  * @param {Error} err - The error object
  * @returns {{ isRateLimited: boolean, retryAfterMinutes?: number }}
  */
-export function handleRateLimitError(err) {
+export function handleRateLimitError(
+  err: unknown
+): { isRateLimited: false } | { isRateLimited: true; retryAfterMinutes: number } {
   const statusCode = getErrorStatusCode(err);
   
   if (statusCode === 429) {
-    const retryAfter = err.response?.headers?.["retry-after"] || 60;
-    const retryAfterMinutes = Math.ceil(retryAfter / 60);
+    const retryAfter = toHttpError(err).response?.headers?.["retry-after"] || 60;
+    const retryAfterMinutes = Math.ceil(Number(retryAfter) / 60);
     return { isRateLimited: true, retryAfterMinutes };
   }
   
@@ -41,12 +53,12 @@ export function handleRateLimitError(err) {
 /**
  * Express error handling middleware
  */
-export function errorMiddleware(err, req, res, next) {
-  const { isRateLimited, retryAfterMinutes } = handleRateLimitError(err);
+export const errorMiddleware: ErrorRequestHandler = (err, req, res, next) => {
+  const rateLimit = handleRateLimitError(err);
   
-  if (isRateLimited) {
+  if (rateLimit.isRateLimited) {
     return res.status(429).json({
-      message: `Too many requests. Please try again in ${retryAfterMinutes} minutes`,
+      message: `Too many requests. Please try again in ${rateLimit.retryAfterMinutes} minutes`,
     });
   }
   
@@ -54,5 +66,4 @@ export function errorMiddleware(err, req, res, next) {
   const message = getSafeErrorMessage(err);
   
   return res.status(statusCode).json({ message });
-}
-
+};

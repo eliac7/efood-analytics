@@ -1,4 +1,5 @@
 import express from "express";
+import type { Request, Response, Router } from "express";
 import {
   loginWithCredentials,
   validateSession,
@@ -10,17 +11,32 @@ import {
   validatePassword,
 } from "../../constants/validation.js";
 import {
+  getErrorStatusCode,
   getSafeErrorMessage,
   handleRateLimitError,
 } from "../../utils/errorHandler.js";
+import type { AuthService } from "../../types.js";
 
 const USE_MOCK_AUTH = process.env.MOCK_AUTH === "true" && process.env.NODE_ENV === "development";
+
+interface LoginWithEmailBody {
+  email?: unknown;
+  password?: unknown;
+}
+
+interface LoginWithSessionBody {
+  session_id?: unknown;
+}
 
 /**
  * POST /api/login
  * Login with email and password
  */
-async function handleLoginWithEmail(req, res, authService) {
+async function handleLoginWithEmail(
+  req: Request<object, object, LoginWithEmailBody>,
+  res: Response,
+  authService: AuthService
+): Promise<Response> {
   // Development mock mode
   if (USE_MOCK_AUTH) {
     return res.status(200).json(getMockUserData());
@@ -40,7 +56,7 @@ async function handleLoginWithEmail(req, res, authService) {
   }
 
   try {
-    const response = await authService.loginWithCredentials(email.trim(), password);
+    const response = await authService.loginWithCredentials(email.trim(), password as string);
 
     if (response?.status === "error") {
       return res.status(401).json({ message: response.message });
@@ -53,15 +69,15 @@ async function handleLoginWithEmail(req, res, authService) {
     });
   } catch (err) {
     // Handle rate limiting
-    const { isRateLimited, retryAfterMinutes } = handleRateLimitError(err);
-    if (isRateLimited) {
+    const rateLimit = handleRateLimitError(err);
+    if (rateLimit.isRateLimited) {
       return res.status(429).json({
-        message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${retryAfterMinutes} λεπτά`,
+        message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${rateLimit.retryAfterMinutes} λεπτά`,
       });
     }
 
     // Handle other errors
-    const statusCode = err.response?.status || 400;
+    const statusCode = getErrorStatusCode(err);
     const message = getSafeErrorMessage(err);
     return res.status(statusCode).json({ message });
   }
@@ -71,14 +87,18 @@ async function handleLoginWithEmail(req, res, authService) {
  * POST /api/login/session
  * Login with existing session ID
  */
-async function handleLoginWithSessionId(req, res, authService) {
+async function handleLoginWithSessionId(
+  req: Request<object, object, LoginWithSessionBody>,
+  res: Response,
+  authService: AuthService
+): Promise<Response> {
   if (USE_MOCK_AUTH) {
     return res.status(200).json(getMockUserData());
   }
 
   let { session_id } = req.body;
 
-  if (session_id) {
+  if (typeof session_id === "string") {
     session_id = session_id.replace(/['"]+/g, "").trim();
   }
 
@@ -101,22 +121,22 @@ async function handleLoginWithSessionId(req, res, authService) {
       message: response.message || "Η συνεδρία επαληθεύτηκε επιτυχώς",
     });
   } catch (err) {
-    const { isRateLimited, retryAfterMinutes } = handleRateLimitError(err);
-    if (isRateLimited) {
+    const rateLimit = handleRateLimitError(err);
+    if (rateLimit.isRateLimited) {
       return res.status(429).json({
-        message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${retryAfterMinutes} λεπτά`,
+        message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${rateLimit.retryAfterMinutes} λεπτά`,
       });
     }
 
-    const statusCode = err.response?.status || 400;
+    const statusCode = getErrorStatusCode(err);
     const message = getSafeErrorMessage(err);
     return res.status(statusCode).json({ message });
   }
 }
 
 export function createLoginRouter(
-  authService = { loginWithCredentials, validateSession }
-) {
+  authService: AuthService = { loginWithCredentials, validateSession }
+): Router {
   const router = express.Router();
 
   // Route definitions

@@ -1,6 +1,18 @@
 import { parseSubmissionDate, toNumber } from "./normalize.js";
+import type { CountMap, EfoodOrder } from "../../../types.js";
 
-export const computeDeliveryTimeStats = (orders) => {
+interface AggregateStats {
+  totalPrice: number;
+  couponAmount: number;
+  deliveryCost: number;
+  totalTips: number;
+  totalDeliveryTime: number;
+  deliveryTimeCount: number;
+  platforms: CountMap;
+  paymentMethods: CountMap;
+}
+
+export const computeDeliveryTimeStats = (orders: EfoodOrder[]): { sum: number; count: number } => {
   let sum = 0;
   let count = 0;
   for (const o of orders) {
@@ -13,22 +25,22 @@ export const computeDeliveryTimeStats = (orders) => {
   return { sum, count };
 };
 
-export const computeFirstLast = (orders) => {
-  let minD = null,
-    maxD = null;
-  let minS = null,
-    maxS = null;
+export const computeFirstLast = (orders: EfoodOrder[]): { firstOrder: string | null; lastOrder: string | null } => {
+  let minD: Date | null = null,
+    maxD: Date | null = null;
+  let minS: string | null = null,
+    maxS: string | null = null;
 
   for (const o of orders) {
     const d = parseSubmissionDate(o?.submission_date);
     if (!d) continue;
     if (!minD || d < minD) {
       minD = d;
-      minS = o.submission_date;
+      minS = o.submission_date as string;
     }
     if (!maxD || d > maxD) {
       maxD = d;
-      maxS = o.submission_date;
+      maxS = o.submission_date as string;
     }
   }
   return { firstOrder: minS, lastOrder: maxS };
@@ -39,8 +51,8 @@ export const computeFirstLast = (orders) => {
  * @param {Array} orders - Array of orders
  * @returns {Object} - Aggregated stats
  */
-export function calculateAggregateStats(orders) {
-  return orders.reduce(
+export function calculateAggregateStats(orders: EfoodOrder[]): AggregateStats {
+  return orders.reduce<AggregateStats>(
     (acc, order) => {
       acc.totalPrice += order.price;
       acc.couponAmount += order.coupon?.amount || 0;
@@ -53,11 +65,13 @@ export function calculateAggregateStats(orders) {
       }
 
       // Count platforms
-      acc.platforms[order.platform] = (acc.platforms[order.platform] || 0) + 1;
+      const platform = order.platform as string;
+      acc.platforms[platform] = (acc.platforms[platform] || 0) + 1;
 
       // Count payment methods
-      acc.paymentMethods[order.payment_type] =
-        (acc.paymentMethods[order.payment_type] || 0) + 1;
+      const paymentType = order.payment_type as string;
+      acc.paymentMethods[paymentType] =
+        (acc.paymentMethods[paymentType] || 0) + 1;
 
       return acc;
     },

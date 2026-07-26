@@ -1,11 +1,28 @@
+import type { EfoodOrder, EfoodRestaurant, RestaurantSummary } from "../../../types.js";
+
+interface RestaurantAccumulator {
+  id: string | number;
+  is_favorite?: boolean;
+  address?: string;
+  restaurant: EfoodRestaurant;
+  total: number;
+  orders: number;
+}
+
+interface RestaurantStats {
+  mostMoneySpent: RestaurantSummary | null;
+  allRestaurants: RestaurantSummary[];
+  uniqueCount: number;
+}
+
 /**
  * Calculate restaurant statistics from orders
  * @param {Array} orders - Array of orders
  * @returns {Object} - Restaurant statistics
  */
-export function calculateRestaurantStats(orders) {
-  const restaurantTotals = new Map();
-  const uniqueRestaurants = new Set();
+export function calculateRestaurantStats(orders: EfoodOrder[]): RestaurantStats {
+  const restaurantTotals = new Map<string | number, RestaurantAccumulator>();
+  const uniqueRestaurants = new Set<string | number>();
 
   for (const order of orders) {
     const restaurant = order.restaurant;
@@ -23,6 +40,7 @@ export function calculateRestaurantStats(orders) {
     }
 
     const existing = restaurantTotals.get(restaurant.id);
+    if (!existing) continue;
     const orderTotal = order.products.reduce(
       (sum, product) => sum + product.quantity * product.unit_price,
       0
@@ -36,7 +54,7 @@ export function calculateRestaurantStats(orders) {
     (a, b) => b.total - a.total
   );
 
-  const formatRestaurant = (r) => ({
+  const formatRestaurant = (r: RestaurantAccumulator): RestaurantSummary => ({
     id: r.id,
     name: r.restaurant.name,
     totalPrice: Math.round(r.total * 100) / 100,

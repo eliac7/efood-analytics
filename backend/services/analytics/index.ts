@@ -1,12 +1,13 @@
 import { getYearFromSubmission, parseSubmissionDate } from "./orders/normalize.js";
 import { calculateAllTimeStats, calculateYearStats } from "./orders/yearStats.js";
+import type { EfoodOrder, OrderAnalytics } from "../../types.js";
 
 /**
  * Main function to process and analyze all orders
  * @param {Array} orders - Raw orders from API
  * @returns {Object} - Processed order analytics
  */
-export function analyzeOrders(orders) {
+export function analyzeOrders(orders: EfoodOrder[]): OrderAnalytics {
   const sortedOrders = [...orders].sort((a, b) => {
     const da = parseSubmissionDate(a?.submission_date);
     const db = parseSubmissionDate(b?.submission_date);

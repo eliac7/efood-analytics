@@ -72,8 +72,8 @@ describe("order analytics", () => {
     expect(allTime.totalTips).toBe(2);
     expect(allTime.uniqueRestaurants).toBe(2);
     expect(allTime.averageDeliveryTime).toBe(38);
-    expect(allTime.restaurantWithMostMoneySpent.name).toBe("Gyro House");
-    expect(allTime.mostOrderedProduct.name).toBe("Pasta");
+    expect(allTime.restaurantWithMostMoneySpent?.name).toBe("Gyro House");
+    expect(allTime.mostOrderedProduct?.name).toBe("Pasta");
   });
 
   it("aggregates restaurants by spend and handles empty inputs", () => {
@@ -84,7 +84,7 @@ describe("order analytics", () => {
       "Gyro House",
       "Pasta Place",
     ]);
-    expect(restaurants.mostMoneySpent.totalPrice).toBe(35);
+    expect(restaurants.mostMoneySpent?.totalPrice).toBe(35);
 
     expect(calculateRestaurantStats([])).toEqual({
       mostMoneySpent: null,

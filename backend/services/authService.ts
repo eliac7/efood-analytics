@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { LoginResponse, MockUserData, SessionValidationResponse } from "../types.js";
 
 const EFOOD_BASE_URL = "https://api.e-food.gr/api/v1";
 const EFOOD_LOGIN_URL = "https://www.e-food.gr/users/login";
@@ -15,8 +16,11 @@ const DEFAULT_HEADERS = {
  * @param {string} password - User password
  * @returns {Promise<Object>} - E-food API response
  */
-export async function loginWithCredentials(email, password) {
-  const response = await axios.post(
+export async function loginWithCredentials(
+  email: string,
+  password: string
+): Promise<LoginResponse> {
+  const response = await axios.post<LoginResponse>(
     EFOOD_LOGIN_URL,
     { email, password },
     { headers: DEFAULT_HEADERS }
@@ -29,8 +33,8 @@ export async function loginWithCredentials(email, password) {
  * @param {string} sessionId - E-food session ID
  * @returns {Promise<Object>} - E-food API response
  */
-export async function validateSession(sessionId) {
-  const response = await axios.get(`${EFOOD_BASE_URL}/user/account`, {
+export async function validateSession(sessionId: string): Promise<SessionValidationResponse> {
+  const response = await axios.get<SessionValidationResponse>(`${EFOOD_BASE_URL}/user/account`, {
     headers: {
       ...DEFAULT_HEADERS,
       "x-core-session-id": sessionId,
@@ -43,7 +47,7 @@ export async function validateSession(sessionId) {
  * Get mock user data for development
  * @returns {Object} - Mock user data
  */
-export function getMockUserData() {
+export function getMockUserData(): MockUserData {
   return {
     session_id: "00000000-0000-0000-0000-000000000000",
     name: "Test User",

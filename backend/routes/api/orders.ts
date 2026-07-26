@@ -1,13 +1,17 @@
 import express from "express";
+import type { Request, Response, Router } from "express";
 import { readFile } from "fs/promises";
 import checkSession from "../../middlewares/checkSession.js";
 import checkResStatus from "../../middlewares/checkResStatus.js";
 import { fetchAllOrders } from "../../services/orderService.js";
 import { analyzeOrders } from "../../services/orderAnalytics.js";
 import {
+  getErrorStatusCode,
   getSafeErrorMessage,
   handleRateLimitError,
+  toHttpError,
 } from "../../utils/errorHandler.js";
+import type { OrderService } from "../../types.js";
 
 const USE_MOCK_DATA = process.env.MOCK_DATA === "true" && process.env.NODE_ENV === "development";
 
@@ -15,12 +19,12 @@ const USE_MOCK_DATA = process.env.MOCK_DATA === "true" && process.env.NODE_ENV =
  * Load mock orders for development
  * @returns {Promise<Object>} - Mock order data
  */
-async function loadMockOrders() {
+async function loadMockOrders(): Promise<unknown> {
   try {
     const rawData = await readFile("./data/postman-orders.json", "utf-8");
     return JSON.parse(rawData);
-  } catch (err) {
-    console.error("Failed to load mock orders:", err.message);
+  } catch (err: unknown) {
+    console.error("Failed to load mock orders:", toHttpError(err).message);
     throw new Error("Mock data not available");
   }
 }
@@ -29,8 +33,12 @@ async function loadMockOrders() {
  * GET /api/orders
  * Fetch and analyze all user orders
  */
-async function handleGetOrders(req, res, orderService) {
-  const { session_id } = req.headers;
+async function handleGetOrders(
+  req: Request,
+  res: Response,
+  orderService: OrderService
+): Promise<Response> {
+  const sessionId = req.headers.session_id as string;
 
   try {
     if (USE_MOCK_DATA) {
@@ -39,7 +47,7 @@ async function handleGetOrders(req, res, orderService) {
       return res.status(200).json(mockData);
     }
 
-    const allOrders = await orderService.fetchAllOrders(session_id);
+    const allOrders = await orderService.fetchAllOrders(sessionId);
 
     const analyzedOrders = orderService.analyzeOrders(allOrders);
 
@@ -48,23 +56,25 @@ async function handleGetOrders(req, res, orderService) {
       message: "Οι παραγγελίες ανακτήθηκαν επιτυχώς",
     });
   } catch (err) {
-    const { isRateLimited, retryAfterMinutes } = handleRateLimitError(err);
-    if (isRateLimited) {
+    const rateLimit = handleRateLimitError(err);
+    if (rateLimit.isRateLimited) {
       return res.status(429).json({
-        message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${retryAfterMinutes} λεπτά`,
+        message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${rateLimit.retryAfterMinutes} λεπτά`,
       });
     }
 
-    const statusCode = err.response?.status || 400;
+    const statusCode = getErrorStatusCode(err);
     const message = getSafeErrorMessage(err);
     return res.status(statusCode).json({ message });
   }
 }
 
-export function createOrdersRouter(orderService = { fetchAllOrders, analyzeOrders }) {
+export function createOrdersRouter(
+  orderService: OrderService = { fetchAllOrders, analyzeOrders }
+): Router {
   const router = express.Router();
 
-  router.get("/", [checkSession, checkResStatus], (req, res) =>
+  router.get("/", [checkSession, checkResStatus], (req: Request, res: Response) =>
     handleGetOrders(req, res, orderService)
   );
 

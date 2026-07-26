@@ -1,4 +1,6 @@
 import axios from "axios";
+import type { EfoodOrder } from "../types.js";
+import { toHttpError } from "../utils/errorHandler.js";
 
 const EFOOD_ORDERS_URL = "https://api.e-food.gr/api/v1/user/orders/history";
 const ORDERS_PER_PAGE = 100;
@@ -16,13 +18,22 @@ const DEFAULT_HEADERS = {
  * @param {number} offset - Pagination offset
  * @returns {Promise<Object>} - API response with orders and hasNext flag
  */
-export async function fetchOrdersPage(sessionId, offset = 0) {
+interface OrdersPage {
+  orders: EfoodOrder[];
+  hasNext: boolean;
+}
+
+interface OrdersHistoryResponse {
+  data: OrdersPage;
+}
+
+export async function fetchOrdersPage(sessionId: string, offset = 0): Promise<OrdersPage> {
   const url = new URL(EFOOD_ORDERS_URL);
-  url.searchParams.append("limit", ORDERS_PER_PAGE);
-  url.searchParams.append("offset", offset);
+  url.searchParams.append("limit", String(ORDERS_PER_PAGE));
+  url.searchParams.append("offset", String(offset));
   url.searchParams.append("mode", "extended");
 
-  const response = await axios.get(url.toString(), {
+  const response = await axios.get<OrdersHistoryResponse>(url.toString(), {
     headers: {
       ...DEFAULT_HEADERS,
       "x-core-session-id": sessionId,
@@ -38,8 +49,8 @@ export async function fetchOrdersPage(sessionId, offset = 0) {
  * @param {string} sessionId - E-food session ID
  * @returns {Promise<Array>} - All user orders
  */
-export async function fetchAllOrders(sessionId) {
-  const allOrders = [];
+export async function fetchAllOrders(sessionId: string): Promise<EfoodOrder[]> {
+  const allOrders: EfoodOrder[] = [];
   let currentOffset = 0;
   let hasMorePages = true;
 
@@ -48,13 +59,14 @@ export async function fetchAllOrders(sessionId) {
     for (let i = 0; i < PARALLEL_BATCH_SIZE; i++) {
       const offset = currentOffset + i * ORDERS_PER_PAGE;
       batchPromises.push(
-        fetchOrdersPage(sessionId, offset).catch((err) => {
+        fetchOrdersPage(sessionId, offset).catch((err: unknown) => {
+          const httpError = toHttpError(err);
           console.log(
             `Error fetching offset ${offset}:`,
-            err.response?.status,
-            err.message
+            httpError.response?.status,
+            httpError.message
           );
-          if (err.response?.status === 404) {
+          if (httpError.response?.status === 404) {
             return { orders: [], hasNext: false };
           }
           throw err;

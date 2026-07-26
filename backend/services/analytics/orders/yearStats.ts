@@ -5,6 +5,7 @@ import {
 import { findMostOrderedProduct } from "./productStats.js";
 import { calculateRestaurantStats } from "./restaurantStats.js";
 import { calculateTimeStats } from "./timeStats.js";
+import type { CommonOrderStats, EfoodOrder, YearOrderStats } from "../../../types.js";
 
 /**
  * Calculate statistics for a single year
@@ -12,7 +13,7 @@ import { calculateTimeStats } from "./timeStats.js";
  * @param {string} year - Year string
  * @returns {Object} - Year statistics
  */
-export function calculateYearStats(orders, year) {
+export function calculateYearStats(orders: EfoodOrder[], year: string): YearOrderStats {
   const aggregateStats = calculateAggregateStats(orders);
   const timeStats = calculateTimeStats(orders);
   const restaurantStats = calculateRestaurantStats(orders);
@@ -55,7 +56,10 @@ export function calculateYearStats(orders, year) {
  * @param {Array} allOrders - All orders
  * @returns {Object} - All-time statistics
  */
-export function calculateAllTimeStats(yearStats, allOrders) {
+export function calculateAllTimeStats(
+  yearStats: YearOrderStats[],
+  allOrders: EfoodOrder[]
+): CommonOrderStats {
   const aggregateStats = calculateAggregateStats(allOrders);
   const restaurantStats = calculateRestaurantStats(allOrders);
   const timeStats = calculateTimeStats(allOrders);

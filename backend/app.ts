@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import router, { createApiRouter } from "./routes/index.js";
 import { errorMiddleware } from "./utils/errorHandler.js";
+import type { AppOptions } from "./types.js";
 
-export function createApp({ apiRouter = router } = {}) {
+export function createApp({ apiRouter = router }: AppOptions = {}): express.Express {
   const app = express();
 
   // Limit request body size to prevent DoS
