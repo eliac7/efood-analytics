@@ -120,6 +120,23 @@ This is an example of how to list things you need to use the software and how to
    ```
 3. Open a terminal on the folder and enter:
    ```npm run dev```
+
+### Download your raw order history
+
+The dashboard endpoint (`GET /api/orders`) returns only calculated statistics. To save the raw e-food orders as JSON locally, first obtain a valid e-food session ID, then run this from the repository root:
+
+```powershell
+$env:EFOOD_SESSION_ID = "your-session-id"
+npm run download:orders --prefix backend
+```
+
+The command writes a timestamped JSON file to `backend/data/`. That directory is ignored by Git, so your order history will not be committed. To choose a filename, use:
+
+```powershell
+npm run download:orders --prefix backend -- --out data/my-orders.json
+```
+
+Avoid sharing your session ID or the exported JSON, since both may contain personal information.
   
 
 <p align="right">(<a href="#top">back to top</a>)</p>

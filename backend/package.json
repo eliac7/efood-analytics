@@ -27,6 +27,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon --watch . --ext ts --exec tsx index.ts",
+    "download:orders": "tsx scripts/download-orders.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "test": "vitest",
