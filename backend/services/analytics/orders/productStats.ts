@@ -1,9 +1,10 @@
 import type { EfoodOrder, EfoodProduct, MostOrderedProduct } from "../../../types.js";
+import { toCents } from "./money.js";
 
 interface ProductTotal {
   product: EfoodProduct;
   quantity: number;
-  amountSpent: number;
+  amountSpentCents: number;
 }
 
 /**
@@ -12,51 +13,55 @@ interface ProductTotal {
  * @returns {Object} - Most ordered product info
  */
 export function findMostOrderedProduct(
-  orders: Array<Pick<EfoodOrder, "products">>
+  orders: Array<Pick<EfoodOrder, "restaurant" | "products">>
 ): MostOrderedProduct | null {
-  const productTotals: Record<string, ProductTotal> = {};
+  const productTotals = new Map<string, ProductTotal>();
 
   for (const order of orders) {
     for (const product of order.products) {
       if (product.is_offer) continue;
 
-      if (!productTotals[product.item_code]) {
-        productTotals[product.item_code] = {
+      const key = JSON.stringify([
+        String(order.restaurant.id),
+        product.item_code,
+        product.size_info ?? "",
+        product.customisation ?? "",
+      ]);
+      if (!productTotals.has(key)) {
+        productTotals.set(key, {
           product,
           quantity: 0,
-          amountSpent: 0,
-        };
+          amountSpentCents: 0,
+        });
       }
 
-      productTotals[product.item_code].quantity += product.quantity;
-      productTotals[product.item_code].amountSpent +=
-        product.quantity * product.unit_price;
+      const total = productTotals.get(key)!;
+      total.quantity += product.quantity;
+      total.amountSpentCents += toCents(product.quantity * product.unit_price);
     }
   }
 
   // Find product with highest quantity
-  let mostOrdered: EfoodProduct | null = null;
-  let highestQuantity = 0;
+  let mostOrdered: ProductTotal | null = null;
 
-  for (const productCode in productTotals) {
-    if (productTotals[productCode].quantity > highestQuantity) {
-      mostOrdered = productTotals[productCode].product;
-      highestQuantity = productTotals[productCode].quantity;
+  for (const total of productTotals.values()) {
+    if (total.quantity > (mostOrdered?.quantity ?? 0)) {
+      mostOrdered = total;
     }
   }
 
   if (!mostOrdered) return null;
 
   // Get first non-null image
-  const image = mostOrdered.images
-    ? Object.values(mostOrdered.images).find((img): img is string => img !== null) || null
+  const { product } = mostOrdered;
+  const image = product.images
+    ? Object.values(product.images).find((img): img is string => typeof img === "string" && img.length > 0) || null
     : null;
 
   return {
-    name: mostOrdered.name || mostOrdered.offer_title,
-    quantity: highestQuantity,
-    totalPrice:
-      Math.round(productTotals[mostOrdered.item_code].amountSpent * 100) / 100,
+    name: product.name || product.offer_title,
+    quantity: mostOrdered.quantity,
+    totalPrice: mostOrdered.amountSpentCents / 100,
     image,
   };
 }

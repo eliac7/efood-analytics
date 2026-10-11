@@ -3,6 +3,7 @@ import { UserReducer } from "./UserReducer";
 import {
   LOCAL_STORAGE_ORDERS,
   LOCAL_STORAGE_USER,
+  ORDERS_CACHE_VERSION,
 } from "../../utils/constants";
 import { testOrders, testUser } from "../../test/fixtures";
 import { initialStateType } from "../../types";
@@ -33,29 +34,29 @@ describe("UserReducer", () => {
     expect(JSON.parse(localStorage.getItem(LOCAL_STORAGE_ORDERS) || "null")).toMatchObject({
       all: { totalOrders: 4 },
       perYear: [{ year: "2025" }, { year: "2024" }],
+      cacheVersion: ORDERS_CACHE_VERSION,
     });
   });
 
-  it("updates an existing orders timestamp and leaves missing orders unchanged", () => {
+  it("replaces analytics and the persisted timestamp together after a successful fetch", () => {
+    vi.useFakeTimers();
+    const now = new Date("2026-01-01T13:00:00");
+    vi.setSystemTime(now);
     const withOrders: initialStateType = {
       ...emptyState,
       orders: testOrders,
     };
-    const timestamp = new Date("2026-01-01T13:00:00").getTime();
-
-    expect(
-      UserReducer(withOrders, {
-        type: "SET_ORDERS_TIMESTAMP",
-        payload: timestamp,
-      }).orders?.timestamp
-    ).toEqual(new Date(timestamp));
-
-    expect(
-      UserReducer(emptyState, {
-        type: "SET_ORDERS_TIMESTAMP",
-        payload: timestamp,
-      })
-    ).toBe(emptyState);
+    const updatedAll = { ...testOrders.all, totalOrders: 5 };
+    const next = UserReducer(withOrders, {
+      type: "SET_ORDERS",
+      payload: { all: updatedAll, perYear: testOrders.perYear },
+    });
+    expect(next.orders?.timestamp).toEqual(now);
+    expect(next.orders?.all.totalOrders).toBe(5);
+    expect(withOrders.orders?.timestamp).toEqual(testOrders.timestamp);
+    expect(JSON.parse(localStorage.getItem(LOCAL_STORAGE_ORDERS)!)).toMatchObject({
+      all: { totalOrders: 5 }, timestamp: now.toISOString(),
+    });
   });
 
   it("stores users with login time and clears localStorage on logout", () => {

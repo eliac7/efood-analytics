@@ -3,12 +3,21 @@ import { Button, Tooltip, useMantineColorScheme } from "@mantine/core";
 import { UserContext } from "../../../Services/UserContext/UserContext";
 import { FiRefreshCcw } from "react-icons/fi";
 import { useMediaQuery } from "@mantine/hooks";
+import { showNotification } from "@mantine/notifications";
+
+const REFRESH_COOLDOWN_MS = 60 * 60 * 1000;
 
 function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
-  const { state, dispatch } = useContext(UserContext);
-  const [timeLeft, setTimeLeft] = useState<number>();
-  const [isRefreshAllowed, setRefreshAllowed] = useState(true);
-  const TimestampState = state?.orders?.timestamp || 0;
+  const { state } = useContext(UserContext);
+  const [now, setNow] = useState(Date.now);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const timestamp = state.orders?.timestamp;
+  const timestampMs = timestamp ? new Date(timestamp).getTime() : 0;
+  const remainingMs = Number.isFinite(timestampMs)
+    ? Math.max(0, timestampMs + REFRESH_COOLDOWN_MS - now)
+    : 0;
+  const isRefreshAllowed = remainingMs === 0;
+  const timeLeft = Math.ceil(remainingMs / (60 * 1000));
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
 
@@ -16,25 +25,26 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const currentDate = new Date();
-      const timestampState = new Date(TimestampState);
-      const differenceInMilliseconds =
-        currentDate.getTime() - timestampState.getTime();
-      const differenceInHours = differenceInMilliseconds / (1000 * 60 * 60);
-
-      if (differenceInHours >= 1) {
-        setRefreshAllowed(true);
-        setTimeLeft(0);
-      } else {
-        setRefreshAllowed(false);
-        setTimeLeft(
-          Math.floor(60 - ((differenceInMilliseconds / (1000 * 60)) % 60))
-        );
-      }
+      setNow(Date.now());
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [TimestampState]);
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    } catch {
+      showNotification({
+        title: "Η ανανέωση απέτυχε",
+        message: "Τα δεδομένα δεν ενημερώθηκαν. Δοκιμάστε ξανά.",
+        color: "red",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <>
@@ -58,14 +68,10 @@ function TimeStampChecker({ refetch }: { refetch: () => Promise<unknown> }) {
       >
         <div>
           <Button
-            onClick={() => {
-              refetch();
-              dispatch({
-                type: "SET_ORDERS_TIMESTAMP",
-                payload: new Date().getTime(),
-              });
-            }}
-            disabled={!isRefreshAllowed}
+            aria-label="Ανανέωση παραγγελιών"
+            onClick={handleRefresh}
+            disabled={!isRefreshAllowed || isRefreshing}
+            loading={isRefreshing}
             color="orange"
             variant="outline"
             size="md"

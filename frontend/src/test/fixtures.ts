@@ -1,4 +1,5 @@
 import { Orders, User } from "../types";
+import { ORDERS_CACHE_VERSION } from "../utils/constants";
 
 export const testUser: User = {
   session_id: "00000000-0000-0000-0000-000000000000",
@@ -7,6 +8,7 @@ export const testUser: User = {
 };
 
 export const testOrders: Orders = {
+  cacheVersion: ORDERS_CACHE_VERSION,
   timestamp: new Date("2026-01-01T10:30:00"),
   all: {
     totalOrders: 4,
@@ -21,7 +23,7 @@ export const testOrders: Orders = {
     restaurantWithMostMoneySpent: {
       id: 1,
       name: "Gyro House",
-      totalPrice: 35,
+      totalPrice: 32.75,
       orders: 2,
       longitude: 23.72,
       latitude: 37.98,
@@ -34,7 +36,7 @@ export const testOrders: Orders = {
       {
         id: 1,
         name: "Gyro House",
-        totalPrice: 35,
+        totalPrice: 32.75,
         orders: 2,
         longitude: 23.72,
         latitude: 37.98,
@@ -72,7 +74,7 @@ export const testOrders: Orders = {
       restaurantWithMostMoneySpent: {
         id: 1,
         name: "Gyro House",
-        totalPrice: 35,
+        totalPrice: 32.75,
         orders: 2,
         longitude: 23.72,
         latitude: 37.98,

@@ -1,11 +1,12 @@
 import type { EfoodOrder, EfoodRestaurant, RestaurantSummary } from "../../../types.js";
+import { toCents } from "./money.js";
 
 interface RestaurantAccumulator {
   id: string | number;
   is_favorite?: boolean;
   address?: string;
   restaurant: EfoodRestaurant;
-  total: number;
+  totalCents: number;
   orders: number;
 }
 
@@ -21,43 +22,39 @@ interface RestaurantStats {
  * @returns {Object} - Restaurant statistics
  */
 export function calculateRestaurantStats(orders: EfoodOrder[]): RestaurantStats {
-  const restaurantTotals = new Map<string | number, RestaurantAccumulator>();
-  const uniqueRestaurants = new Set<string | number>();
+  const restaurantTotals = new Map<string, RestaurantAccumulator>();
 
   for (const order of orders) {
     const restaurant = order.restaurant;
-    uniqueRestaurants.add(restaurant.id);
+    const restaurantId = String(restaurant.id);
 
-    if (!restaurantTotals.has(restaurant.id)) {
-      restaurantTotals.set(restaurant.id, {
+    if (!restaurantTotals.has(restaurantId)) {
+      restaurantTotals.set(restaurantId, {
         id: restaurant.id,
         is_favorite: order.is_favorite,
         address: restaurant.address,
         restaurant: { ...restaurant, is_open: order.is_open },
-        total: 0,
+        totalCents: 0,
         orders: 0,
       });
     }
 
-    const existing = restaurantTotals.get(restaurant.id);
+    const existing = restaurantTotals.get(restaurantId);
     if (!existing) continue;
-    const orderTotal = order.products.reduce(
-      (sum, product) => sum + product.quantity * product.unit_price,
-      0
-    );
-    existing.total += orderTotal;
+    // Includes the same discounts and charges as the dashboard's order total.
+    existing.totalCents += toCents(order.price);
     existing.orders++;
   }
 
   // Sort by total spent descending
   const sortedRestaurants = Array.from(restaurantTotals.values()).sort(
-    (a, b) => b.total - a.total
+    (a, b) => b.totalCents - a.totalCents
   );
 
   const formatRestaurant = (r: RestaurantAccumulator): RestaurantSummary => ({
     id: r.id,
     name: r.restaurant.name,
-    totalPrice: Math.round(r.total * 100) / 100,
+    totalPrice: r.totalCents / 100,
     orders: r.orders,
     longitude: r.restaurant.longitude,
     latitude: r.restaurant.latitude,
@@ -72,6 +69,6 @@ export function calculateRestaurantStats(orders: EfoodOrder[]): RestaurantStats 
       ? formatRestaurant(sortedRestaurants[0])
       : null,
     allRestaurants: sortedRestaurants.map(formatRestaurant),
-    uniqueCount: uniqueRestaurants.size,
+    uniqueCount: restaurantTotals.size,
   };
 }

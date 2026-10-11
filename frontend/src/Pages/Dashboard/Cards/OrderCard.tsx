@@ -45,7 +45,7 @@ function OrderCard({ data }: { data: MostOrderedProduct }) {
           </div>
         </div>
         <div className="flex items-center justify-start">
-          <p className="text-sm">Προϊόν με τις περισσότερες παραγγελίες</p>
+            <p className="text-sm">Προϊόν με τη μεγαλύτερη ποσότητα (χωρίς προσφορές)</p>
         </div>
       </Stack>
     </Card>

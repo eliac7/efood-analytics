@@ -3,6 +3,13 @@ import type { EfoodOrder } from "../../../types.js";
 export const toNumber = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) ? v : null;
 
+export const getEstimatedDeliveryTime = (order: EfoodOrder): number | null => {
+  const minutes =
+    toNumber(order.delivery?.time_estimation?.minutes) ??
+    toNumber(order.delivery_time);
+  return minutes !== null && minutes >= 0 ? minutes : null;
+};
+
 // Handles "YYYY-MM-DD HH:mm:ss" safely (and keeps local-time semantics).
 export const parseSubmissionDate = (s: unknown): Date | null => {
   if (!s || typeof s !== "string") return null;

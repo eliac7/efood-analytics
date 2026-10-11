@@ -1,6 +1,6 @@
 import { useState, useContext, useCallback, useMemo } from "react";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
-import { Container, Flex, Select } from "@mantine/core";
+import { Alert, Container, Flex, Select } from "@mantine/core";
 import Loading from "../../Components/Loading/Loading";
 import { Orders, PerYear } from "../../types";
 import DashboardCard from "./Cards/DashboardCard";
@@ -19,7 +19,7 @@ import {
 import { CgRowLast } from "react-icons/cg";
 import { GoGraph } from "react-icons/go";
 import Map from "./Map/Map";
-import { dateFormat, formatAmount, timeFormat } from "../../utils/helpers";
+import { dateFormat, formatAmount, NO_DATA, timeFormat } from "../../utils/helpers";
 import { useQuery } from "@tanstack/react-query";
 import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import { UserContext } from "../../Services/UserContext/UserContext";
@@ -63,18 +63,17 @@ function Dashboard() {
       },
     });
 
-    if (response && "data" in response && response.data) {
-      const responseData = response.data as { orders: Orders };
-      if (responseData.orders) {
-        dispatch({ type: "SET_ORDERS", payload: responseData.orders });
-        showNotification({
-          title: `Επιτυχής ανάκτηση δεδομένων`,
-          message: `Βρέθηκαν συνολικά ${responseData.orders.all.totalOrders} παραγγελίες`,
-          color: "green",
-          icon: <GoGraph />,
-        });
-      }
+    const responseData = response.data as { orders?: Pick<Orders, "all" | "perYear"> };
+    if (!responseData?.orders?.all || !Array.isArray(responseData.orders.perYear)) {
+      throw new Error("Invalid order analytics response");
     }
+    dispatch({ type: "SET_ORDERS", payload: responseData.orders });
+    showNotification({
+      title: "Επιτυχής ανάκτηση δεδομένων",
+      message: `Βρέθηκαν συνολικά ${responseData.orders.all.totalOrders} παραγγελίες`,
+      color: "green",
+      icon: <GoGraph />,
+    });
 
     return response;
   }, [user, dispatch]);
@@ -83,6 +82,7 @@ function Dashboard() {
     refetch,
     isLoading: isInitialLoading,
     isRefetching,
+    isError,
   } = useQuery({
     queryKey: ["orders", user?.session_id],
     queryFn: fetchOrders,
@@ -119,6 +119,11 @@ function Dashboard() {
          firefox:bg-opacity-100 firefox:backdrop-filter-none firefox:bg-gray-600
       "
         >
+          {isError ? (
+            <Alert color="red" title="Η ανάκτηση παραγγελιών απέτυχε" mb="md">
+              Τα δεδομένα δεν ενημερώθηκαν. Δοκιμάστε ξανά την ανανέωση.
+            </Alert>
+          ) : null}
           <Flex justify={"space-between"} align="flex-end">
             <Select
               label="Επιλογή Έτους"
@@ -138,19 +143,13 @@ function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             <DashboardCard
               title="Πρώτη παραγγελία"
-              value={
-                selectedYearOrders?.firstOrder &&
-                dateFormat(selectedYearOrders?.firstOrder)
-              }
+              value={dateFormat(selectedYearOrders?.firstOrder)}
               icon={<FaMedal size={40} />}
               color="rgba(234, 179, 8, 0.25)"
             />
             <DashboardCard
               title="Τελευταία παραγγελία"
-              value={
-                selectedYearOrders?.lastOrder &&
-                dateFormat(selectedYearOrders?.lastOrder)
-              }
+              value={dateFormat(selectedYearOrders?.lastOrder)}
               icon={<CgRowLast size={40} />}
               color="rgba(59, 130, 246, 0.25)"
             />
@@ -158,92 +157,57 @@ function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
             <DashboardCard
               title="Συνολικές Παραγγελίες"
-              value={selectedYearOrders?.totalOrders}
+              value={selectedYearOrders?.totalOrders ?? NO_DATA}
               icon={<AiOutlineShoppingCart size={40} />}
               color="rgba(34, 197, 94, 0.25)"
             />
             <DashboardCard
               title="Συνολική Δαπάνη"
-              value={
-                selectedYearOrders?.totalPrice &&
-                formatAmount(selectedYearOrders?.totalPrice)
-              }
+              value={formatAmount(selectedYearOrders?.totalPrice)}
               color="rgba(220, 38, 38, 0.25)"
               icon={<BsPiggyBank size={40} />}
             />
             <DashboardCard
               title="Μέσος Όρος / Παραγγελία"
               value={
-                selectedYearOrders?.totalPrice &&
-                selectedYearOrders?.totalOrders &&
-                formatAmount(
-                  selectedYearOrders?.totalPrice /
-                    selectedYearOrders?.totalOrders
-                )
+                selectedYearOrders && selectedYearOrders.totalOrders > 0
+                  ? formatAmount(selectedYearOrders.totalPrice / selectedYearOrders.totalOrders)
+                  : NO_DATA
               }
               icon={<GoGraph size={40} />}
             />
             <DashboardCard
               title="Συνολικά φιλοδωρήματα"
-              value={
-                selectedYearOrders?.totalTips &&
-                formatAmount(selectedYearOrders?.totalTips)
-              }
+              value={formatAmount(selectedYearOrders?.totalTips)}
               icon={<FaHandsHelping size={40} />}
               color="rgba(249, 115, 22, 0.25)"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4 my-4">
-            {selectedYearOrders?.deliveryCost ? (
-              <DashboardCard
-                title="Συνολικά Έξοδα Παράδοσης"
-                value={formatAmount(selectedYearOrders?.deliveryCost)}
-                icon={<FaTruck size={40} />}
-                color="rgba(168, 85, 247, 0.25)"
-              />
-            ) : (
-              <DashboardCard
-                title="Συνολικά Έξοδα Παράδοσης"
-                value="Δεν υπάρχουν διαθέσιμα δεδομένα"
-                icon={<FaTruck size={40} />}
-                color="rgba(168, 85, 247, 0.25)"
-              />
-            )}
-            {selectedYearOrders?.couponAmount ? (
-              <DashboardCard
-                title="Συνολικά Έξοδα Κουπονιών"
-                value={formatAmount(selectedYearOrders?.couponAmount)}
-                icon={<FaTicketAlt size={40} />}
-                color="rgba(236, 72, 153, 0.25)"
-              />
-            ) : (
-              <DashboardCard
-                title="Συνολικά Έξοδα Κουπονιών"
-                value="Δεν υπάρχουν διαθέσιμα δεδομένα"
-                icon={<FaTicketAlt size={40} />}
-                color="rgba(236, 72, 153, 0.25)"
-              />
-            )}
-            {selectedYearOrders &&
-            "averageDeliveryTime" in selectedYearOrders ? (
-              <DashboardCard
-                title="Μέσος χρόνος παράδοσης"
-                value={
-                  selectedYearOrders?.averageDeliveryTime &&
-                  timeFormat(selectedYearOrders?.averageDeliveryTime)
-                }
-                icon={<FaHourglassHalf size={40} />}
-                color="rgba(99, 102, 241, 0.25)"
-              />
-            ) : null}
-            {selectedYearOrders && "uniqueRestaurants" in selectedYearOrders ? (
-              <DashboardCard
-                title="Μοναδικά Εστιατόρια"
-                value={selectedYearOrders?.uniqueRestaurants}
-                icon={<FaUtensils size={40} />}
-                color="rgba(234, 179, 8, 0.25)"
-              />
-            ) : null}
+            <DashboardCard
+              title="Συνολικά Έξοδα Παράδοσης"
+              value={formatAmount(selectedYearOrders?.deliveryCost)}
+              icon={<FaTruck size={40} />}
+              color="rgba(168, 85, 247, 0.25)"
+            />
+            <DashboardCard
+              title="Έκπτωση από κουπόνια"
+              value={formatAmount(selectedYearOrders?.couponAmount)}
+              icon={<FaTicketAlt size={40} />}
+              color="rgba(236, 72, 153, 0.25)"
+            />
+            <DashboardCard
+              title="Μέση εκτίμηση χρόνου παράδοσης"
+              value={timeFormat(selectedYearOrders?.averageDeliveryTime)}
+              icon={<FaHourglassHalf size={40} />}
+              color="rgba(99, 102, 241, 0.25)"
+            />
+            <DashboardCard
+              title="Μοναδικά καταστήματα"
+              value={selectedYearOrders?.uniqueRestaurants ?? NO_DATA}
+              icon={<FaUtensils size={40} />}
+              color="rgba(234, 179, 8, 0.25)"
+            />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             {selectedYearOrders?.restaurantWithMostMoneySpent && (

@@ -1,11 +1,12 @@
-import { parseSubmissionDate, toNumber } from "./normalize.js";
+import { getEstimatedDeliveryTime, parseSubmissionDate } from "./normalize.js";
+import { sumKnownAmounts, toCents } from "./money.js";
 import type { CountMap, EfoodOrder } from "../../../types.js";
 
 interface AggregateStats {
   totalPrice: number;
-  couponAmount: number;
-  deliveryCost: number;
-  totalTips: number;
+  couponAmount: number | null;
+  deliveryCost: number | null;
+  totalTips: number | null;
   totalDeliveryTime: number;
   deliveryTimeCount: number;
   platforms: CountMap;
@@ -16,7 +17,7 @@ export const computeDeliveryTimeStats = (orders: EfoodOrder[]): { sum: number; c
   let sum = 0;
   let count = 0;
   for (const o of orders) {
-    const dt = toNumber(o?.delivery_time);
+    const dt = getEstimatedDeliveryTime(o);
     if (dt !== null) {
       sum += dt;
       count += 1;
@@ -52,24 +53,22 @@ export const computeFirstLast = (orders: EfoodOrder[]): { firstOrder: string | n
  * @returns {Object} - Aggregated stats
  */
 export function calculateAggregateStats(orders: EfoodOrder[]): AggregateStats {
-  return orders.reduce<AggregateStats>(
+  let totalPriceCents = 0;
+  const stats = orders.reduce<AggregateStats>(
     (acc, order) => {
-      acc.totalPrice += order.price;
-      acc.couponAmount += order.coupon?.amount || 0;
-      acc.deliveryCost += order.delivery_cost || 0;
-      acc.totalTips += order.tip || 0;
-      const dt = toNumber(order.delivery_time);
+      totalPriceCents += toCents(order.price);
+      const dt = getEstimatedDeliveryTime(order);
       if (dt !== null) {
         acc.totalDeliveryTime += dt;
         acc.deliveryTimeCount += 1;
       }
 
       // Count platforms
-      const platform = order.platform as string;
+      const platform = order.platform?.trim() || "unknown";
       acc.platforms[platform] = (acc.platforms[platform] || 0) + 1;
 
       // Count payment methods
-      const paymentType = order.payment_type as string;
+      const paymentType = order.payment_type?.trim() || "unknown";
       acc.paymentMethods[paymentType] =
         (acc.paymentMethods[paymentType] || 0) + 1;
 
@@ -86,4 +85,11 @@ export function calculateAggregateStats(orders: EfoodOrder[]): AggregateStats {
       paymentMethods: {},
     }
   );
+  stats.totalPrice = totalPriceCents / 100;
+  stats.couponAmount = sumKnownAmounts(orders, (order) =>
+    order.coupon === null ? 0 : order.coupon?.amount
+  );
+  stats.deliveryCost = sumKnownAmounts(orders, (order) => order.delivery_cost);
+  stats.totalTips = sumKnownAmounts(orders, (order) => order.tip);
+  return stats;
 }

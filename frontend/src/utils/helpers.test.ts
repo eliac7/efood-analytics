@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dateFormat, formatAmount, timeFormat } from "./helpers";
+import { dateFormat, formatAmount, NO_DATA, timeFormat } from "./helpers";
 
 describe("format helpers", () => {
   it("formats dates for Greek users", () => {
@@ -22,5 +22,16 @@ describe("format helpers", () => {
   it("formats minute durations", () => {
     expect(timeFormat(45)).toBe("45 λεπτά");
     expect(timeFormat(125)).toBe("2 ώρες 5 λεπτά");
+  });
+
+  it("distinguishes zero amounts and durations from unavailable data", () => {
+    expect(formatAmount(0)).toContain("0,00");
+    expect(timeFormat(0)).toBe("0 λεπτά");
+    for (const value of [null, undefined, NaN, Infinity]) {
+      expect(formatAmount(value)).toBe(NO_DATA);
+      expect(timeFormat(value)).toBe(NO_DATA);
+    }
+    expect(dateFormat(null)).toBe(NO_DATA);
+    expect(dateFormat("not-a-date")).toBe(NO_DATA);
   });
 });

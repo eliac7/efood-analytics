@@ -1,5 +1,6 @@
 import { createContext, useReducer, useEffect } from "react";
-import { initialStateType, Orders, User } from "../../types";
+import { initialStateType, User } from "../../types";
+import { getStoredOrders } from "../../utils/ordersStorage";
 import { Action, UserReducer } from "../Reducers/UserReducer";
 import {
   LOCAL_STORAGE_USER,
@@ -37,9 +38,7 @@ const getStoredUser = (): User | null => {
 
 const initialState: initialStateType = {
   user: getStoredUser(),
-  orders: JSON.parse(
-    localStorage.getItem(LOCAL_STORAGE_ORDERS) ?? "null"
-  ) as Orders | null,
+  orders: getStoredOrders(),
   loading: false,
 };
 

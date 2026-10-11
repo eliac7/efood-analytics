@@ -19,6 +19,8 @@ export interface EfoodProduct {
   offer_title?: string;
   quantity: number;
   unit_price: number;
+  size_info?: string;
+  customisation?: string;
   is_offer?: boolean;
   images?: Record<string, string | null> | null;
   [key: string]: unknown;
@@ -32,6 +34,9 @@ export interface EfoodOrder {
   delivery_cost?: number | null;
   tip?: number | null;
   delivery_time?: number | string | null;
+  delivery?: {
+    time_estimation?: { minutes?: number | null };
+  };
   platform?: string;
   payment_type?: string;
   restaurant: EfoodRestaurant;
@@ -73,11 +78,12 @@ export interface CommonOrderStats {
   paymentMethods: CountMap;
   firstOrder: string | null;
   lastOrder: string | null;
-  couponAmount: number;
-  deliveryCost: number;
-  totalTips: number;
+  couponAmount: number | null;
+  deliveryCost: number | null;
+  totalTips: number | null;
   restaurants: RestaurantSummary[];
   mostOrderedProduct: MostOrderedProduct | null;
+  /** Estimated delivery minutes, not elapsed time until actual delivery. */
   averageDeliveryTime: number | null;
   restaurantWithMostMoneySpent: RestaurantSummary | null;
   uniqueRestaurants: number;

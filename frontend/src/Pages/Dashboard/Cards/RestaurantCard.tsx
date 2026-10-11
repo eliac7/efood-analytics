@@ -33,7 +33,7 @@ function RestaurantCard({ data }: { data: Restaurant }) {
             ) : null}
           </div>
           <div>
-            {data.is_open ? (
+              {data.is_open === undefined ? null : data.is_open ? (
               <Tooltip
                 label="Το κατάστημα είναι ανοιχτό"
                 withArrow
@@ -66,7 +66,7 @@ function RestaurantCard({ data }: { data: Restaurant }) {
           <div className="flex flex-row items-center flex-1 flex-wrap  gap-2 ">
             <div>
               <img
-                src={data.logo}
+                  src={data.logo ?? undefined}
                 alt="logo"
                 className="rounded-full h-20 w-20"
               />
@@ -102,7 +102,7 @@ function RestaurantCard({ data }: { data: Restaurant }) {
         </div>
         <div className="flex items-center justify-start">
           <p className="text-sm">
-            Το εστιατόριο στο οποίο ξοδεύτηκαν τα περισσότερα χρήματα
+              Το κατάστημα στο οποίο ξοδεύτηκαν τα περισσότερα χρήματα
           </p>
         </div>
       </Stack>

@@ -2,6 +2,7 @@ import { initialStateType, OrderStats, PerYear, User } from "../../types";
 import {
   LOCAL_STORAGE_ORDERS,
   LOCAL_STORAGE_USER,
+  ORDERS_CACHE_VERSION,
 } from "../../utils/constants";
 
 export type Action =
@@ -9,7 +10,6 @@ export type Action =
       type: "SET_ORDERS";
       payload: { all: OrderStats; perYear: PerYear[] };
     }
-  | { type: "SET_ORDERS_TIMESTAMP"; payload: number }
   | {
       type: "SET_USER";
       payload: User;
@@ -26,7 +26,7 @@ export const UserReducer = (
       const { all, perYear } = action.payload;
 
       const timestamp = new Date();
-      const orders = { all, perYear, timestamp };
+      const orders = { all, perYear, timestamp, cacheVersion: ORDERS_CACHE_VERSION };
 
       localStorage.setItem(LOCAL_STORAGE_ORDERS, JSON.stringify(orders));
       return {
@@ -34,18 +34,6 @@ export const UserReducer = (
         orders,
       };
     }
-    case "SET_ORDERS_TIMESTAMP":
-      if (state.orders) {
-        return {
-          ...state,
-          orders: {
-            ...state.orders,
-            timestamp: new Date(action.payload),
-          },
-        };
-      }
-      return state;
-
     case "SET_USER": {
       const user = { ...(action.payload as User), loginAt: Date.now() };
       localStorage.setItem(LOCAL_STORAGE_USER, JSON.stringify(user));

@@ -6,6 +6,7 @@ import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import * as L from "leaflet";
 import { Restaurant } from "../../../types";
 import { Badge, useMantineColorScheme } from "@mantine/core";
+import noAvatar from "../../../Assets/Images/no-avatar.webp";
 const maptkn = import.meta.env.VITE_APP_MAPBOX_TOKEN;
 
 const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
@@ -14,12 +15,25 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
 
   const { colorScheme } = useMantineColorScheme();
 
-  const markers = restaurants?.map((restaurant) => (
+  const locatedRestaurants = useMemo(
+    () => (restaurants ?? []).filter(
+      (restaurant): restaurant is Restaurant & { latitude: number; longitude: number } =>
+        typeof restaurant.latitude === "number" &&
+        Number.isFinite(restaurant.latitude) &&
+        Math.abs(restaurant.latitude) <= 90 &&
+        typeof restaurant.longitude === "number" &&
+        Number.isFinite(restaurant.longitude) &&
+        Math.abs(restaurant.longitude) <= 180
+    ),
+    [restaurants]
+  );
+
+  const markers = locatedRestaurants.map((restaurant) => (
     <Marker
       key={restaurant.id}
       position={[restaurant.latitude, restaurant.longitude]}
       icon={L.icon({
-        iconUrl: restaurant.logo,
+        iconUrl: restaurant.logo || noAvatar,
         iconSize: [50, 50],
         iconAnchor: [25, 25],
         className: "rounded-full",
@@ -28,8 +42,8 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
       <Popup minWidth={300} maxWidth={500}>
         <div className="flex flex-col items-center min-w-[200px]">
           <img
-            src={restaurant.logo}
-            alt={restaurant.name}
+            src={restaurant.logo || noAvatar}
+            alt={restaurant.name ?? "Κατάστημα"}
             className="w-20 h-20 rounded-full"
           />
           <h1 className="text-lg font-semibold text-center">
@@ -56,27 +70,29 @@ const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
               / Μ.Ο. ΠΑΡΑΓΓΕΛΙΑΣ
             </Badge>
           )}
-          <Badge
-            color={restaurant.is_open ? "green" : "red"}
-            variant="filled"
-            className="mt-2"
-          >
-            {restaurant.is_open ? "ΑΝΟΙΧΤΟ" : "ΚΛΕΙΣΤΟ"}
-          </Badge>
+          {restaurant.is_open !== undefined ? (
+            <Badge
+              color={restaurant.is_open ? "green" : "red"}
+              variant="filled"
+              className="mt-2"
+            >
+              {restaurant.is_open ? "ΑΝΟΙΧΤΟ" : "ΚΛΕΙΣΤΟ"}
+            </Badge>
+          ) : null}
         </div>
       </Popup>
     </Marker>
   ));
 
   const bounds = useMemo(() => {
-    if (!restaurants) return null;
+    if (locatedRestaurants.length === 0) return null;
     return new L.LatLngBounds(
-      restaurants.map((restaurant) => [
+      locatedRestaurants.map((restaurant) => [
         restaurant.latitude,
         restaurant.longitude,
       ]),
     );
-  }, [restaurants]);
+  }, [locatedRestaurants]);
 
   useEffect(() => {
     if (mapRef.current && bounds) {

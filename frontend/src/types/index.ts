@@ -2,22 +2,24 @@ export interface Orders {
   all: OrderStats;
   perYear: PerYear[];
   timestamp: Date;
+  cacheVersion: number;
 }
 
 export interface OrderStats {
   totalOrders: number;
   totalPrice: number;
-  couponAmount: number;
-  deliveryCost: number;
-  totalTips: number;
+  couponAmount: number | null;
+  deliveryCost: number | null;
+  totalTips: number | null;
   platforms: Platforms;
   paymentMethods: PaymentMethods;
-  firstOrder: string;
-  lastOrder: string;
-  restaurantWithMostMoneySpent: Restaurant;
+  firstOrder: string | null;
+  lastOrder: string | null;
+  restaurantWithMostMoneySpent: Restaurant | null;
   restaurants: Restaurant[];
-  mostOrderedProduct: MostOrderedProduct;
-  averageDeliveryTime: number;
+  mostOrderedProduct: MostOrderedProduct | null;
+  /** Estimated minutes, not actual delivery duration. */
+  averageDeliveryTime: number | null;
   uniqueRestaurants: number;
   weekdays: { [key: string]: number };
   phases: Phases;
@@ -30,31 +32,21 @@ export interface PerYear extends OrderStats {
 }
 
 export interface Restaurant {
-  id: number;
-  name: string;
+  id: string | number;
+  name?: string;
   totalPrice: number;
   orders: number;
-  longitude: number;
-  latitude: number;
-  logo: string;
-  is_open: boolean;
-  is_favorite: boolean;
-  address: string;
+  longitude?: number | null;
+  latitude?: number | null;
+  logo?: string | null;
+  is_open?: boolean;
+  is_favorite?: boolean;
+  address?: string;
 }
 
-export interface PaymentMethods {
-  paypal?: number;
-  cash?: number;
-  googlepay?: number;
-  credit_card?: number;
-  applepay?: number;
-}
+export type PaymentMethods = Record<string, number>;
 
-export interface Platforms {
-  web: number;
-  android?: number;
-  ios?: number;
-}
+export type Platforms = Record<string, number>;
 
 export interface Phases {
   morning: number;
@@ -64,7 +56,7 @@ export interface Phases {
 }
 
 export interface MostOrderedProduct {
-  name: string;
+  name?: string;
   quantity: number;
   totalPrice: number;
   image: string | null;

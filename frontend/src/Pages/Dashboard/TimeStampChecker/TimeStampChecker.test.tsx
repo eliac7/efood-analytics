@@ -22,7 +22,7 @@ describe("TimeStampChecker", () => {
         loading: false,
       },
     });
-
+    expect(screen.getByRole("button")).toBeDisabled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1000);
     });
@@ -32,13 +32,14 @@ describe("TimeStampChecker", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1000);
     });
-    expect(screen.getByRole("button")).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Ανανέωση παραγγελιών" })).toBeEnabled();
   });
 
-  it("refetches and updates timestamp when refresh is allowed", async () => {
+  it("refetches without advancing the timestamp before data has been committed", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T13:01:00"));
-    const refetch = vi.fn().mockResolvedValue({});
+    let complete!: () => void;
+    const refetch = vi.fn(() => new Promise<void>((resolve) => { complete = resolve; }));
     const dispatch = vi.fn();
 
     renderWithProviders(<TimeStampChecker refetch={refetch} />, {
@@ -59,9 +60,25 @@ describe("TimeStampChecker", () => {
     fireEvent.click(screen.getByRole("button"));
 
     expect(refetch).toHaveBeenCalled();
-    expect(dispatch).toHaveBeenCalledWith({
-      type: "SET_ORDERS_TIMESTAMP",
-      payload: new Date("2026-01-01T13:01:01").getTime(),
+    expect(screen.getByRole("button")).toBeDisabled();
+    expect(dispatch).not.toHaveBeenCalled();
+    await act(async () => { complete(); });
+    expect(screen.getByRole("button", { name: "Ανανέωση παραγγελιών" })).toBeEnabled();
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it("permits retry after a rejected refresh without changing cached timestamps", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T13:01:00"));
+    const refetch = vi.fn().mockRejectedValue(new Error("Request failed"));
+    const dispatch = vi.fn();
+    renderWithProviders(<TimeStampChecker refetch={refetch} />, {
+      dispatch,
+      state: { user: testUser, orders: { ...testOrders, timestamp: new Date("2026-01-01T12:00:00") }, loading: false },
     });
+    await act(async () => { fireEvent.click(screen.getByRole("button")); });
+    expect(refetch).toHaveBeenCalledOnce();
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Ανανέωση παραγγελιών" })).toBeEnabled();
   });
 });
