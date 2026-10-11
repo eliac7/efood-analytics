@@ -20,14 +20,15 @@ function OrderCard({ data }: { data: MostOrderedProduct }) {
             <div>
               <img
                 src={data.image || noAvatar}
-                alt="logo"
+                alt={data.name || "Προϊόν"}
+                onError={(event) => { if (!event.currentTarget.src.endsWith(noAvatar)) event.currentTarget.src = noAvatar; }}
                 className="rounded-full h-20 w-20 object-cover"
               />
             </div>
 
             <div className="flex flex-col items-left">
               <p className="text-2xl">
-                {data.name} <br />
+                {data.name || "Προϊόν"} <br />
               </p>
               <div className="flex items-center"></div>
             </div>

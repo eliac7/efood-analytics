@@ -1,4 +1,5 @@
 import { Card, Text, Group, Flex } from "@mantine/core";
+import { highestCount, NO_DATA } from "../../../utils/helpers";
 
 export default function MapCard({
   title,
@@ -12,6 +13,7 @@ export default function MapCard({
   hover?: boolean;
   color?: string;
 }) {
+  const mostFrequent = highestCount(value);
   return (
     <Card
       shadow="sm"
@@ -29,9 +31,9 @@ export default function MapCard({
         >
           <Flex direction={"column"} className="w-full h-full">
             <Text size="xl" fw={400} ta="left" className="flex-1">
-              Η πολή στην οποία πραγματοποιήσατε τις περισσότερες παραγγελίες
-              είναι η πολή <b>"{Object.keys(value)[0]}"</b> με{" "}
-              <b>{Object.values(value)[0]}</b> παραγγελίες.
+              {mostFrequent ? <>Η πόλη στην οποία πραγματοποιήσατε τις περισσότερες παραγγελίες
+              είναι η πόλη <b>"{mostFrequent[0]}"</b> με{" "}
+              <b>{mostFrequent[1]}</b> παραγγελίες.</> : NO_DATA}
             </Text>
             <Text
               size="sm"

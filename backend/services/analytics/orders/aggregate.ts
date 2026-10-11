@@ -81,8 +81,8 @@ export function calculateAggregateStats(orders: EfoodOrder[]): AggregateStats {
       totalTips: 0,
       totalDeliveryTime: 0,
       deliveryTimeCount: 0,
-      platforms: {},
-      paymentMethods: {},
+      platforms: Object.create(null) as CountMap,
+      paymentMethods: Object.create(null) as CountMap,
     }
   );
   stats.totalPrice = totalPriceCents / 100;

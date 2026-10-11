@@ -1,6 +1,7 @@
 import express from "express";
 import type { Request, Response, Router } from "express";
 import { readFile } from "fs/promises";
+import { resolve } from "node:path";
 import checkSession from "../../middlewares/checkSession.js";
 import checkResStatus from "../../middlewares/checkResStatus.js";
 import { fetchAllOrders } from "../../services/orderService.js";
@@ -10,19 +11,22 @@ import {
   getSafeErrorMessage,
   handleRateLimitError,
   toHttpError,
+  getRetryAfterSeconds,
 } from "../../utils/errorHandler.js";
 import type { OrderService } from "../../types.js";
+import { normalizeOrders } from "../../services/orderValidation.js";
 
-const USE_MOCK_DATA = process.env.MOCK_DATA === "true" && process.env.NODE_ENV === "development";
+const useMockData = () => process.env.MOCK_DATA === "true" && process.env.NODE_ENV === "development";
 
 /**
  * Load mock orders for development
  * @returns {Promise<Object>} - Mock order data
  */
-async function loadMockOrders(): Promise<unknown> {
+async function loadMockOrders() {
   try {
-    const rawData = await readFile("./data/postman-orders.json", "utf-8");
-    return JSON.parse(rawData);
+      const file = resolve(process.env.MOCK_ORDERS_FILE || "data/my-orders.json");
+      const rawData = await readFile(file, "utf-8");
+      return normalizeOrders(JSON.parse(rawData));
   } catch (err: unknown) {
     console.error("Failed to load mock orders:", toHttpError(err).message);
     throw new Error("Mock data not available");
@@ -41,13 +45,7 @@ async function handleGetOrders(
   const sessionId = req.headers.session_id as string;
 
   try {
-    if (USE_MOCK_DATA) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      const mockData = await loadMockOrders();
-      return res.status(200).json(mockData);
-    }
-
-    const allOrders = await orderService.fetchAllOrders(sessionId);
+      const allOrders = useMockData() ? await loadMockOrders() : await orderService.fetchAllOrders(sessionId);
 
     const analyzedOrders = orderService.analyzeOrders(allOrders);
 
@@ -58,6 +56,7 @@ async function handleGetOrders(
   } catch (err) {
     const rateLimit = handleRateLimitError(err);
     if (rateLimit.isRateLimited) {
+        res.setHeader("Retry-After", getRetryAfterSeconds(toHttpError(err).response?.headers?.["retry-after"]));
       return res.status(429).json({
         message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${rateLimit.retryAfterMinutes} λεπτά`,
       });

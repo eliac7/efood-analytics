@@ -1,44 +1,12 @@
 import { createContext, useReducer, useEffect } from "react";
-import { initialStateType, User } from "../../types";
-import { getStoredOrders } from "../../utils/ordersStorage";
+import { initialStateType } from "../../types";
+import { getInitialUserState } from "../../utils/userStorage";
 import { Action, UserReducer } from "../Reducers/UserReducer";
-import {
-  LOCAL_STORAGE_USER,
-  LOCAL_STORAGE_ORDERS,
-  USER_SESSION_TTL_MS,
-} from "../../utils/constants";
-
-const getStoredUser = (): User | null => {
-  const rawUser = localStorage.getItem(LOCAL_STORAGE_USER);
-  if (!rawUser) return null;
-
-  try {
-    const parsedUser = JSON.parse(rawUser) as User;
-    const loginAt = parsedUser.loginAt;
-
-    if (!loginAt || typeof loginAt !== "number") {
-      localStorage.removeItem(LOCAL_STORAGE_USER);
-      localStorage.removeItem(LOCAL_STORAGE_ORDERS);
-      return null;
-    }
-
-    if (Date.now() - loginAt > USER_SESSION_TTL_MS) {
-      localStorage.removeItem(LOCAL_STORAGE_USER);
-      localStorage.removeItem(LOCAL_STORAGE_ORDERS);
-      return null;
-    }
-
-    return parsedUser;
-  } catch {
-    localStorage.removeItem(LOCAL_STORAGE_USER);
-    localStorage.removeItem(LOCAL_STORAGE_ORDERS);
-    return null;
-  }
-};
+import { USER_SESSION_TTL_MS } from "../../utils/constants";
 
 const initialState: initialStateType = {
-  user: getStoredUser(),
-  orders: getStoredOrders(),
+  user: null,
+  orders: null,
   loading: false,
 };
 
@@ -56,7 +24,7 @@ export const UserContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [state, dispatch] = useReducer(UserReducer, initialState);
+  const [state, dispatch] = useReducer(UserReducer, undefined, getInitialUserState);
 
   useEffect(() => {
     if (!state.user?.loginAt) return;

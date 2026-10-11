@@ -24,9 +24,10 @@ describe("UserReducer", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T12:00:00"));
 
-    const nextState = UserReducer(emptyState, {
+    const nextState = UserReducer({ ...emptyState, user: testUser }, {
       type: "SET_ORDERS",
       payload: { all: testOrders.all, perYear: testOrders.perYear },
+      requestUser: testUser,
     });
 
     expect(nextState.orders?.all.totalOrders).toBe(4);
@@ -44,12 +45,14 @@ describe("UserReducer", () => {
     vi.setSystemTime(now);
     const withOrders: initialStateType = {
       ...emptyState,
+      user: testUser,
       orders: testOrders,
     };
     const updatedAll = { ...testOrders.all, totalOrders: 5 };
     const next = UserReducer(withOrders, {
       type: "SET_ORDERS",
       payload: { all: updatedAll, perYear: testOrders.perYear },
+      requestUser: testUser,
     });
     expect(next.orders?.timestamp).toEqual(now);
     expect(next.orders?.all.totalOrders).toBe(5);
@@ -93,5 +96,34 @@ describe("UserReducer", () => {
     expect(
       UserReducer(emptyState, { type: "SET_LOADING", payload: true }).loading
     ).toBe(true);
+  });
+
+  it("ignores late orders after logout or a new login, including the same session ID", () => {
+    const action = { type: "SET_ORDERS" as const, payload: testOrders, requestUser: testUser };
+    const loggedOut = UserReducer({ ...emptyState, user: testUser }, { type: "LOGOUT" });
+    expect(UserReducer(loggedOut, action)).toBe(loggedOut);
+    const loggedInAgain = { ...emptyState, user: { ...testUser, loginAt: testUser.loginAt! + 1 } };
+    expect(UserReducer(loggedInAgain, action)).toBe(loggedInAgain);
+    const otherUser = { ...emptyState, user: { ...testUser, session_id: "11111111-1111-1111-1111-111111111111" } };
+    expect(UserReducer(otherUser, action)).toBe(otherUser);
+    expect(localStorage.getItem(LOCAL_STORAGE_ORDERS)).toBeNull();
+  });
+
+  it("ignores old login and loading completions after logout", () => {
+    const loggedOut = UserReducer(emptyState, { type: "LOGOUT" });
+    const pendingLogin = { type: "SET_USER" as const, payload: testUser, authRevision: 0 };
+    expect(UserReducer(loggedOut, pendingLogin)).toBe(loggedOut);
+    const nextLogin = UserReducer(loggedOut, { type: "SET_LOADING", payload: true, authRevision: 1 });
+    expect(UserReducer(nextLogin, { type: "SET_LOADING", payload: false, authRevision: 0 })).toBe(nextLogin);
+    expect(localStorage.getItem(LOCAL_STORAGE_USER)).toBeNull();
+  });
+
+  it("continues updating in-memory state when browser storage is unavailable", () => {
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new DOMException("Quota exceeded"); });
+    try {
+      const state = UserReducer(emptyState, { type: "SET_USER", payload: testUser });
+      const next = UserReducer(state, { type: "SET_ORDERS", payload: testOrders, requestUser: state.user! });
+      expect(next.orders?.all.totalOrders).toBe(4);
+    } finally { spy.mockRestore(); }
   });
 });

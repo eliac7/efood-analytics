@@ -1,5 +1,6 @@
 import { Card, Text, Group, Flex } from "@mantine/core";
 import { Phases } from "../../../types";
+import { highestCount, NO_DATA } from "../../../utils/helpers";
 
 export default function HourCard({
   title,
@@ -11,8 +12,9 @@ export default function HourCard({
   icon?: React.ReactNode;
   hover?: boolean;
 }) {
-  let time = Object.keys(value)[0];
-  const orders = Object.values(value)[0];
+  const mostFrequent = highestCount({ ...value });
+  let time = mostFrequent?.[0];
+  const orders = mostFrequent?.[1];
   let color: string;
   let hour: string;
 
@@ -61,12 +63,12 @@ export default function HourCard({
         >
           <Flex direction={"column"} className="w-full h-full">
             <Text size="xl" fw={400} ta="left" className="flex-1">
-              Τις περισσότερες φορές, λιγουρεύτηκες{" "}
+              {mostFrequent ? <>Τις περισσότερες φορές, λιγουρεύτηκες{" "}
               {time === "νύχτα" ? "τη " : "το "}
               <b>
                 {time} ({hour})
               </b>{" "}
-              με <b>{orders}</b> παραγγελίες συνολικά
+              με <b>{orders}</b> παραγγελίες συνολικά</> : NO_DATA}
             </Text>
             <Text
               size="sm"

@@ -1,11 +1,15 @@
+import { ORDER_TIME_ZONE, parseOrderDate } from "./orderDate";
+
 export const NO_DATA = "Δεν υπάρχουν διαθέσιμα δεδομένα";
+
+export const highestCount = (counts: Record<string, number>) =>
+  Object.entries(counts).filter(([, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1])[0];
 
 export const dateFormat = (dateString: string | Date | null | undefined) => {
   if (dateString == null) return NO_DATA;
-  const date = new Date(
-    typeof dateString === "string" ? dateString.replace(" ", "T") : dateString
-  );
-  if (Number.isNaN(date.getTime())) return NO_DATA;
+  const date = typeof dateString === "string" ? parseOrderDate(dateString) : dateString;
+  if (!date || Number.isNaN(date.getTime())) return NO_DATA;
   return new Intl.DateTimeFormat("el-GR", {
     month: "long",
     day: "numeric",
@@ -13,6 +17,7 @@ export const dateFormat = (dateString: string | Date | null | undefined) => {
     hour: "numeric",
     minute: "numeric",
     hour12: false,
+    timeZone: ORDER_TIME_ZONE,
   }).format(date);
 };
 export const formatAmount = (amount: number | null | undefined) => {

@@ -3,6 +3,8 @@ export interface Orders {
   perYear: PerYear[];
   timestamp: Date;
   cacheVersion: number;
+  ownerSessionId: string;
+  ownerLoginAt: number;
 }
 
 export interface OrderStats {
@@ -78,4 +80,5 @@ export interface initialStateType {
   user: User | null;
   orders: Orders | null;
   loading: boolean;
+  authRevision?: number;
 }

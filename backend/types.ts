@@ -21,6 +21,10 @@ export interface EfoodProduct {
   unit_price: number;
   size_info?: string;
   customisation?: string;
+  tracking_product_id?: string;
+  is_coupon?: boolean;
+  is_delivery_fee_discount?: boolean;
+  offer_discount?: boolean;
   is_offer?: boolean;
   images?: Record<string, string | null> | null;
   [key: string]: unknown;
@@ -30,6 +34,7 @@ export interface EfoodOrder {
   id?: string | number;
   submission_date?: string | null;
   price: number;
+  status?: string;
   coupon?: { amount?: number } | null;
   delivery_cost?: number | null;
   tip?: number | null;
@@ -103,8 +108,8 @@ export interface OrderAnalytics {
 }
 
 export interface AuthService {
-  loginWithCredentials(email: string, password: string): Promise<LoginResponse>;
-  validateSession(sessionId: string): Promise<SessionValidationResponse>;
+  loginWithCredentials(email: string, password: string): Promise<unknown>;
+  validateSession(sessionId: string): Promise<unknown>;
 }
 
 export interface OrderService {
@@ -114,7 +119,7 @@ export interface OrderService {
 
 export type LoginResponse =
   | {
-      status?: undefined;
+      status?: "ok";
       message: string;
       data: {
         session_id: string;
@@ -131,7 +136,7 @@ export type LoginResponse =
 
 export type SessionValidationResponse =
   | {
-      status?: undefined;
+      status?: "ok";
       message?: string;
       data: {
         first_name_in_vocative: string;
@@ -165,6 +170,8 @@ export interface AppOptions {
 
 export interface HttpErrorLike {
   message?: string;
+  code?: string;
+  status?: number;
   response?: {
     status?: number;
     headers?: Record<string, string | number | undefined>;

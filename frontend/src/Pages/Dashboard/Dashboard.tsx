@@ -2,7 +2,8 @@ import { useState, useContext, useCallback, useMemo } from "react";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
 import { Alert, Container, Flex, Select } from "@mantine/core";
 import Loading from "../../Components/Loading/Loading";
-import { Orders, PerYear } from "../../types";
+import { PerYear } from "../../types";
+import { parseOrderAnalyticsResponse } from "../../utils/analyticsValidation";
 import DashboardCard from "./Cards/DashboardCard";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { BsPiggyBank } from "react-icons/bs";
@@ -51,26 +52,25 @@ function Dashboard() {
 
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
-  const effectiveSelectedYear = selectedYear ?? defaultSelectedYear;
+  const effectiveSelectedYear = years.some((year) => year.value === selectedYear) ? selectedYear : defaultSelectedYear;
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (signal: AbortSignal) => {
     if (!user?.session_id) {
       throw new Error("Session ID is required");
     }
     const response = await EfoodAxios.get("/orders", {
+      signal,
       headers: {
         session_id: user.session_id,
       },
     });
 
-    const responseData = response.data as { orders?: Pick<Orders, "all" | "perYear"> };
-    if (!responseData?.orders?.all || !Array.isArray(responseData.orders.perYear)) {
-      throw new Error("Invalid order analytics response");
-    }
-    dispatch({ type: "SET_ORDERS", payload: responseData.orders });
+    if (signal.aborted) throw new Error("Order request cancelled");
+    const orders = parseOrderAnalyticsResponse(response.data);
+    dispatch({ type: "SET_ORDERS", payload: orders, requestUser: user });
     showNotification({
       title: "Επιτυχής ανάκτηση δεδομένων",
-      message: `Βρέθηκαν συνολικά ${responseData.orders.all.totalOrders} παραγγελίες`,
+      message: `Βρέθηκαν συνολικά ${orders.all.totalOrders} παραγγελίες`,
       color: "green",
       icon: <GoGraph />,
     });
@@ -84,8 +84,9 @@ function Dashboard() {
     isRefetching,
     isError,
   } = useQuery({
-    queryKey: ["orders", user?.session_id],
-    queryFn: fetchOrders,
+    queryKey: ["orders", user?.session_id, user?.loginAt],
+    queryFn: ({ signal }) => fetchOrders(signal),
+    retry: false,
     refetchOnWindowFocus: false,
     enabled: !!user?.session_id && !ordersState?.all,
   });
@@ -242,14 +243,14 @@ function Dashboard() {
               <WeekdayChart
                 data={selectedYearOrders?.months}
                 title="Παραγγελίες ανά μήνα"
-                color="bg-blue-500"
+                color="rgba(59, 130, 246, 0.25)"
               />
             )}
             {selectedYearOrders?.weekdays && (
               <WeekdayChart
                 data={selectedYearOrders?.weekdays}
                 title="Παραγγελίες ανά ημέρα"
-                color="bg-green-500"
+                color="rgba(34, 197, 94, 0.25)"
               />
             )}
           </div>
@@ -259,14 +260,14 @@ function Dashboard() {
               <PlatformAndPaymentChart
                 data={selectedYearOrders?.platforms}
                 title="Πλατφόρμες παραγγελιών"
-                color="bg-blue-500"
+                color="rgba(59, 130, 246, 0.25)"
               />
             )}
             {selectedYearOrders?.paymentMethods && (
               <PlatformAndPaymentChart
                 data={selectedYearOrders?.paymentMethods}
                 title="Τρόποι Πληρωμής"
-                color="bg-green-500"
+                color="rgba(34, 197, 94, 0.25)"
               />
             )}
           </div>

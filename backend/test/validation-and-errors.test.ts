@@ -4,6 +4,7 @@ import {
   getErrorStatusCode,
   getSafeErrorMessage,
   handleRateLimitError,
+  getRetryAfterSeconds,
 } from "../utils/errorHandler.js";
 
 describe("validation helpers", () => {
@@ -73,5 +74,15 @@ describe("error helpers", () => {
     expect(handleRateLimitError({ response: { status: 400 } })).toEqual({
       isRateLimited: false,
     });
+  });
+
+  it("handles HTTP-date Retry-After and maps network failures to gateway errors", () => {
+    const now = Date.parse("2026-10-11T10:00:00Z");
+    expect(getRetryAfterSeconds("Sun, 11 Oct 2026 10:02:01 GMT", now)).toBe(121);
+    expect(getRetryAfterSeconds("invalid", now)).toBe(60);
+    expect(getRetryAfterSeconds("0", now)).toBe(0);
+    expect(getErrorStatusCode({ response: { status: 200 }, code: "ECONNABORTED" })).toBe(504);
+    expect(getErrorStatusCode({ code: "ENOTFOUND" })).toBe(502);
+    expect(getErrorStatusCode(new Error("Unexpected server failure"))).toBe(500);
   });
 });

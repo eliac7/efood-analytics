@@ -85,12 +85,14 @@ describe("Dashboard", () => {
 
     await waitFor(() => {
       expect(mockedAxiosGet).toHaveBeenCalledWith("/orders", {
+        signal: expect.any(AbortSignal),
         headers: { session_id: testUser.session_id },
       });
     });
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "SET_ORDERS",
+      requestUser: testUser,
       payload: { all: testOrders.all, perYear: testOrders.perYear },
     });
   });
@@ -147,7 +149,7 @@ describe("Dashboard", () => {
     expect(dispatch).not.toHaveBeenCalled();
     const updated = { all: { ...testOrders.all, totalOrders: 5 }, perYear: testOrders.perYear };
     await act(async () => { complete({ data: { orders: updated } }); });
-    await waitFor(() => { expect(dispatch).toHaveBeenCalledWith({ type: "SET_ORDERS", payload: updated }); });
+    await waitFor(() => { expect(dispatch).toHaveBeenCalledWith({ type: "SET_ORDERS", payload: updated, requestUser: testUser }); });
     expect(dispatch).toHaveBeenCalledOnce();
   });
 });

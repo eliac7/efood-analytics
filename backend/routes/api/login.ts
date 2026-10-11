@@ -14,10 +14,14 @@ import {
   getErrorStatusCode,
   getSafeErrorMessage,
   handleRateLimitError,
+  getRetryAfterSeconds,
+  toHttpError,
 } from "../../utils/errorHandler.js";
 import type { AuthService } from "../../types.js";
+import { UpstreamError } from "../../utils/upstreamError.js";
+import { isRecord } from "../../services/orderValidation.js";
 
-const USE_MOCK_AUTH = process.env.MOCK_AUTH === "true" && process.env.NODE_ENV === "development";
+const useMockAuth = () => process.env.MOCK_AUTH === "true" && process.env.NODE_ENV === "development";
 
 interface LoginWithEmailBody {
   email?: unknown;
@@ -38,11 +42,11 @@ async function handleLoginWithEmail(
   authService: AuthService
 ): Promise<Response> {
   // Development mock mode
-  if (USE_MOCK_AUTH) {
+    if (useMockAuth()) {
     return res.status(200).json(getMockUserData());
   }
 
-  const { email, password } = req.body;
+    const { email, password } = req.body ?? {};
 
   // Validate email
   if (!email || !isValidEmail(email)) {
@@ -57,10 +61,16 @@ async function handleLoginWithEmail(
 
   try {
     const response = await authService.loginWithCredentials(email.trim(), password as string);
+    if (!isRecord(response)) throw new UpstreamError("Το efood επέστρεψε μη έγκυρη απόκριση σύνδεσης.");
 
     if (response?.status === "error") {
-      return res.status(401).json({ message: response.message });
+      return res.status(401).json({ message: typeof response.message === "string" ? response.message : "Η σύνδεση απέτυχε." });
     }
+
+      if ((response.status !== undefined && response.status !== "ok") || !isRecord(response.data) || !isValidSessionId(response.data.session_id) ||
+          !isRecord(response.data.user) || typeof response.data.user.first_name_in_vocative !== "string") {
+        throw new UpstreamError("Το efood επέστρεψε μη έγκυρα στοιχεία σύνδεσης.");
+      }
 
     return res.status(200).json({
       session_id: response.data.session_id,
@@ -71,6 +81,7 @@ async function handleLoginWithEmail(
     // Handle rate limiting
     const rateLimit = handleRateLimitError(err);
     if (rateLimit.isRateLimited) {
+        res.setHeader("Retry-After", getRetryAfterSeconds(toHttpError(err).response?.headers?.["retry-after"]));
       return res.status(429).json({
         message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${rateLimit.retryAfterMinutes} λεπτά`,
       });
@@ -92,11 +103,11 @@ async function handleLoginWithSessionId(
   res: Response,
   authService: AuthService
 ): Promise<Response> {
-  if (USE_MOCK_AUTH) {
+    if (useMockAuth()) {
     return res.status(200).json(getMockUserData());
   }
 
-  let { session_id } = req.body;
+    let { session_id } = req.body ?? {};
 
   if (typeof session_id === "string") {
     session_id = session_id.replace(/['"]+/g, "").trim();
@@ -110,10 +121,15 @@ async function handleLoginWithSessionId(
 
   try {
     const response = await authService.validateSession(session_id);
+    if (!isRecord(response)) throw new UpstreamError("Το efood επέστρεψε μη έγκυρη απόκριση συνεδρίας.");
 
     if (response?.status === "error") {
-      return res.status(401).json({ message: response.message });
+      return res.status(401).json({ message: typeof response.message === "string" ? response.message : "Η συνεδρία δεν είναι έγκυρη." });
     }
+
+      if ((response.status !== undefined && response.status !== "ok") || !isRecord(response.data) || typeof response.data.first_name_in_vocative !== "string") {
+        throw new UpstreamError("Το efood επέστρεψε μη έγκυρα στοιχεία συνεδρίας.");
+      }
 
     return res.status(200).json({
       session_id,
@@ -123,6 +139,7 @@ async function handleLoginWithSessionId(
   } catch (err) {
     const rateLimit = handleRateLimitError(err);
     if (rateLimit.isRateLimited) {
+        res.setHeader("Retry-After", getRetryAfterSeconds(toHttpError(err).response?.headers?.["retry-after"]));
       return res.status(429).json({
         message: `Πάρα πολλές αιτήσεις. Παρακαλώ δοκιμάστε ξανά σε ${rateLimit.retryAfterMinutes} λεπτά`,
       });

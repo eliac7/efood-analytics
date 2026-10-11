@@ -9,6 +9,8 @@ export const testUser: User = {
 
 export const testOrders: Orders = {
   cacheVersion: ORDERS_CACHE_VERSION,
+  ownerSessionId: testUser.session_id,
+  ownerLoginAt: testUser.loginAt!,
   timestamp: new Date("2026-01-01T10:30:00"),
   all: {
     totalOrders: 4,

@@ -29,6 +29,7 @@ function Header() {
         <ToggleDarkMode />
         {user && (
           <Button
+            aria-label="Αποσύνδεση"
             variant="filled"
             color="red"
             radius="xl"

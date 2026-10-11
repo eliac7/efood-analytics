@@ -3,7 +3,7 @@ import { TextInput, PasswordInput, Button, Stack } from "@mantine/core";
 import { useAuth } from "../../Hooks/Auth/useAuth";
 
 function LoginFormWithEmail() {
-  const { login } = useAuth();
+  const { login, loading } = useAuth();
 
   const form = useForm({
     initialValues: {
@@ -12,11 +12,11 @@ function LoginFormWithEmail() {
     },
     validate: {
       email: (value) =>
-        /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
           ? null
           : "Παρακαλώ εισάγετε ένα έγκυρο email",
       password: (value) =>
-        value.length > 0 ? null : "Παρακαλώ εισάγετε έναν κωδικό",
+        value.length >= 6 && value.length <= 128 ? null : "Ο κωδικός πρέπει να έχει 6–128 χαρακτήρες",
     },
   });
 
@@ -50,14 +50,13 @@ function LoginFormWithEmail() {
           onChange={(event) =>
             form.setFieldValue("password", event.currentTarget.value)
           }
-          error={
-            form.errors.password &&
-            "Password should include at least 6 characters"
-          }
+          error={form.errors.password}
           radius="lg"
         />
 
         <Button
+          loading={loading}
+          disabled={loading}
           type="submit"
           color="blue"
           variant="outline"

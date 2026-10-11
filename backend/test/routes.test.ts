@@ -33,6 +33,15 @@ describe("api routes", () => {
 });
 
 describe("login routes", () => {
+  it("rejects missing bodies and malformed successful upstream responses", async () => {
+    const authService = { loginWithCredentials: vi.fn().mockResolvedValue({ status: "ok", data: {} }),
+      validateSession: vi.fn().mockResolvedValue({ status: "ok", data: { first_name_in_vocative: 123 } }) };
+    const app = createTestApp({ authService });
+    await request(app).post("/api/login").expect(400);
+    await request(app).post("/api/login/session").expect(400);
+    await request(app).post("/api/login").send({ email: "user@example.com", password: "secret" }).expect(502);
+    await request(app).post("/api/login/session").send({ session_id: validSessionId }).expect(502);
+  });
   it("rejects invalid email and password requests before calling external services", async () => {
     const authService = {
       loginWithCredentials: vi.fn(),
@@ -49,6 +58,7 @@ describe("login routes", () => {
   it("maps successful credential login responses", async () => {
     const authService = {
       loginWithCredentials: vi.fn().mockResolvedValue({
+        status: "ok",
         data: {
           session_id: validSessionId,
           user: { first_name_in_vocative: "Ilias" },
@@ -101,12 +111,14 @@ describe("login routes", () => {
       .expect(429);
 
     expect(response.body.message).toContain("2 λεπτά");
+    expect(response.headers["retry-after"]).toBe("120");
   });
 
   it("sanitizes session IDs and maps validation responses", async () => {
     const authService = {
       loginWithCredentials: vi.fn(),
       validateSession: vi.fn().mockResolvedValue({
+        status: "ok",
         data: { first_name_in_vocative: "Ilias" },
         message: "verified",
       }),
@@ -202,6 +214,7 @@ describe("orders routes", () => {
       .expect(429);
 
     expect(rateLimitResponse.body.message).toContain("3 λεπτά");
+    expect(rateLimitResponse.headers["retry-after"]).toBe("180");
 
     const failureApp = createTestApp({
       orderService: {

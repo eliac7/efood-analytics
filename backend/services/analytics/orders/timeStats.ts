@@ -2,6 +2,7 @@ import { WEEKDAYS_GR, MONTHS_GR, TIME_PHASES } from "../../../constants/locale.j
 import { sortByReference, sortByValueDesc } from "../../../utils/sorting.js";
 import { getCityFromOrder, parseSubmissionDate } from "./normalize.js";
 import type { CountMap, EfoodOrder } from "../../../types.js";
+import { getOrderDateParts } from "../../../utils/orderDate.js";
 
 /**
  * Get time phase from hour
@@ -32,14 +33,18 @@ export function calculateTimeStats(orders: EfoodOrder[]): {
   const phases: CountMap = { morning: 0, noon: 0, afternoon: 0, night: 0 };
   const weekdays: CountMap = {};
   const months: CountMap = {};
-  const cities: CountMap = {};
+  const cities: CountMap = Object.create(null) as CountMap;
 
   for (const order of orders) {
+    // Location remains usable even when an order's timestamp is unavailable.
+    const city = getCityFromOrder(order);
+    cities[city] = (cities[city] || 0) + 1;
     const date = parseSubmissionDate(order.submission_date);
     if (!date) continue;
-    const day = date.getDay() === 0 ? 6 : date.getDay() - 1;
-    const month = date.getMonth();
-    const hour = date.getHours();
+    const parts = getOrderDateParts(date);
+    const day = parts.weekday === 0 ? 6 : parts.weekday - 1;
+    const month = parts.month - 1;
+    const hour = parts.hour;
 
     // Count phases
     phases[getTimePhase(hour)]++;
@@ -52,9 +57,6 @@ export function calculateTimeStats(orders: EfoodOrder[]): {
     const monthName = MONTHS_GR[month];
     months[monthName] = (months[monthName] || 0) + 1;
 
-    // Count cities
-    const city = getCityFromOrder(order);
-    cities[city] = (cities[city] || 0) + 1;
   }
 
   return {

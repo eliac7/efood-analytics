@@ -6,7 +6,7 @@ import { RiInformationLine } from "react-icons/ri";
 import InstructionsMoal from "./InstructionsModal";
 
 function LoginFormWithID() {
-  const { loginWithSessionId } = useAuth();
+  const { loginWithSessionId, loading } = useAuth();
   const [openModal, setOpenModal] = useState(false);
 
   const form = useForm({
@@ -19,7 +19,7 @@ function LoginFormWithID() {
 
         if (!value) return "Το ID είναι υποχρεωτικό";
         if (
-          !/^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$/.test(
+          !/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(
             value
           )
         ) {
@@ -35,7 +35,7 @@ function LoginFormWithID() {
       <form
         className="w-full"
         onSubmit={form.onSubmit((values) => {
-          loginWithSessionId(values.id);
+          loginWithSessionId(values.id.replace(/\s/g, "").replace(/['"]+/g, ""));
         })}
       >
         <Stack>
@@ -67,6 +67,8 @@ function LoginFormWithID() {
           />
 
           <Button
+            loading={loading}
+            disabled={loading}
             type="submit"
             color="blue"
             variant="outline"

@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { LoginResponse, MockUserData, SessionValidationResponse } from "../types.js";
+import { UPSTREAM_TIMEOUT_MS } from "./orderService.js";
 
 const EFOOD_BASE_URL = "https://api.e-food.gr/api/v1";
 const EFOOD_LOGIN_URL = "https://www.e-food.gr/users/login";
@@ -23,7 +24,7 @@ export async function loginWithCredentials(
   const response = await axios.post<LoginResponse>(
     EFOOD_LOGIN_URL,
     { email, password },
-    { headers: DEFAULT_HEADERS }
+    { headers: DEFAULT_HEADERS, timeout: UPSTREAM_TIMEOUT_MS }
   );
   return response.data;
 }
@@ -35,6 +36,7 @@ export async function loginWithCredentials(
  */
 export async function validateSession(sessionId: string): Promise<SessionValidationResponse> {
   const response = await axios.get<SessionValidationResponse>(`${EFOOD_BASE_URL}/user/account`, {
+      timeout: UPSTREAM_TIMEOUT_MS,
     headers: {
       ...DEFAULT_HEADERS,
       "x-core-session-id": sessionId,

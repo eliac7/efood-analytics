@@ -8,6 +8,41 @@ import { analyticsOrders } from "./fixtures/orders.js";
 import type { EfoodOrder } from "../types.js";
 
 describe("order analytics", () => {
+  it("retains usable cities when timestamps are missing and trims city names", () => {
+    const stats = analyzeOrders([{ ...analyticsOrders[0], submission_date: null,
+      delivery_address: { city: " Athens " } }]).all;
+    expect(stats.cities).toEqual({ Athens: 1 });
+    expect(stats.months).toEqual({});
+    expect(stats.firstOrder).toBeNull();
+  });
+  it("excludes discount adjustments and separates products without item codes by identity", () => {
+    const base = analyticsOrders[0];
+    const product = { item_code: "", name: "Coffee", quantity: 2, unit_price: 3 };
+    expect(findMostOrderedProduct([{ ...base, products: [
+      product, { ...product, name: "Tea" },
+      { ...product, name: "Discount", quantity: 20, unit_price: -2 },
+      { ...product, name: "Coupon", quantity: 30, is_coupon: true },
+      { ...product, name: "Delivery discount", quantity: 40, is_delivery_fee_discount: true },
+      { ...product, name: "Offer adjustment", quantity: 50, offer_discount: true },
+      { ...product, name: "Cake", quantity: 3 },
+    ] }])).toMatchObject({ name: "Cake", quantity: 3 });
+  });
+
+  it("keeps reported totals regardless of tax aliases, donations, overlapping discounts, or statuses", () => {
+    const orders = ["accepted", "cancelled", "new-unknown-status"].map((status) => ({
+      ...analyticsOrders[0], status, price: 8.25, additional_taxes: 0.1, csr: { amount: 1 },
+      service_fee: 0.5, service_fees: { total: 0.5, current: 0.5 },
+      coupon: { amount: 2 }, products: [
+        { item_code: "item", name: "Item", quantity: 1, unit_price: 12 },
+        { item_code: "discount", quantity: 1, unit_price: -2, is_coupon: true },
+      ],
+    }));
+    const stats = analyzeOrders(orders).all;
+    expect(stats.totalOrders).toBe(3);
+    expect(stats.totalPrice).toBe(24.75);
+    expect(stats.restaurants[0].totalPrice).toBe(24.75);
+    expect(stats.mostOrderedProduct).toMatchObject({ name: "Item", quantity: 3, totalPrice: 36 });
+  });
   it("analyzes orders across years and excludes invalid dates from per-year buckets", () => {
     const result = analyzeOrders(analyticsOrders);
 

@@ -18,7 +18,8 @@ export function getSafeErrorMessage(err: unknown): string {
   if (process.env.NODE_ENV === "production") {
     return "Προέκυψε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά αργότερα.";
   }
-  return toHttpError(err).message || "Προέκυψε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά αργότερα.";
+  const message = toHttpError(err).message;
+  return typeof message === "string" && message.trim() ? message : "Προέκυψε ένα σφάλμα. Παρακαλώ δοκιμάστε ξανά αργότερα.";
 }
 
 /**
@@ -27,8 +28,23 @@ export function getSafeErrorMessage(err: unknown): string {
  * @param {number} defaultCode - Default status code
  * @returns {number} - HTTP status code
  */
-export function getErrorStatusCode(err: unknown, defaultCode = 400): number {
-  return toHttpError(err).response?.status || defaultCode;
+export function getErrorStatusCode(err: unknown, defaultCode = 500): number {
+  const error = toHttpError(err);
+  const status = error.response?.status ?? error.status;
+  if (typeof status === "number" && Number.isInteger(status) && status >= 400 && status <= 599) return status;
+  if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") return 504;
+  if (error.code === "ECONNREFUSED" || error.code === "ENOTFOUND" || error.code === "ECONNRESET" || error.code === "ERR_NETWORK") return 502;
+  return defaultCode;
+}
+
+export function getRetryAfterSeconds(value: unknown, now = Date.now()): number {
+  if ((typeof value === "number" || (typeof value === "string" && /^\d+(?:\.\d+)?$/.test(value))) &&
+      Number.isFinite(Number(value)) && Number(value) >= 0) return Math.ceil(Number(value));
+  if (typeof value === "string") {
+    const date = Date.parse(value);
+    if (Number.isFinite(date)) return Math.max(0, Math.ceil((date - now) / 1000));
+  }
+  return 60;
 }
 
 /**
@@ -42,8 +58,8 @@ export function handleRateLimitError(
   const statusCode = getErrorStatusCode(err);
   
   if (statusCode === 429) {
-    const retryAfter = toHttpError(err).response?.headers?.["retry-after"] || 60;
-    const retryAfterMinutes = Math.ceil(Number(retryAfter) / 60);
+    const retryAfter = getRetryAfterSeconds(toHttpError(err).response?.headers?.["retry-after"]);
+    const retryAfterMinutes = Math.max(1, Math.ceil(retryAfter / 60));
     return { isRateLimited: true, retryAfterMinutes };
   }
   
@@ -54,9 +70,11 @@ export function handleRateLimitError(
  * Express error handling middleware
  */
 export const errorMiddleware: ErrorRequestHandler = (err, req, res, next) => {
+  if (res.headersSent) { next(err); return; }
   const rateLimit = handleRateLimitError(err);
   
   if (rateLimit.isRateLimited) {
+    res.setHeader("Retry-After", getRetryAfterSeconds(toHttpError(err).response?.headers?.["retry-after"]));
     return res.status(429).json({
       message: `Too many requests. Please try again in ${rateLimit.retryAfterMinutes} minutes`,
     });

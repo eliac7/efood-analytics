@@ -3,9 +3,12 @@ import { AiFillDollarCircle, AiFillHeart } from "react-icons/ai";
 import { FaShoppingBasket } from "react-icons/fa";
 import { GiForkKnifeSpoon, GiKnifeFork } from "react-icons/gi";
 import { Restaurant } from "../../../types";
-import { formatAmount } from "../../../utils/helpers";
+import { formatAmount, NO_DATA } from "../../../utils/helpers";
+import noAvatar from "../../../Assets/Images/no-avatar.webp";
 
 function RestaurantCard({ data }: { data: Restaurant }) {
+  const hasLocation = typeof data.latitude === "number" && Number.isFinite(data.latitude) && Math.abs(data.latitude) <= 90 &&
+    typeof data.longitude === "number" && Number.isFinite(data.longitude) && Math.abs(data.longitude) <= 180;
   return (
     <Card
       shadow="sm"
@@ -66,25 +69,26 @@ function RestaurantCard({ data }: { data: Restaurant }) {
           <div className="flex flex-row items-center flex-1 flex-wrap  gap-2 ">
             <div>
               <img
-                  src={data.logo ?? undefined}
-                alt="logo"
+                src={data.logo || noAvatar}
+                alt={data.name || "Κατάστημα"}
+                onError={(event) => { if (!event.currentTarget.src.endsWith(noAvatar)) event.currentTarget.src = noAvatar; }}
                 className="rounded-full h-20 w-20"
               />
             </div>
 
             <div className="flex flex-col items-left">
               <p className="text-2xl">
-                {data.name} <br />
+                {data.name || "Κατάστημα"} <br />
               </p>
               <div className="flex items-center">
-                <a
+                {hasLocation ? <a
                   className="text-sm cursor-pointer no-underline hover:underline text-gray-500 dark:text-gray-900"
                   href={`https://maps.google.com/?q=${data.latitude},${data.longitude}`}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {data.address}
-                </a>
+                  {data.address || "Δες στον χάρτη"}
+                </a> : <span>{data.address || NO_DATA}</span>}
               </div>
             </div>
           </div>

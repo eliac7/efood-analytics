@@ -3,6 +3,7 @@ import ReactApexChart from "react-apexcharts";
 import { PaymentMethods, Platforms } from "../../../types";
 import DashboardCard from "../Cards/DashboardCard";
 import { useMantineColorScheme } from "@mantine/core";
+import { highestCount, NO_DATA } from "../../../utils/helpers";
 
 function PlatformAndPaymentChart({
   data,
@@ -15,31 +16,34 @@ function PlatformAndPaymentChart({
 }) {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
-  
-  const options = useMemo(() => ({
-    options: {
-      labels: Object.keys(data).map(
-        (key) => key.charAt(0).toUpperCase() + key.slice(1)
-      ),
-      tooltip: {
-        enabled: true,
-      },
-      chart: {
-        foreColor: isDark ? "#fff" : "#2E4053",
-      },
-      responsive: [
-        {
-          breakpoint: 768,
-          options: {
-            legend: {
-              position: "bottom",
+
+  const options = useMemo(
+    () => ({
+      options: {
+        labels: Object.keys(data).map(
+          (key) => key.charAt(0).toUpperCase() + key.slice(1),
+        ),
+        tooltip: {
+          enabled: true,
+        },
+        chart: {
+          foreColor: isDark ? "#fff" : "#2E4053",
+        },
+        responsive: [
+          {
+            breakpoint: 768,
+            options: {
+              legend: {
+                position: "bottom",
+              },
             },
           },
-        },
-      ],
-    },
-    series: Object.values(data),
-  }), [data, isDark]);
+        ],
+      },
+      series: Object.values(data),
+    }),
+    [data, isDark],
+  );
 
   return (
     <DashboardCard
@@ -47,12 +51,16 @@ function PlatformAndPaymentChart({
       color={color}
       hover={false}
       value={
-        <ReactApexChart
-          type="donut"
-          options={options.options}
-          series={options.series}
-          height={350}
-        />
+        highestCount(data) ? (
+          <ReactApexChart
+            type="donut"
+            options={options.options}
+            series={options.series}
+            height={350}
+          />
+        ) : (
+          NO_DATA
+        )
       }
     />
   );

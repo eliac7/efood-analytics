@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import ReactApexChart from "react-apexcharts";
 import { useMantineColorScheme } from "@mantine/core";
 import DashboardCard from "../Cards/DashboardCard";
+import { highestCount, NO_DATA } from "../../../utils/helpers";
 
 function WeekdayChart({
   data,
@@ -18,6 +19,7 @@ function WeekdayChart({
   const options = useMemo(
     () => ({
       options: {
+        xaxis: { categories: Object.keys(data) },
         dataLabels: {
           enabled: true,
           style: {
@@ -46,7 +48,7 @@ function WeekdayChart({
         },
       ],
     }),
-    [data, isDark]
+    [data, isDark],
   );
 
   return (
@@ -55,12 +57,16 @@ function WeekdayChart({
       hover={false}
       color={color}
       value={
-        <ReactApexChart
-          type="heatmap"
-          options={options.options}
-          series={options.series}
-          height={150}
-        />
+        highestCount(data) ? (
+          <ReactApexChart
+            type="heatmap"
+            options={options.options}
+            series={options.series}
+            height={150}
+          />
+        ) : (
+          NO_DATA
+        )
       }
     />
   );

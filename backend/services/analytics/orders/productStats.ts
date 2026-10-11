@@ -19,11 +19,16 @@ export function findMostOrderedProduct(
 
   for (const order of orders) {
     for (const product of order.products) {
-      if (product.is_offer) continue;
+      if (product.is_offer || product.is_coupon || product.is_delivery_fee_discount ||
+          product.offer_discount || product.unit_price < 0 || product.quantity <= 0) continue;
+
+      const identity = product.item_code.trim() || product.tracking_product_id || product.name?.trim();
+      if (!identity) continue;
 
       const key = JSON.stringify([
         String(order.restaurant.id),
-        product.item_code,
+        product.item_code.trim() ? "code" : product.tracking_product_id ? "tracking" : "name",
+        identity,
         product.size_info ?? "",
         product.customisation ?? "",
       ]);

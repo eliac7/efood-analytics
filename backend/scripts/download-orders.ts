@@ -1,6 +1,10 @@
 import { access, mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fetchAllOrders } from "../services/orderService.js";
+import dotenv from "dotenv";
+import { fileURLToPath } from "node:url";
+
+dotenv.config({ path: fileURLToPath(new URL("../.env", import.meta.url)), quiet: true });
 
 interface CliOptions {
   sessionId?: string;
@@ -15,9 +19,11 @@ function readOptions(args: string[]): CliOptions {
     const arg = args[index];
 
     if (arg === "--session") {
+      if (!args[index + 1] || args[index + 1].startsWith("--")) throw new Error("--session requires a value.");
       options.sessionId = args[index + 1];
       index += 1;
     } else if (arg === "--out") {
+      if (!args[index + 1] || args[index + 1].startsWith("--")) throw new Error("--out requires a value.");
       options.outputPath = args[index + 1];
       index += 1;
     } else if (arg === "--force") {

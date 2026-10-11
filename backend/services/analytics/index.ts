@@ -1,6 +1,7 @@
 import { getYearFromSubmission, parseSubmissionDate } from "./orders/normalize.js";
 import { calculateAllTimeStats, calculateYearStats } from "./orders/yearStats.js";
 import type { EfoodOrder, OrderAnalytics } from "../../types.js";
+import { normalizeOrders } from "../orderValidation.js";
 
 /**
  * Main function to process and analyze all orders
@@ -8,7 +9,7 @@ import type { EfoodOrder, OrderAnalytics } from "../../types.js";
  * @returns {Object} - Processed order analytics
  */
 export function analyzeOrders(orders: EfoodOrder[]): OrderAnalytics {
-  const sortedOrders = [...orders].sort((a, b) => {
+  const sortedOrders = normalizeOrders(orders).sort((a, b) => {
     const da = parseSubmissionDate(a?.submission_date);
     const db = parseSubmissionDate(b?.submission_date);
     // Newest first
