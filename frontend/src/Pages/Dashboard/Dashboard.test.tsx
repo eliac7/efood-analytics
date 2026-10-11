@@ -9,6 +9,7 @@ import {
 import { renderWithProviders } from "../../test/render";
 import {
   makeTestCostBreakdown,
+  makeTestHistory,
   makeTestTimeline,
   testOrders,
   testUser,
@@ -54,10 +55,14 @@ describe("Dashboard", () => {
     });
 
     expect(screen.getByText("Συνολικές Παραγγελίες")).toBeInTheDocument();
-    expect(screen.getByText("4")).toBeInTheDocument();
+    expect(
+      within(
+        screen.getByText("Συνολικές Παραγγελίες").parentElement!,
+      ).getByText("4"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Συνολική Δαπάνη")).toBeInTheDocument();
     expect(screen.getByText(/49,74/)).toBeInTheDocument();
-    expect(screen.getByText("Gyro House")).toBeInTheDocument();
+    expect(screen.getAllByText("Gyro House").length).toBeGreaterThan(0);
     expect(screen.getByText("Pasta")).toBeInTheDocument();
     expect(screen.getByTestId("map")).toHaveTextContent("restaurants:1");
     expect(mockedAxiosGet).not.toHaveBeenCalled();
@@ -74,7 +79,7 @@ describe("Dashboard", () => {
     fireEvent.click(screen.getByRole("option", { name: "2024", hidden: true }));
 
     await waitFor(() => {
-      expect(screen.getByText("Pasta Place")).toBeInTheDocument();
+      expect(screen.getAllByText("Pasta Place").length).toBeGreaterThan(0);
     });
     expect(screen.getAllByText("1").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/9,99/).length).toBeGreaterThan(0);
@@ -82,7 +87,10 @@ describe("Dashboard", () => {
       screen.getByRole("region", { name: "Ανάλυση κόστους" }),
     );
     expect(costs.getByText("1 παραγγελία")).toBeInTheDocument();
-    expect(costs.getByText(/σε 1\/1 παραγγελίες/i)).toBeInTheDocument();
+    expect(
+      costs.getByRole("columnheader", { name: "Στοιχεία για" }),
+    ).toBeInTheDocument();
+    expect(costs.getAllByText("1/1").length).toBeGreaterThan(0);
   });
 
   it("fetches orders when no cached analytics exist", async () => {
@@ -93,6 +101,7 @@ describe("Dashboard", () => {
           all: testOrders.all,
           perYear: testOrders.perYear,
           timeline: testOrders.timeline,
+          history: testOrders.history,
         },
       },
     });
@@ -117,8 +126,79 @@ describe("Dashboard", () => {
         all: testOrders.all,
         perYear: testOrders.perYear,
         timeline: testOrders.timeline,
+        history: testOrders.history,
       },
     });
+  });
+
+  it("applies filters to every view locally, then clears applied filters even after editing the draft", async () => {
+    renderWithProviders(<Dashboard />, {
+      state: { user: testUser, orders: testOrders, loading: false },
+    });
+    const toggle = screen.getByRole("button", { name: "Φίλτρα" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(
+      screen.queryByLabelText("Αναζήτηση καταστήματος"),
+    ).not.toBeInTheDocument();
+    fireEvent.click(toggle);
+    fireEvent.change(await screen.findByLabelText("Αναζήτηση καταστήματος"), {
+      target: { value: "Pasta" },
+    });
+    fireEvent.click(toggle);
+    fireEvent.click(toggle);
+    expect(await screen.findByLabelText("Αναζήτηση καταστήματος")).toHaveValue(
+      "Pasta",
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Εφαρμογή" }));
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(toggle).toHaveTextContent("1 ενεργό");
+    expect(toggle).toHaveTextContent("Pasta");
+    expect(toggle).toHaveFocus();
+    expect(
+      within(
+        screen.getByText("Συνολικές Παραγγελίες").parentElement!,
+      ).getByText("1"),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByText("Συνολική Δαπάνη").parentElement!).getByText(
+        /9,99/,
+      ),
+    ).toBeInTheDocument();
+    const history = within(
+      screen.getByRole("region", { name: "Ιστορικό παραγγελιών" }),
+    );
+    expect(history.getByText("Pasta Place")).toBeInTheDocument();
+    expect(history.queryByText("Gyro House")).not.toBeInTheDocument();
+    expect(
+      within(screen.getByRole("region", { name: "Ανάλυση κόστους" })).getByText(
+        "1 παραγγελία",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("map")).toHaveTextContent("restaurants:1");
+    fireEvent.click(toggle);
+    await screen.findByRole("button", { name: "Εφαρμογή" });
+    fireEvent.change(screen.getByLabelText("Ελάχιστο ποσό (€)"), {
+      target: { value: "bad" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Εφαρμογή" }));
+    expect(screen.getByText("Έλεγξε τα φίλτρα")).toBeInTheDocument();
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(history.getByText("Pasta Place")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Ελάχιστο ποσό (€)"), {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getByLabelText("Αναζήτηση καταστήματος"), {
+      target: { value: "" },
+    });
+    expect(screen.getByRole("button", { name: "Καθαρισμός" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Καθαρισμός" }));
+    expect(toggle).not.toHaveTextContent("ενεργό");
+    expect(
+      within(screen.getByText("Συνολική Δαπάνη").parentElement!).getByText(
+        /49,74/,
+      ),
+    ).toBeInTheDocument();
+    expect(mockedAxiosGet).not.toHaveBeenCalled();
   });
 
   it("renders zero euros correctly and labels delivery time as an estimate", () => {
@@ -190,7 +270,7 @@ describe("Dashboard", () => {
     renderWithProviders(<Dashboard />, {
       state: {
         user: testUser,
-        orders: { ...testOrders, all, perYear: [] },
+        orders: { ...testOrders, all, perYear: [], history: [] },
         loading: false,
       },
     });
@@ -224,7 +304,7 @@ describe("Dashboard", () => {
     );
     await waitFor(() => {
       expect(
-        screen.getByText("Η ανάκτηση παραγγελιών απέτυχε"),
+        screen.getByText("Δεν φορτώθηκαν οι παραγγελίες"),
       ).toBeInTheDocument();
     });
     expect(dispatch).not.toHaveBeenCalled();
@@ -242,6 +322,7 @@ describe("Dashboard", () => {
           all: typeof testOrders.all;
           perYear: typeof testOrders.perYear;
           timeline: typeof testOrders.timeline;
+          history: typeof testOrders.history;
         };
       };
     }) => void;
@@ -270,6 +351,7 @@ describe("Dashboard", () => {
       },
       perYear: testOrders.perYear,
       timeline: makeTestTimeline(5),
+      history: makeTestHistory(5),
     };
     await act(async () => {
       complete({ data: { orders: updated } });

@@ -1,6 +1,6 @@
 import { getEstimatedDeliveryTime, parseSubmissionDate } from "./normalize.js";
 import { sumKnownAmounts, toCents } from "./money.js";
-import type { CountMap, EfoodOrder } from "../../../types.js";
+import type { CountMap, EfoodOrder } from "../../../analyticsTypes.js";
 
 interface AggregateStats {
   totalPrice: number;
@@ -13,7 +13,9 @@ interface AggregateStats {
   paymentMethods: CountMap;
 }
 
-export const computeDeliveryTimeStats = (orders: EfoodOrder[]): { sum: number; count: number } => {
+export const computeDeliveryTimeStats = (
+  orders: EfoodOrder[],
+): { sum: number; count: number } => {
   let sum = 0;
   let count = 0;
   for (const o of orders) {
@@ -26,7 +28,9 @@ export const computeDeliveryTimeStats = (orders: EfoodOrder[]): { sum: number; c
   return { sum, count };
 };
 
-export const computeFirstLast = (orders: EfoodOrder[]): { firstOrder: string | null; lastOrder: string | null } => {
+export const computeFirstLast = (
+  orders: EfoodOrder[],
+): { firstOrder: string | null; lastOrder: string | null } => {
   let minD: Date | null = null,
     maxD: Date | null = null;
   let minS: string | null = null,
@@ -83,11 +87,11 @@ export function calculateAggregateStats(orders: EfoodOrder[]): AggregateStats {
       deliveryTimeCount: 0,
       platforms: Object.create(null) as CountMap,
       paymentMethods: Object.create(null) as CountMap,
-    }
+    },
   );
   stats.totalPrice = totalPriceCents / 100;
   stats.couponAmount = sumKnownAmounts(orders, (order) =>
-    order.coupon === null ? 0 : order.coupon?.amount
+    order.coupon === null ? 0 : order.coupon?.amount,
   );
   stats.deliveryCost = sumKnownAmounts(orders, (order) => order.delivery_cost);
   stats.totalTips = sumKnownAmounts(orders, (order) => order.tip);

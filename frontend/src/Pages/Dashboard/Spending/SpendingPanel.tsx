@@ -45,7 +45,7 @@ function ChangeValue({
       {money ? formatAmount(value.absolute) : decimal(value.absolute)}
       <Text component="span" size="sm" c="dimmed">
         {value.percent === null
-          ? " · ποσοστό μη διαθέσιμο (προηγούμενο ποσό μηδέν)"
+          ? " · χωρίς ποσοστό (πριν: 0)"
           : ` · ${sign(value.percent)}${decimal(value.percent)}%`}
       </Text>
     </Text>
@@ -63,28 +63,32 @@ function ComparisonTable({ comparison }: { comparison: PeriodComparison }) {
   return (
     <>
       <Text size="sm" my="sm">
-        {comparison.days} ολοκληρωμένες ημέρες ανά περίοδο. Τρέχουσα:{" "}
-        {dateLabel(current.from)}–{dateLabel(current.through)}. Προηγούμενη:{" "}
-        {dateLabel(previous.from)}–{dateLabel(previous.through)}.
+        Συγκρίνουμε {comparison.days} πλήρεις ημέρες: {dateLabel(current.from)}–
+        {dateLabel(current.through)} με {dateLabel(previous.from)}–
+        {dateLabel(previous.through)}.
       </Text>
       {change === null ? (
-        <Alert color="blue" title="Η σύγκριση δεν είναι διαθέσιμη" mb="sm">
+        <Alert
+          color="blue"
+          title="Δεν έχουμε αρκετά στοιχεία για σύγκριση"
+          mb="sm"
+        >
           {comparison.days === 0
-            ? "Δεν έχει ολοκληρωθεί ακόμη ημέρα στην επιλεγμένη περίοδο."
-            : "Δεν υπάρχει πλήρης χρονική κάλυψη και για τις δύο περιόδους. Τα παρακάτω ποσά περιλαμβάνουν μόνο τις παραγγελίες με διαθέσιμη ημερομηνία και δεν χρησιμοποιούνται για υπολογισμό μεταβολής."}
+            ? "Δεν έχει ολοκληρωθεί ακόμα μία ημέρα σε αυτό το διάστημα."
+            : "Λείπει ιστορικό από κάποια περίοδο ή υπάρχουν παραγγελίες χωρίς σωστή ημερομηνία. Δείχνουμε τα γνωστά ποσά, αλλά δεν υπολογίζουμε μεταβολή."}
         </Alert>
       ) : null}
       <ScrollArea>
         <Table miw={550} striped withTableBorder>
-          <Table.Caption>Σύγκριση ισότιμων περιόδων</Table.Caption>
+          <Table.Caption>Σύγκριση περιόδων</Table.Caption>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Μετρική</Table.Th>
               <Table.Th>
-                Τρέχουσα{!current.complete ? " (ελλιπής κάλυψη)" : ""}
+                Τρέχουσα{!current.complete ? " (ελλιπή στοιχεία)" : ""}
               </Table.Th>
               <Table.Th>
-                Προηγούμενη{!previous.complete ? " (ελλιπής κάλυψη)" : ""}
+                Προηγούμενη{!previous.complete ? " (ελλιπή στοιχεία)" : ""}
               </Table.Th>
               <Table.Th>Μεταβολή</Table.Th>
             </Table.Tr>
@@ -114,9 +118,11 @@ function ComparisonTable({ comparison }: { comparison: PeriodComparison }) {
 export default function SpendingPanel({
   timeline,
   year,
+  scope,
 }: {
   timeline: OrderTimeline;
   year: string;
+  scope?: { from: string; through: string };
 }) {
   const [frequency, setFrequency] = useState("months");
   const [range, setRange] = useState("24");
@@ -125,12 +131,13 @@ export default function SpendingPanel({
   const weekly = frequency === "weeks";
   const buckets = useMemo(() => {
     const source = weekly ? timeline.weeks : timeline.months;
-    const filtered =
-      year === "all"
-        ? source
-        : source.filter((b) => b.from.startsWith(`${year}-`));
+    const filtered = source.filter(
+      (b) =>
+        (year === "all" || b.from.startsWith(`${year}-`)) &&
+        (!scope || (b.through >= scope.from && b.from <= scope.through)),
+    );
     return range === "all" ? filtered : filtered.slice(-Number(range));
-  }, [timeline, weekly, year, range]);
+  }, [timeline, weekly, year, range, scope]);
   const labels = buckets.map((b) => periodLabel(b, weekly));
   const options: ApexOptions = useMemo(
     () => ({
@@ -152,7 +159,11 @@ export default function SpendingPanel({
     [buckets, weekly, colorScheme],
   );
   const referenceYear = timeline.coverage.through.slice(0, 4);
-  const activeKey = year === "all" ? comparisonKey : `year:${year}`;
+  const activeKey = scope
+    ? "custom"
+    : year === "all"
+      ? comparisonKey
+      : `year:${year}`;
   const comparison = timeline.comparisons.find((c) => c.key === activeKey);
   const c = timeline.coverage;
 
@@ -174,29 +185,28 @@ export default function SpendingPanel({
         <Badge variant="light">{year === "all" ? "Όλα τα έτη" : year}</Badge>
       </Group>
       <Text size="sm" c="dimmed" mt="xs">
-        Συγχρονισμός:{" "}
+        Ενημερώθηκε:{" "}
         {new Date(timeline.asOf).toLocaleString("el-GR", {
           timeZone: "Europe/Athens",
         })}{" "}
-        (ώρα Αθήνας). Παρατηρημένο ιστορικό:{" "}
+        (ώρα Αθήνας). Ιστορικό:{" "}
         {c.from ? `${dateLabel(c.from)}–${dateLabel(c.through)}` : NO_DATA}.
       </Text>
       <Text size="sm" c="dimmed" mb="md">
-        Η σημερινή ημέρα περιλαμβάνεται στη χρονοσειρά μέχρι τον συγχρονισμό. Οι
-        συγκρίσεις χρησιμοποιούν μόνο ολοκληρωμένες ημέρες, ίδιο αριθμό ημερών
-        και τις ημερομηνίες που αναγράφονται παρακάτω. Σε μικρότερο μήνα ή
-        δίσεκτο έτος περιορίζονται και οι δύο περίοδοι στο κοινό πλήθος ημερών.
+        Το γράφημα περιλαμβάνει και τη σημερινή ημέρα μέχρι την τελευταία
+        ενημέρωση. Για τη σύγκριση μετράμε μόνο πλήρεις ημέρες, όσες χωρούν και
+        στις δύο περιόδους.
       </Text>
       {c.undatedOrders > 0 || c.futureOrders > 0 ? (
-        <Alert color="orange" title="Ποσά εκτός χρονοσειράς" mb="md">
+        <Alert color="orange" title="Παραγγελίες εκτός γραφήματος" mb="md">
           {c.undatedOrders > 0
-            ? `${c.undatedOrders} παραγγελίες (${formatAmount(c.undatedAmount)}) χωρίς έγκυρη ημερομηνία. `
+            ? `${c.undatedOrders} ${c.undatedOrders === 1 ? "παραγγελία" : "παραγγελίες"} (${formatAmount(c.undatedAmount)}) χωρίς σωστή ημερομηνία. `
             : ""}
           {c.futureOrders > 0
-            ? `${c.futureOrders} παραγγελίες (${formatAmount(c.futureAmount)}) με ημερομηνία μετά τον συγχρονισμό. `
+            ? `${c.futureOrders} ${c.futureOrders === 1 ? "παραγγελία" : "παραγγελίες"} (${formatAmount(c.futureAmount)}) με ημερομηνία μετά την τελευταία ενημέρωση. `
             : ""}
-          Παραμένουν στη συνολική δαπάνη. Οι χρονικές συγκρίσεις δεν υπολογίζουν
-          μεταβολή όσο υπάρχουν μη κατανεμημένα ποσά.
+          Τα ποσά μετρούν στο σύνολο, αλλά δεν μπαίνουν στο γράφημα. Όσο λείπουν
+          σωστές ημερομηνίες, δεν υπολογίζουμε μεταβολή.
         </Alert>
       ) : null}
       <Group align="flex-end" mb="sm">
@@ -236,9 +246,9 @@ export default function SpendingPanel({
             />
           </div>
           <Text size="sm" c="dimmed" mb="sm">
-            Τα κενά μέσα στο παρατηρημένο ιστορικό εμφανίζονται ως μηδέν. Οι
-            οριακές περίοδοι επισημαίνονται ως μερικές. Οι εβδομάδες αρχίζουν
-            Δευτέρα και χωρίζονται στην αλλαγή έτους.
+            Οι περίοδοι χωρίς παραγγελίες εμφανίζονται με 0 €. Η ένδειξη «Μερική
+            περίοδος» σημαίνει ότι δεν καλύπτονται όλες οι ημέρες. Οι εβδομάδες
+            ξεκινούν Δευτέρα.
           </Text>
           <ScrollArea h={290}>
             <Table miw={580} striped stickyHeader>
@@ -285,7 +295,12 @@ export default function SpendingPanel({
       <Title order={3} size="h4" mt="lg">
         Σύγκριση περιόδων
       </Title>
-      {year === "all" ? (
+      {scope ? (
+        <Text size="sm" mt="sm">
+          Σύγκριση με το προηγούμενο διάστημα, ίδιας διάρκειας και με τα ίδια
+          φίλτρα.
+        </Text>
+      ) : year === "all" ? (
         <NativeSelect
           label="Περίοδος σύγκρισης"
           value={comparisonKey}
@@ -318,8 +333,8 @@ export default function SpendingPanel({
         <Text my="sm">{NO_DATA}</Text>
       )}
       <Text size="xs" c="dimmed" mt="sm">
-        Η μεταβολή του μέσου καλαθιού περιλαμβάνει αλλαγές σε προϊόντα,
-        καταστήματα και είδη αγορών. Δεν αποτελεί δείκτη πληθωρισμού.
+        Το μέσο ποσό αλλάζει και ανάλογα με το τι παραγγέλνεις. Δεν δείχνει μόνο
+        αλλαγές στις τιμές.
       </Text>
     </Card>
   );

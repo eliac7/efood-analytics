@@ -1,4 +1,4 @@
-import type { CountMap } from "../types.js";
+import type { CountMap } from "../analyticsTypes.js";
 
 /**
  * Sort object entries by a reference array order
@@ -6,11 +6,14 @@ import type { CountMap } from "../types.js";
  * @param {string[]} referenceArray - Array defining the desired order
  * @returns {Object} - Sorted object
  */
-export function sortByReference(obj: CountMap, referenceArray: readonly string[]): CountMap {
+export function sortByReference(
+  obj: CountMap,
+  referenceArray: readonly string[],
+): CountMap {
   return Object.fromEntries(
     Object.entries(obj).sort(
-      (a, b) => referenceArray.indexOf(a[0]) - referenceArray.indexOf(b[0])
-    )
+      (a, b) => referenceArray.indexOf(a[0]) - referenceArray.indexOf(b[0]),
+    ),
   );
 }
 
@@ -20,9 +23,7 @@ export function sortByReference(obj: CountMap, referenceArray: readonly string[]
  * @returns {Object} - Sorted object
  */
 export function sortByValueDesc(obj: CountMap): CountMap {
-  return Object.fromEntries(
-    Object.entries(obj).sort((a, b) => b[1] - a[1])
-  );
+  return Object.fromEntries(Object.entries(obj).sort((a, b) => b[1] - a[1]));
 }
 
 /**
@@ -31,8 +32,5 @@ export function sortByValueDesc(obj: CountMap): CountMap {
  * @returns {Object} - Sorted object
  */
 export function sortByValueAsc(obj: CountMap): CountMap {
-  return Object.fromEntries(
-    Object.entries(obj).sort((a, b) => a[1] - b[1])
-  );
+  return Object.fromEntries(Object.entries(obj).sort((a, b) => a[1] - b[1]));
 }
-

@@ -104,6 +104,46 @@ describe("analytics cache", () => {
     expect(getStoredOrders(testUser)).toBeNull();
   });
 
+  it("invalidates version 5 and rejects incomplete or unsafe history", () => {
+    for (const change of [
+      { cacheVersion: 5 },
+      { history: undefined },
+      { history: testOrders.history.slice(1) },
+      {
+        history: testOrders.history.map((entry, i) =>
+          i === 0 ? { ...entry, price: 99 } : entry,
+        ),
+      },
+      {
+        history: testOrders.history.map((entry) => ({
+          ...entry,
+          id: "duplicate",
+        })),
+      },
+      {
+        history: testOrders.history.map((entry) => ({
+          ...entry,
+          delivery_address: { street: "private" },
+        })),
+      },
+      {
+        history: testOrders.history.map((entry) => ({
+          ...entry,
+          products: entry.products.map((product) => ({
+            ...product,
+            customisation: "private",
+          })),
+        })),
+      },
+    ]) {
+      localStorage.setItem(
+        LOCAL_STORAGE_ORDERS,
+        JSON.stringify({ ...testOrders, ...change }),
+      );
+      expect(getStoredOrders(testUser)).toBeNull();
+    }
+  });
+
   it("rejects missing timelines, impossible dates and mismatched allocated totals", () => {
     const timeline = testOrders.timeline;
     for (const invalid of [

@@ -1,4 +1,4 @@
-import type { EfoodOrder } from "../../../types.js";
+import type { EfoodOrder } from "../../../analyticsTypes.js";
 import { getOrderDateParts, parseOrderDate } from "../../../utils/orderDate.js";
 
 export const toNumber = (v: unknown): number | null =>
@@ -13,12 +13,16 @@ export const getEstimatedDeliveryTime = (order: EfoodOrder): number | null => {
 
 export const parseSubmissionDate = parseOrderDate;
 
-export const getYearFromSubmission = (order: Pick<EfoodOrder, "submission_date">): string => {
+export const getYearFromSubmission = (
+  order: Pick<EfoodOrder, "submission_date">,
+): string => {
   const date = parseSubmissionDate(order?.submission_date);
   return date ? String(getOrderDateParts(date).year) : "Unknown";
 };
 
-export const getCityFromOrder = (order: Pick<EfoodOrder, "delivery_address" | "restaurant">): string =>
+export const getCityFromOrder = (
+  order: Pick<EfoodOrder, "delivery_address" | "restaurant">,
+): string =>
   order?.delivery_address?.city?.trim() ||
   order?.delivery_address?.area?.trim() ||
   order?.restaurant?.address?.split(",")[1]?.trim() ||

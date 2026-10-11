@@ -1,7 +1,11 @@
+import type { OrderHistoryEntry } from "../../../backend/analyticsTypes.js";
+export type { OrderHistoryEntry } from "../../../backend/analyticsTypes.js";
+
 export interface Orders {
   all: OrderStats;
   perYear: PerYear[];
   timeline: OrderTimeline;
+  history: OrderHistoryEntry[];
   timestamp: Date;
   cacheVersion: number;
   ownerSessionId: string;

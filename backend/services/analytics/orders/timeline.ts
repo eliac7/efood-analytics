@@ -6,7 +6,7 @@ import type {
   PeriodComparison,
   PeriodMetrics,
   TimeBucket,
-} from "../../../types.js";
+} from "../../../analyticsTypes.js";
 import { getOrderDateParts, parseOrderDate } from "../../../utils/orderDate.js";
 import { toCents } from "./money.js";
 
@@ -33,6 +33,49 @@ const weekStart = (day: number) =>
     calendarDay(yearOf(day), 1, 1),
   );
 type DatedAmount = { day: number; cents: number };
+
+export interface TimelineOptions {
+  coverageFrom?: string | null;
+  comparisonOrders?: EfoodOrder[];
+  comparisonPeriod?: { from: string; through: string };
+  comparisonYear?: number;
+}
+
+function parseCalendarDay(value: string): number {
+  const day = Date.parse(value) / DAY;
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+    !Number.isInteger(day) ||
+    dateKey(day) !== value
+  )
+    throw new Error("Invalid analytics calendar date");
+  return day;
+}
+
+function datedAmounts(orders: EfoodOrder[], asOf: Date) {
+  const values: DatedAmount[] = [];
+  let undatedOrders = 0,
+    undatedCents = 0,
+    futureOrders = 0,
+    futureCents = 0;
+  for (const order of orders) {
+    const date = parseOrderDate(order.submission_date),
+      cents = toCents(order.price);
+    if (!date) {
+      undatedOrders++;
+      undatedCents += cents;
+      continue;
+    }
+    if (date.getTime() > asOf.getTime()) {
+      futureOrders++;
+      futureCents += cents;
+      continue;
+    }
+    const p = getOrderDateParts(date);
+    values.push({ day: calendarDay(p.year, p.month, p.day), cents });
+  }
+  return { values, undatedOrders, undatedCents, futureOrders, futureCents };
+}
 
 function metrics(values: DatedAmount[]): PeriodMetrics {
   const prices = values.map(({ cents }) => cents).sort((a, b) => a - b);
@@ -67,37 +110,29 @@ function change(current: number, previous: number): MetricChange {
 export function calculateTimeline(
   orders: EfoodOrder[],
   asOf: Date,
+  options: TimelineOptions = {},
 ): OrderTimeline {
   if (!Number.isFinite(asOf.getTime()))
     throw new Error("Invalid analytics reference date");
   const reference = getOrderDateParts(asOf);
   const today = calendarDay(reference.year, reference.month, reference.day);
-  const values: DatedAmount[] = [];
-  let undatedOrders = 0,
-    undatedCents = 0,
-    futureOrders = 0,
-    futureCents = 0;
-  for (const order of orders) {
-    const date = parseOrderDate(order.submission_date),
-      cents = toCents(order.price);
-    if (!date) {
-      undatedOrders++;
-      undatedCents += cents;
-      continue;
-    }
-    if (date.getTime() > asOf.getTime()) {
-      futureOrders++;
-      futureCents += cents;
-      continue;
-    }
-    const p = getOrderDateParts(date);
-    values.push({ day: calendarDay(p.year, p.month, p.day), cents });
-  }
-  const first = values.reduce<number | null>(
+  const selected = datedAmounts(orders, asOf);
+  const { values, undatedOrders, undatedCents, futureOrders, futureCents } =
+    selected;
+  const comparison = options.comparisonOrders
+    ? datedAmounts(options.comparisonOrders, asOf)
+    : selected;
+  const observedFirst = values.reduce<number | null>(
     (earliest, value) =>
       earliest === null ? value.day : Math.min(earliest, value.day),
     null,
   );
+  const first =
+    options.coverageFrom === undefined
+      ? observedFirst
+      : options.coverageFrom === null
+        ? null
+        : parseCalendarDay(options.coverageFrom);
   const byMonth = new Map<number, DatedAmount[]>(),
     byWeek = new Map<number, DatedAmount[]>();
   for (const value of values) {
@@ -142,10 +177,12 @@ export function calculateTimeline(
       first !== null &&
       start >= first &&
       start + days <= today &&
-      undatedOrders === 0 &&
-      futureOrders === 0,
+      comparison.undatedOrders === 0 &&
+      comparison.futureOrders === 0,
     ...metrics(
-      values.filter((value) => value.day >= start && value.day < start + days),
+      comparison.values.filter(
+        (value) => value.day >= start && value.day < start + days,
+      ),
     ),
   });
   const compare = (
@@ -190,8 +227,17 @@ export function calculateTimeline(
     compare("days30", today - 30, today - 60, 30),
     compare("days90", today - 90, today - 180, 90),
   ];
-  const years = new Set(values.map((value) => yearOf(value.day)));
+  const years = new Set(comparison.values.map((value) => yearOf(value.day)));
   years.add(reference.year);
+  if (options.comparisonYear !== undefined) {
+    if (
+      !Number.isInteger(options.comparisonYear) ||
+      options.comparisonYear < 1000 ||
+      options.comparisonYear > 9999
+    )
+      throw new Error("Invalid comparison year");
+    years.add(options.comparisonYear);
+  }
   for (const year of [...years].sort((a, b) => b - a)) {
     const start = calendarDay(year, 1, 1),
       previous = calendarDay(year - 1, 1, 1);
@@ -203,6 +249,15 @@ export function calculateTimeline(
       start - previous,
     );
     comparisons.push(compare(`year:${year}`, start, previous, days));
+  }
+  if (options.comparisonPeriod) {
+    const start = parseCalendarDay(options.comparisonPeriod.from);
+    const end = Math.min(
+      parseCalendarDay(options.comparisonPeriod.through),
+      today - 1,
+    );
+    const days = Math.max(0, end - start + 1);
+    comparisons.push(compare("custom", start, start - days, days));
   }
   return {
     asOf: asOf.toISOString(),

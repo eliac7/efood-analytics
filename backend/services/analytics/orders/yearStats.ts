@@ -1,12 +1,13 @@
-import {
-  calculateAggregateStats,
-  computeFirstLast,
-} from "./aggregate.js";
+import { calculateAggregateStats, computeFirstLast } from "./aggregate.js";
 import { findMostOrderedProduct } from "./productStats.js";
 import { calculateRestaurantStats } from "./restaurantStats.js";
 import { calculateTimeStats } from "./timeStats.js";
 import { calculateCostStats } from "./costStats.js";
-import type { CommonOrderStats, EfoodOrder, YearOrderStats } from "../../../types.js";
+import type {
+  CommonOrderStats,
+  EfoodOrder,
+  YearOrderStats,
+} from "../../../analyticsTypes.js";
 
 /**
  * Calculate statistics for a single year
@@ -14,7 +15,10 @@ import type { CommonOrderStats, EfoodOrder, YearOrderStats } from "../../../type
  * @param {string} year - Year string
  * @returns {Object} - Year statistics
  */
-export function calculateYearStats(orders: EfoodOrder[], year: string): YearOrderStats {
+export function calculateYearStats(
+  orders: EfoodOrder[],
+  year: string,
+): YearOrderStats {
   const aggregateStats = calculateAggregateStats(orders);
   const timeStats = calculateTimeStats(orders);
   const restaurantStats = calculateRestaurantStats(orders);
@@ -24,7 +28,7 @@ export function calculateYearStats(orders: EfoodOrder[], year: string): YearOrde
   const avgDelivery =
     aggregateStats.deliveryTimeCount > 0
       ? Math.round(
-          aggregateStats.totalDeliveryTime / aggregateStats.deliveryTimeCount
+          aggregateStats.totalDeliveryTime / aggregateStats.deliveryTimeCount,
         )
       : null;
 
@@ -60,7 +64,7 @@ export function calculateYearStats(orders: EfoodOrder[], year: string): YearOrde
  */
 export function calculateAllTimeStats(
   yearStats: YearOrderStats[],
-  allOrders: EfoodOrder[]
+  allOrders: EfoodOrder[],
 ): CommonOrderStats {
   const aggregateStats = calculateAggregateStats(allOrders);
   const restaurantStats = calculateRestaurantStats(allOrders);
@@ -84,7 +88,7 @@ export function calculateAllTimeStats(
     averageDeliveryTime:
       aggregateStats.deliveryTimeCount > 0
         ? Math.round(
-            aggregateStats.totalDeliveryTime / aggregateStats.deliveryTimeCount
+            aggregateStats.totalDeliveryTime / aggregateStats.deliveryTimeCount,
           )
         : null,
     restaurantWithMostMoneySpent: restaurantStats.mostMoneySpent,

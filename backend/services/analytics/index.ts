@@ -6,9 +6,10 @@ import {
   calculateAllTimeStats,
   calculateYearStats,
 } from "./orders/yearStats.js";
-import type { EfoodOrder, OrderAnalytics } from "../../types.js";
+import type { EfoodOrder, OrderAnalytics } from "../../analyticsTypes.js";
 import { normalizeOrders } from "../orderValidation.js";
 import { calculateTimeline } from "./orders/timeline.js";
+import { toOrderHistory } from "../orderHistory.js";
 
 /**
  * Main function to process and analyze all orders
@@ -44,5 +45,10 @@ export function analyzeOrders(
 
   const all = calculateAllTimeStats(perYear, sortedOrders);
 
-  return { all, perYear, timeline: calculateTimeline(sortedOrders, asOf) };
+  return {
+    all,
+    perYear,
+    timeline: calculateTimeline(sortedOrders, asOf),
+    history: toOrderHistory(sortedOrders),
+  };
 }

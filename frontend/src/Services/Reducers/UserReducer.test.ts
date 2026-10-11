@@ -5,7 +5,12 @@ import {
   LOCAL_STORAGE_USER,
   ORDERS_CACHE_VERSION,
 } from "../../utils/constants";
-import { makeTestTimeline, testOrders, testUser } from "../../test/fixtures";
+import {
+  makeTestHistory,
+  makeTestTimeline,
+  testOrders,
+  testUser,
+} from "../../test/fixtures";
 import { initialStateType } from "../../types";
 
 const emptyState: initialStateType = {
@@ -32,6 +37,7 @@ describe("UserReducer", () => {
           all: testOrders.all,
           perYear: testOrders.perYear,
           timeline: testOrders.timeline,
+          history: testOrders.history,
         },
         requestUser: testUser,
       },
@@ -67,6 +73,7 @@ describe("UserReducer", () => {
         all: updatedAll,
         perYear: testOrders.perYear,
         timeline: makeTestTimeline(5),
+        history: makeTestHistory(5),
       },
       requestUser: testUser,
     });

@@ -9,7 +9,7 @@ import { writeStorage, removeStorage } from "../../utils/storage";
 export type Action =
   | {
       type: "SET_ORDERS";
-      payload: Pick<Orders, "all" | "perYear" | "timeline">;
+      payload: Pick<Orders, "all" | "perYear" | "timeline" | "history">;
       requestUser: Pick<User, "session_id" | "loginAt">;
     }
   | {
@@ -33,13 +33,14 @@ export const UserReducer = (
         state.user.loginAt !== action.requestUser.loginAt
       )
         return state;
-      const { all, perYear, timeline } = action.payload;
+      const { all, perYear, timeline, history } = action.payload;
 
       const timestamp = new Date();
       const orders = {
         all,
         perYear,
         timeline,
+        history,
         timestamp,
         cacheVersion: ORDERS_CACHE_VERSION,
         ownerSessionId: state.user.session_id,

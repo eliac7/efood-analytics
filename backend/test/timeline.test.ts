@@ -9,6 +9,56 @@ const order = (submission_date: string | null, price = 10): EfoodOrder =>
 const sync = new Date("2026-03-11T10:00:00Z");
 
 describe("spending timeline", () => {
+  it("retains observed coverage and compares an independent cohort using completed custom days", () => {
+    const current = order("2026-03-10 12:00:00", 20);
+    const timeline = calculateTimeline([current], sync, {
+      coverageFrom: "2025-01-01",
+      comparisonOrders: [
+        current,
+        order("2026-03-08 12:00:00", 10),
+        order("2026-03-11 09:00:00", 99),
+      ],
+      comparisonPeriod: { from: "2026-03-09", through: "2026-03-11" },
+    });
+    expect(timeline.coverage.from).toBe("2025-01-01");
+    expect(
+      timeline.months.reduce((sum, bucket) => sum + bucket.totalPrice, 0),
+    ).toBe(20);
+    expect(
+      timeline.comparisons.find((entry) => entry.key === "custom"),
+    ).toMatchObject({
+      days: 2,
+      current: { through: "2026-03-10", totalPrice: 20, complete: true },
+      previous: { from: "2026-03-07", through: "2026-03-08", totalPrice: 10 },
+      change: { totalPrice: { absolute: 10, percent: 100 } },
+    });
+  });
+
+  it("rejects invalid option dates and preserves explicitly requested zero-order comparison years", () => {
+    for (const coverageFrom of ["bad", "2026-02-30", "2026-03-01T12:00:00Z"])
+      expect(() => calculateTimeline([], sync, { coverageFrom })).toThrow(
+        "Invalid analytics calendar date",
+      );
+    expect(() =>
+      calculateTimeline([], sync, {
+        comparisonPeriod: { from: "2026-02-30", through: "2026-03-01" },
+      }),
+    ).toThrow();
+    expect(() => calculateTimeline([], sync, { comparisonYear: NaN })).toThrow(
+      "Invalid comparison year",
+    );
+    expect(
+      calculateTimeline([], sync, {
+        coverageFrom: "2023-01-01",
+        comparisonYear: 2025,
+      }).comparisons.find((entry) => entry.key === "year:2025"),
+    ).toMatchObject({
+      current: { totalOrders: 0, complete: true },
+      previous: { totalOrders: 0, complete: true },
+      change: { totalPrice: { absolute: 0, percent: null } },
+    });
+  });
+
   it("keeps different years separate, fills gaps and reconciles unallocated money", () => {
     const result = analyzeOrders(
       [

@@ -1,7 +1,11 @@
-import { WEEKDAYS_GR, MONTHS_GR, TIME_PHASES } from "../../../constants/locale.js";
+import {
+  WEEKDAYS_GR,
+  MONTHS_GR,
+  TIME_PHASES,
+} from "../../../constants/locale.js";
 import { sortByReference, sortByValueDesc } from "../../../utils/sorting.js";
 import { getCityFromOrder, parseSubmissionDate } from "./normalize.js";
-import type { CountMap, EfoodOrder } from "../../../types.js";
+import type { CountMap, EfoodOrder } from "../../../analyticsTypes.js";
 import { getOrderDateParts } from "../../../utils/orderDate.js";
 
 /**
@@ -56,7 +60,6 @@ export function calculateTimeStats(orders: EfoodOrder[]): {
     // Count months
     const monthName = MONTHS_GR[month];
     months[monthName] = (months[monthName] || 0) + 1;
-
   }
 
   return {

@@ -39,6 +39,13 @@ import HourCard from "./Cards/HourCard";
 import MapCard from "./Cards/MapCard";
 import CostBreakdownPanel from "./CostBreakdown/CostBreakdownPanel";
 import SpendingPanel from "./Spending/SpendingPanel";
+import OrderFiltersPanel from "./History/OrderFiltersPanel";
+import OrderHistoryPanel from "./History/OrderHistoryPanel";
+import {
+  buildFilteredView,
+  EMPTY_ORDER_FILTERS,
+  type OrderFilters,
+} from "../../utils/ordersAnalytics";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
@@ -58,6 +65,9 @@ function Dashboard() {
   }, [years]);
 
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
+  const [filters, setFilters] = useState<OrderFilters>({
+    ...EMPTY_ORDER_FILTERS,
+  });
 
   const effectiveSelectedYear = years.some(
     (year) => year.value === selectedYear,
@@ -81,8 +91,8 @@ function Dashboard() {
       const orders = parseOrderAnalyticsResponse(response.data);
       dispatch({ type: "SET_ORDERS", payload: orders, requestUser: user });
       showNotification({
-        title: "Επιτυχής ανάκτηση δεδομένων",
-        message: `Βρέθηκαν συνολικά ${orders.all.totalOrders} παραγγελίες`,
+        title: "Οι παραγγελίες σου είναι έτοιμες",
+        message: `${orders.all.totalOrders} ${orders.all.totalOrders === 1 ? "παραγγελία" : "παραγγελίες"}`,
         color: "green",
         icon: <GoGraph />,
       });
@@ -107,15 +117,19 @@ function Dashboard() {
 
   const isLoading = isInitialLoading || isRefetching;
 
-  const selectedYearOrders = useMemo(() => {
-    if (!ordersState) return undefined;
-    if (effectiveSelectedYear === "all") {
-      return ordersState.all;
-    }
-    return ordersState.perYear.find(
-      (year: PerYear) => year.year === effectiveSelectedYear,
-    );
-  }, [effectiveSelectedYear, ordersState]);
+  const view = useMemo(
+    () =>
+      ordersState
+        ? buildFilteredView(
+            ordersState,
+            effectiveSelectedYear ?? "all",
+            filters,
+          )
+        : undefined,
+    [ordersState, effectiveSelectedYear, filters],
+  );
+  const selectedYearOrders = view?.all;
+  const viewKey = `${ordersState?.timestamp.getTime() ?? 0}:${effectiveSelectedYear}:${JSON.stringify(filters)}`;
 
   return (
     <>
@@ -134,8 +148,11 @@ function Dashboard() {
       "
         >
           {isError ? (
-            <Alert color="red" title="Η ανάκτηση παραγγελιών απέτυχε" mb="md">
-              Τα δεδομένα δεν ενημερώθηκαν. Δοκιμάστε ξανά την ανανέωση.
+            <Alert color="red" title="Δεν φορτώθηκαν οι παραγγελίες" mb="md">
+              {ordersState
+                ? "Τα προηγούμενα στοιχεία σου είναι ακόμα εδώ. "
+                : ""}
+              Δοκίμασε ξανά σε λίγο.
             </Alert>
           ) : null}
           <Flex justify={"space-between"} align="flex-end">
@@ -154,6 +171,25 @@ function Dashboard() {
             />
             <TimeStampChecker refetch={refetch} />
           </Flex>
+          {ordersState ? (
+            <OrderFiltersPanel
+              history={ordersState.history}
+              appliedFilters={filters}
+              matchingCount={view?.history.length ?? 0}
+              onApply={setFilters}
+            />
+          ) : null}
+          {(view?.excludedUndated ?? 0) > 0 ? (
+            <Alert color="orange" title="Παραγγελίες χωρίς ημερομηνία" mt="sm">
+              {view!.excludedUndated}{" "}
+              {view!.excludedUndated === 1
+                ? "παραγγελία δεν έχει ημερομηνία και μένει"
+                : "παραγγελίες δεν έχουν ημερομηνία και μένουν"}{" "}
+              έξω από αυτό το διάστημα. Για να{" "}
+              {view!.excludedUndated === 1 ? "τη" : "τις"} δεις, επίλεξε «Όλα τα
+              έτη» και καθάρισε τις ημερομηνίες στα φίλτρα.
+            </Alert>
+          ) : null}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             <DashboardCard
               title="Πρώτη παραγγελία"
@@ -226,10 +262,11 @@ function Dashboard() {
               color="rgba(234, 179, 8, 0.25)"
             />
           </div>
-          {ordersState && (
+          {view && (
             <SpendingPanel
-              timeline={ordersState.timeline}
+              timeline={view.timeline}
               year={effectiveSelectedYear ?? "all"}
+              scope={view.scope}
             />
           )}
           {selectedYearOrders && (
@@ -239,6 +276,9 @@ function Dashboard() {
               totalPrice={selectedYearOrders.totalPrice}
             />
           )}
+          {view ? (
+            <OrderHistoryPanel key={viewKey} history={view.history} />
+          ) : null}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             {selectedYearOrders?.restaurantWithMostMoneySpent && (
               <RestaurantCard

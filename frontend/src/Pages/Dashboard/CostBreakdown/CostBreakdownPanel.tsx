@@ -29,12 +29,12 @@ function AmountValue({
     <>
       <Text fw={600}>
         {value.amount === null && value.coveredOrders > 0
-          ? "Πλήρες σύνολο μη διαθέσιμο"
+          ? "Λείπουν ποσά"
           : formatAmount(value.amount)}
       </Text>
       {value.amount === null && value.coveredOrders > 0 && (
         <Text size="xs" c="dimmed">
-          Διαθέσιμο μέρος: {formatAmount(value.knownAmount)} σε{" "}
+          Γνωστό ποσό: {formatAmount(value.knownAmount)} σε{" "}
           {value.coveredOrders}/{totalOrders} παραγγελίες
         </Text>
       )}
@@ -100,8 +100,7 @@ export default function CostBreakdownPanel({
             </Badge>
           </Group>
           <Text size="sm" c="dimmed" mt="xs">
-            Τα παρακάτω ποσά περιλαμβάνονται ήδη στη συνολική δαπάνη της
-            επιλεγμένης περιόδου.
+            Πού πήγαν τα χρήματά σου. Όλα τα ποσά μετρούν ήδη στο σύνολο.
           </Text>
         </div>
         {totalOrders === 0 ? (
@@ -111,7 +110,7 @@ export default function CostBreakdownPanel({
             <SimpleGrid cols={{ base: 1, sm: 3 }}>
               <div>
                 <Text size="sm" c="dimmed">
-                  Αναφερόμενες πρόσθετες χρεώσεις
+                  Έξτρα χρεώσεις
                 </Text>
                 <AmountValue
                   value={additionalCharges}
@@ -120,26 +119,27 @@ export default function CostBreakdownPanel({
               </div>
               <div>
                 <Text size="sm" c="dimmed">
-                  Μερίδιο στη συνολική δαπάνη
+                  Ποσοστό των εξόδων σου
                 </Text>
                 <Text fw={600}>{percentage}</Text>
               </div>
               <div>
                 <Text size="sm" c="dimmed">
-                  Ανάλυση που συμφωνεί με το σύνολο
+                  Παραγγελίες που συμφωνούν στο ποσό
                 </Text>
                 <Text fw={600}>
-                  {reconciliation.matchedOrders}/{totalOrders} παραγγελίες
+                  {reconciliation.matchedOrders}/{totalOrders}{" "}
+                  {totalOrders === 1 ? "παραγγελία" : "παραγγελίες"}
                 </Text>
                 <Text size="xs" c="dimmed">
-                  Ανοχή στρογγυλοποίησης έως 0,01 € ανά παραγγελία
+                  Με περιθώριο 0,01 € για στρογγυλοποιήσεις
                 </Text>
               </div>
             </SimpleGrid>
             {drawable && (
               <div>
                 <Text size="sm" mb="xs">
-                  Κατανομή πρόσθετων χρεώσεων
+                  Οι έξτρα χρεώσεις αναλυτικά
                 </Text>
                 <div
                   role="img"
@@ -172,7 +172,12 @@ export default function CostBreakdownPanel({
                 <Table.Tr>
                   <Table.Th style={{ width: "42%" }}>Κατηγορία</Table.Th>
                   <Table.Th style={{ width: "38%" }}>Ποσό</Table.Th>
-                  <Table.Th style={{ width: "20%" }}>Κάλυψη</Table.Th>
+                  <Table.Th
+                    style={{ width: "20%" }}
+                    title="Παραγγελίες με διαθέσιμο ποσό"
+                  >
+                    Στοιχεία για
+                  </Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -214,9 +219,8 @@ export default function CostBreakdownPanel({
               </Table.Tbody>
             </Table>
             <Text size="xs" c="dimmed">
-              Μηδενικές χρεώσεις με πλήρη κάλυψη αποκρύπτονται. Οι προσαρμογές
-              στις γραμμές προϊόντων έχουν ήδη συνυπολογιστεί στο ποσό τους. Δεν
-              αφαιρούνται ξανά εκπτώσεις efood pro.
+              Οι μηδενικές χρεώσεις δεν εμφανίζονται. Οι εκπτώσεις μέσα στις
+              τιμές, μαζί με το efood pro, έχουν ήδη αφαιρεθεί.
             </Text>
             {(data.includedTaxes.knownAmount > 0 ||
               data.includedTaxes.amount === null) && (
@@ -225,27 +229,26 @@ export default function CostBreakdownPanel({
                 {formatAmount(data.includedTaxes.amount)}
                 {data.includedTaxes.amount === null &&
                 data.includedTaxes.coveredOrders > 0
-                  ? ` (διαθέσιμο μέρος ${formatAmount(data.includedTaxes.knownAmount)}, κάλυψη ${data.includedTaxes.coveredOrders}/${totalOrders})`
+                  ? ` (γνωστό ποσό ${formatAmount(data.includedTaxes.knownAmount)} σε ${data.includedTaxes.coveredOrders}/${totalOrders} παραγγελίες)`
                   : ""}
-                . Δεν προστίθενται ξανά στις χρεώσεις.
+                . Περιλαμβάνονται ήδη, δεν είναι έξτρα χρέωση.
               </Text>
             )}
             {reconciliation.mismatchedOrders > 0 && (
-              <Alert color="orange" title="Η επιμέρους ανάλυση έχει αποκλίσεις">
-                Σε {reconciliation.mismatchedOrders}/{totalOrders} παραγγελίες
-                τα στοιχεία κόστους δεν εξηγούν πλήρως το συνολικό ποσό.{" "}
-                Άθροισμα απόλυτων διαφορών:{" "}
-                {formatAmount(reconciliation.absoluteDifference)}. Το ποσό αυτό
-                δεν είναι επιπλέον χρέωση ή επιβεβαιωμένη έκπτωση. Η συνολική
-                δαπάνη παραμένει το ποσό που αναφέρει το efood.
+              <Alert color="orange" title="Κάποια ποσά δεν συμφωνούν">
+                Σε {reconciliation.mismatchedOrders} από τις {totalOrders}{" "}
+                παραγγελίες, τα επιμέρους ποσά διαφέρουν από το σύνολο του
+                efood. Οι διαφορές φτάνουν συνολικά τα{" "}
+                {formatAmount(reconciliation.absoluteDifference)}. Δεν είναι
+                έξτρα χρέωση ή επιβεβαιωμένη έκπτωση. Στα έξοδά σου κρατάμε το
+                σύνολο του efood.
               </Alert>
             )}
             {reconciliation.unavailableOrders > 0 && (
-              <Alert color="blue" title="Μερική κάλυψη στοιχείων κόστους">
-                Σε {reconciliation.unavailableOrders}/{totalOrders} παραγγελίες
-                λείπουν απαραίτητα στοιχεία ή δεν μπορεί να διακριθεί αν μια
-                έκπτωση έχει ήδη εφαρμοστεί. Τα διαθέσιμα ποσά επισημαίνονται ως
-                μερικά και δεν θεωρούνται πλήρη σύνολα.
+              <Alert color="blue" title="Λείπουν στοιχεία κόστους">
+                Για {reconciliation.unavailableOrders} από τις {totalOrders}{" "}
+                παραγγελίες, λείπουν ποσά ή δεν είναι σαφές πώς μπήκε μια
+                έκπτωση. Όπου λείπουν στοιχεία, βλέπεις μόνο το γνωστό ποσό.
               </Alert>
             )}
           </>

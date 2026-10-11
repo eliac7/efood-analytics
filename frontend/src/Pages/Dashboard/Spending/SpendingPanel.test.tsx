@@ -76,14 +76,14 @@ describe("spending panel", () => {
     fireEvent.change(screen.getByLabelText("Περίοδος σύγκρισης"), {
       target: { value: "days30" },
     });
-    expect(screen.getByText(/30 ολοκληρωμένες ημέρες/)).toHaveTextContent(
+    expect(screen.getByText(/30 πλήρεις ημέρες/)).toHaveTextContent(
       "02/12/2025–31/12/2025",
     );
     const row = within(
-      screen.getByRole("table", { name: "Σύγκριση ισότιμων περιόδων" }),
+      screen.getByRole("table", { name: "Σύγκριση περιόδων" }),
     ).getByRole("row", { name: /^Δαπάνη/ });
     expect(row).toHaveTextContent("+10,00 €");
-    expect(row).toHaveTextContent("ποσοστό μη διαθέσιμο");
+    expect(row).toHaveTextContent("χωρίς ποσοστό (πριν: 0)");
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
   });
 
@@ -92,16 +92,18 @@ describe("spending panel", () => {
       <SpendingPanel timeline={makeTestTimeline()} year="all" />,
     );
     expect(
-      screen.getByRole("alert", { name: "Ποσά εκτός χρονοσειράς" }),
+      screen.getByRole("alert", { name: "Παραγγελίες εκτός γραφήματος" }),
     ).toHaveTextContent("7,00 €");
     expect(
-      screen.getByRole("alert", { name: "Η σύγκριση δεν είναι διαθέσιμη" }),
+      screen.getByRole("alert", {
+        name: "Δεν έχουμε αρκετά στοιχεία για σύγκριση",
+      }),
     ).toBeInTheDocument();
     const table = within(
-      screen.getByRole("table", { name: "Σύγκριση ισότιμων περιόδων" }),
+      screen.getByRole("table", { name: "Σύγκριση περιόδων" }),
     );
     expect(
-      table.getByRole("columnheader", { name: "Τρέχουσα (ελλιπής κάλυψη)" }),
+      table.getByRole("columnheader", { name: "Τρέχουσα (ελλιπή στοιχεία)" }),
     ).toBeInTheDocument();
     expect(table.queryByText(/\+\d/)).not.toBeInTheDocument();
   });
@@ -115,7 +117,7 @@ describe("spending panel", () => {
     timeline.coverage.undatedAmount = 0;
     renderWithProviders(<SpendingPanel timeline={timeline} year="all" />);
     expect(screen.queryByTestId("spending-chart")).not.toBeInTheDocument();
-    expect(screen.getByText(/Συγχρονισμός:/)).toHaveTextContent("2026");
+    expect(screen.getByText(/Ενημερώθηκε:/)).toHaveTextContent("2026");
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
   });
 });

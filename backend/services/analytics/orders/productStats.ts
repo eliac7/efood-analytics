@@ -1,4 +1,8 @@
-import type { EfoodOrder, EfoodProduct, MostOrderedProduct } from "../../../types.js";
+import type {
+  EfoodOrder,
+  EfoodProduct,
+  MostOrderedProduct,
+} from "../../../analyticsTypes.js";
 import { toCents } from "./money.js";
 
 interface ProductTotal {
@@ -7,31 +11,53 @@ interface ProductTotal {
   amountSpentCents: number;
 }
 
+export function getProductIdentity(
+  order: Pick<EfoodOrder, "restaurant">,
+  product: EfoodProduct,
+): string | null {
+  const identity =
+    product.item_code.trim() ||
+    product.tracking_product_id ||
+    product.name?.trim();
+  return identity
+    ? JSON.stringify([
+        String(order.restaurant.id),
+        product.item_code.trim()
+          ? "code"
+          : product.tracking_product_id
+            ? "tracking"
+            : "name",
+        identity,
+        product.size_info ?? "",
+        product.customisation ?? "",
+      ])
+    : null;
+}
+
 /**
  * Find the most ordered product from order data
  * @param {Array} orders - Array of orders
  * @returns {Object} - Most ordered product info
  */
 export function findMostOrderedProduct(
-  orders: Array<Pick<EfoodOrder, "restaurant" | "products">>
+  orders: Array<Pick<EfoodOrder, "restaurant" | "products">>,
 ): MostOrderedProduct | null {
   const productTotals = new Map<string, ProductTotal>();
 
   for (const order of orders) {
     for (const product of order.products) {
-      if (product.is_offer || product.is_coupon || product.is_delivery_fee_discount ||
-          product.offer_discount || product.unit_price < 0 || product.quantity <= 0) continue;
+      if (
+        product.is_offer ||
+        product.is_coupon ||
+        product.is_delivery_fee_discount ||
+        product.offer_discount ||
+        product.unit_price < 0 ||
+        product.quantity <= 0
+      )
+        continue;
 
-      const identity = product.item_code.trim() || product.tracking_product_id || product.name?.trim();
-      if (!identity) continue;
-
-      const key = JSON.stringify([
-        String(order.restaurant.id),
-        product.item_code.trim() ? "code" : product.tracking_product_id ? "tracking" : "name",
-        identity,
-        product.size_info ?? "",
-        product.customisation ?? "",
-      ]);
+      const key = getProductIdentity(order, product);
+      if (!key) continue;
       if (!productTotals.has(key)) {
         productTotals.set(key, {
           product,
@@ -60,7 +86,9 @@ export function findMostOrderedProduct(
   // Get first non-null image
   const { product } = mostOrdered;
   const image = product.images
-    ? Object.values(product.images).find((img): img is string => typeof img === "string" && img.length > 0) || null
+    ? Object.values(product.images).find(
+        (img): img is string => typeof img === "string" && img.length > 0,
+      ) || null
     : null;
 
   return {

@@ -1,6 +1,7 @@
 import type { Orders, OrderStats, Restaurant, User } from "../types";
 import { COST_COMPONENT_KEYS } from "./costs";
 import { isOrderTimeline } from "./timelineValidation";
+import { isOrderHistory } from "./historyValidation";
 
 const record = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === "object" && !Array.isArray(v);
@@ -121,11 +122,12 @@ function isOrderStats(v: unknown): v is OrderStats {
 
 export function isOrderAnalytics(
   v: unknown,
-): v is Pick<Orders, "all" | "perYear" | "timeline"> {
+): v is Pick<Orders, "all" | "perYear" | "timeline" | "history"> {
   return (
     record(v) &&
     isOrderStats(v.all) &&
     isOrderTimeline(v.timeline, v.all.totalOrders, v.all.totalPrice) &&
+    isOrderHistory(v.history, v.all.totalOrders, v.all.totalPrice) &&
     Array.isArray(v.perYear) &&
     v.perYear.every(
       (year) =>
@@ -139,7 +141,7 @@ export function isOrderAnalytics(
 
 export function parseOrderAnalyticsResponse(
   v: unknown,
-): Pick<Orders, "all" | "perYear" | "timeline"> {
+): Pick<Orders, "all" | "perYear" | "timeline" | "history"> {
   if (!record(v) || !isOrderAnalytics(v.orders))
     throw new Error("Η απόκριση στατιστικών δεν είναι έγκυρη.");
   return v.orders;

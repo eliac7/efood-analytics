@@ -6,6 +6,7 @@ import {
   OrderTimeline,
   PeriodMetrics,
   User,
+  OrderHistoryEntry,
 } from "../types";
 import { ORDERS_CACHE_VERSION } from "../utils/constants";
 import { COST_COMPONENT_KEYS } from "../utils/costs";
@@ -57,6 +58,7 @@ export const testUser: User = {
 };
 
 export const testOrders: Orders = {
+  history: makeTestHistory(),
   timeline: makeTestTimeline(),
   cacheVersion: ORDERS_CACHE_VERSION,
   ownerSessionId: testUser.session_id,
@@ -191,6 +193,116 @@ export const testOrders: Orders = {
     },
   ],
 };
+
+export function makeTestHistory(totalOrders = 4): OrderHistoryEntry[] {
+  const entry = (
+    id: number,
+    date: string | null,
+    price: number,
+    store: number,
+    name: string,
+    payment: string,
+    product: string,
+    quantity: number,
+    unitPrice: number,
+  ): OrderHistoryEntry => ({
+    id: `order:${id}`,
+    submissionDate: date,
+    price,
+    restaurant: {
+      id: store,
+      name,
+      address: "Public store address",
+      isOpen: true,
+      isFavorite: store === 1,
+    },
+    city: store === 1 ? "Athens" : "Patras",
+    platform: store === 2 ? "ios" : "web",
+    payment,
+    status: "accepted",
+    estimatedDeliveryMinutes: 30,
+    amounts: {
+      coupon: 0,
+      delivery: 0,
+      tips: 0,
+      service: null,
+      serviceAlias: null,
+      bags: null,
+      donation: null,
+      priority: null,
+      smallOrder: null,
+      recycling: null,
+      includedTaxes: null,
+      joker: null,
+    },
+    products: [
+      {
+        identity: String(id + 1).repeat(64),
+        name: product,
+        quantity,
+        unitPrice,
+        image: `${product.toLowerCase()}.jpg`,
+        isOffer: false,
+        isCoupon: false,
+        isDeliveryDiscount: false,
+        offerDiscount: false,
+      },
+    ],
+  });
+  const values = [
+    entry(
+      0,
+      "2025-04-15 13:00:00",
+      20.25,
+      1,
+      "Gyro House",
+      "credit_card",
+      "Burger",
+      1,
+      15,
+    ),
+    entry(
+      1,
+      "2025-03-10 11:30:00",
+      12.5,
+      1,
+      "Gyro House",
+      "cash",
+      "Pita",
+      2,
+      5,
+    ),
+    entry(
+      2,
+      "2024-12-31 21:15:00",
+      9.99,
+      2,
+      "Pasta Place",
+      "paypal",
+      "Pasta",
+      3,
+      3.33,
+    ),
+    entry(3, null, 7, 3, "Invalid Date Cafe", "cash", "Coffee", 1, 7),
+  ];
+  Object.assign(values[0].amounts, { tips: 1.5 });
+  values[0].platform = "android";
+  values[0].products.push({
+    ...values[0].products[0],
+    identity: "a".repeat(64),
+    name: "Ignored Offer",
+    quantity: 10,
+    unitPrice: 1,
+    isOffer: true,
+  });
+  Object.assign(values[1].amounts, { tips: 0.5, delivery: 2, coupon: 1 });
+  Object.assign(values[2].amounts, { delivery: 1, coupon: 0.5 });
+  for (let index = 4; index < totalOrders; index++)
+    values.push(
+      entry(index, null, 0, 3, "Invalid Date Cafe", "cash", "Coffee", 0, 0),
+    );
+  return values.slice(0, totalOrders);
+}
 
 export function makeTestTimeline(
   totalOrders = 4,

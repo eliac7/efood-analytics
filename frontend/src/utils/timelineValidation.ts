@@ -129,7 +129,7 @@ export function isOrderTimeline(
     if (
       !record(comparison) ||
       typeof comparison.key !== "string" ||
-      !/^(month|days30|days90|year:\d{4})$/.test(comparison.key) ||
+      !/^(month|days30|days90|custom|year:\d{4})$/.test(comparison.key) ||
       keys.has(comparison.key) ||
       !count(comparison.days)
     )

@@ -1,4 +1,8 @@
-import type { EfoodOrder, EfoodRestaurant, RestaurantSummary } from "../../../types.js";
+import type {
+  EfoodOrder,
+  EfoodRestaurant,
+  RestaurantSummary,
+} from "../../../analyticsTypes.js";
 import { toCents } from "./money.js";
 
 interface RestaurantAccumulator {
@@ -21,7 +25,9 @@ interface RestaurantStats {
  * @param {Array} orders - Array of orders
  * @returns {Object} - Restaurant statistics
  */
-export function calculateRestaurantStats(orders: EfoodOrder[]): RestaurantStats {
+export function calculateRestaurantStats(
+  orders: EfoodOrder[],
+): RestaurantStats {
   const restaurantTotals = new Map<string, RestaurantAccumulator>();
 
   for (const order of orders) {
@@ -48,7 +54,7 @@ export function calculateRestaurantStats(orders: EfoodOrder[]): RestaurantStats 
 
   // Sort by total spent descending
   const sortedRestaurants = Array.from(restaurantTotals.values()).sort(
-    (a, b) => b.totalCents - a.totalCents
+    (a, b) => b.totalCents - a.totalCents,
   );
 
   const formatRestaurant = (r: RestaurantAccumulator): RestaurantSummary => ({
