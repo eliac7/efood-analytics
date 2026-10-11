@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.5"
   },
   "name": "efood-analytics",
   "version": "1.0.0",
