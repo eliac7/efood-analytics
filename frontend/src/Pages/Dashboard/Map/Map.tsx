@@ -1,133 +1,259 @@
-import { useRef, useEffect, useMemo } from "react";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  CircleMarker,
+  MapContainer,
+  Popup,
+  TileLayer,
+  Tooltip,
+  useMap,
+} from "react-leaflet";
+import {
+  Alert,
+  Button,
+  Group,
+  Stack,
+  Text,
+  useComputedColorScheme,
+} from "@mantine/core";
 import "leaflet/dist/leaflet.css";
 import "leaflet-fullscreen/dist/Leaflet.fullscreen.js";
 import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import * as L from "leaflet";
-import { Restaurant } from "../../../types";
-import { Badge, useMantineColorScheme } from "@mantine/core";
-import noAvatar from "../../../Assets/Images/no-avatar.webp";
-const maptkn = import.meta.env.VITE_APP_MAPBOX_TOKEN;
+import { dateFormat, formatAmount } from "../../../utils/helpers";
+import {
+  formatStoreShare,
+  groupStorePoints,
+  storePointRadius,
+  type StoreMetric,
+  type StorePoint,
+  type StoreRow,
+} from "../../../utils/storeAnalytics";
+import styles from "./Map.module.css";
 
-const Map = ({ restaurants }: { restaurants: Restaurant[] | undefined }) => {
-  const mapRef = useRef<L.Map | null>(null);
-  const tileLayerRef = useRef<L.TileLayer | null>(null);
+interface Props {
+  restaurants: StoreRow[];
+  metric: StoreMetric;
+  selectedId: string | null;
+  focusRequest: number;
+  onSelect: (id: string) => void;
+  onShowOrders: (id: string) => void;
+}
 
-  const { colorScheme } = useMantineColorScheme();
-
-  const locatedRestaurants = useMemo(
-    () => (restaurants ?? []).filter(
-      (restaurant): restaurant is Restaurant & { latitude: number; longitude: number } =>
-        typeof restaurant.latitude === "number" &&
-        Number.isFinite(restaurant.latitude) &&
-        Math.abs(restaurant.latitude) <= 90 &&
-        typeof restaurant.longitude === "number" &&
-        Number.isFinite(restaurant.longitude) &&
-        Math.abs(restaurant.longitude) <= 180
-    ),
-    [restaurants]
-  );
-
-  const markers = locatedRestaurants.map((restaurant) => (
-    <Marker
-      key={restaurant.id}
-      position={[restaurant.latitude, restaurant.longitude]}
-      icon={L.icon({
-        iconUrl: restaurant.logo || noAvatar,
-        iconSize: [50, 50],
-        iconAnchor: [25, 25],
-        className: "rounded-full",
-      })}
-    >
-      <Popup minWidth={300} maxWidth={500}>
-        <div className="flex flex-col items-center min-w-[200px]">
-          <img
-            src={restaurant.logo || noAvatar}
-            alt={restaurant.name ?? "Κατάστημα"}
-            className="w-20 h-20 rounded-full"
-          />
-          <h1 className="text-lg font-semibold text-center">
-            {restaurant.name}
-          </h1>
-
-          <Badge color="cyan" variant="filled">
-            {restaurant.orders}{" "}
-            {restaurant.orders === 1 ? "ΠΑΡΑΓΓΕΛΙΑ" : "ΠΑΡΑΓΓΕΛΙΕΣ"}
-          </Badge>
-          <Badge color="cyan" variant="filled" className="mt-2">
-            {new Intl.NumberFormat("el-GR", {
-              style: "currency",
-              currency: "EUR",
-            }).format(restaurant.totalPrice)}{" "}
-            ΞΟΔΕΥΤΗΚΑΝ
-          </Badge>
-          {restaurant.orders > 1 && (
-            <Badge color="cyan" variant="filled" className="mt-2">
-              {new Intl.NumberFormat("el-GR", {
-                style: "currency",
-                currency: "EUR",
-              }).format(restaurant.totalPrice / restaurant.orders)}{" "}
-              / Μ.Ο. ΠΑΡΑΓΓΕΛΙΑΣ
-            </Badge>
-          )}
-          {restaurant.is_open !== undefined ? (
-            <Badge
-              color={restaurant.is_open ? "green" : "red"}
-              variant="filled"
-              className="mt-2"
-            >
-              {restaurant.is_open ? "ΑΝΟΙΧΤΟ" : "ΚΛΕΙΣΤΟ"}
-            </Badge>
-          ) : null}
-        </div>
-      </Popup>
-    </Marker>
-  ));
-
-  const bounds = useMemo(() => {
-    if (locatedRestaurants.length === 0) return null;
-    return new L.LatLngBounds(
-      locatedRestaurants.map((restaurant) => [
-        restaurant.latitude,
-        restaurant.longitude,
-      ]),
-    );
-  }, [locatedRestaurants]);
-
+function Viewport({
+  points,
+  selectedId,
+  focusRequest,
+}: {
+  points: StorePoint[];
+  selectedId: string | null;
+  focusRequest: number;
+}) {
+  const map = useMap();
   useEffect(() => {
-    if (mapRef.current && bounds) {
-      mapRef.current.fitBounds(bounds as L.LatLngBoundsExpression);
+    const selected = points.find((point) =>
+      point.stores.some((store) => String(store.id) === selectedId),
+    );
+    if (selected) map.setView(selected.position, 14, { animate: false });
+    else if (points.length) {
+      map.closePopup();
+      map.fitBounds(L.latLngBounds(points.map((point) => point.position)), {
+        padding: [35, 35],
+        maxZoom: 14,
+        animate: false,
+      });
     }
-  }, [bounds]);
+  }, [map, points, selectedId, focusRequest]);
+  return null;
+}
 
-  const tiles: Record<string, string> = {
-    light: `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=${maptkn}`,
-    dark: `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${maptkn}`,
-  };
-
-  return (
-    <MapContainer
-      className="w-full h-150 rounded-md shadow-md my-6"
-      attributionControl={true}
-      zoomControl={true}
-      doubleClickZoom={true}
-      scrollWheelZoom={true}
-      dragging={true}
-      easeLinearity={0.35}
-      center={[37.880695, 25.1410391]}
-      zoom={7}
-      boundsOptions={{ padding: [50, 50] }}
-      ref={mapRef}
-      fullscreenControl={true}
-    >
-      <TileLayer
-        url={tiles[colorScheme] || tiles.light}
-        ref={tileLayerRef}
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      {markers}
-    </MapContainer>
+function StorePointMarker({
+  point,
+  radius,
+  selectedId,
+  focusRequest,
+  onSelect,
+  onShowOrders,
+  dark,
+}: {
+  point: StorePoint;
+  radius: number;
+  selectedId: string | null;
+  focusRequest: number;
+  onSelect: Props["onSelect"];
+  onShowOrders: Props["onShowOrders"];
+  dark: boolean;
+}) {
+  const ref = useRef<L.CircleMarker>(null);
+  const selected = point.stores.some(
+    (store) => String(store.id) === selectedId,
   );
-};
+  const popupStores = [...point.stores].sort(
+    (a, b) =>
+      Number(String(b.id) === selectedId) - Number(String(a.id) === selectedId),
+  );
+  useEffect(() => {
+    if (selected) ref.current?.openPopup();
+  }, [selected, focusRequest]);
+  return (
+    <CircleMarker
+      ref={ref}
+      center={point.position}
+      radius={radius}
+      pathOptions={{
+        color: selected
+          ? dark
+            ? "#ffd43b"
+            : "#9c6500"
+          : dark
+            ? "#74c0fc"
+            : "#1864ab",
+        fillColor: dark ? "#339af0" : "#228be6",
+        fillOpacity: 0.65,
+        weight: selected ? 4 : 2,
+      }}
+      eventHandlers={{ click: () => onSelect(String(point.stores[0].id)) }}
+    >
+      <Tooltip>
+        {point.stores.length === 1
+          ? point.stores[0].name || "Άγνωστο κατάστημα"
+          : `${point.stores.length} καταστήματα στην ίδια θέση`}
+      </Tooltip>
+      <Popup minWidth={180} maxWidth={240} autoPanPadding={[10, 10]}>
+        <Stack gap="sm" className={styles.popupContent}>
+          {point.stores.length > 1 ? (
+            <Text fw={700}>
+              {point.stores.length} καταστήματα στην ίδια θέση
+            </Text>
+          ) : null}
+          {popupStores.map((store) => (
+            <div key={String(store.id)}>
+              <Text fw={700}>{store.name || "Άγνωστο κατάστημα"}</Text>
+              <Text size="sm">Ποσό: {formatAmount(store.totalPrice)}</Text>
+              <Text size="sm">Παραγγελίες: {store.orders}</Text>
+              <Text size="sm">Μέσο ποσό: {formatAmount(store.average)}</Text>
+              <Text size="sm">
+                Μερίδιο εξόδων: {formatStoreShare(store.share)}
+              </Text>
+              <Text size="xs">
+                Πρώτη παραγγελία: {dateFormat(store.firstOrder)}
+              </Text>
+              <Text size="xs">
+                Τελευταία παραγγελία: {dateFormat(store.lastOrder)}
+              </Text>
+              {store.undatedOrders > 0 ? (
+                <Text size="xs">Χωρίς ημερομηνία: {store.undatedOrders}</Text>
+              ) : null}
+              <Group mt="xs">
+                <Button
+                  size="xs"
+                  onClick={() => onShowOrders(String(store.id))}
+                  aria-label={`Δες παραγγελίες: ${store.name || "Άγνωστο κατάστημα"}`}
+                >
+                  Δες παραγγελίες
+                </Button>
+              </Group>
+            </div>
+          ))}
+        </Stack>
+      </Popup>
+    </CircleMarker>
+  );
+}
 
-export default Map;
+function StoreMapCanvas({
+  points,
+  metric,
+  selectedId,
+  focusRequest,
+  onSelect,
+  onShowOrders,
+  dark,
+  mapToken,
+}: Omit<Props, "restaurants"> & {
+  points: StorePoint[];
+  dark: boolean;
+  mapToken: string;
+}) {
+  const [tileError, setTileError] = useState(false);
+  const maximum = Math.max(
+    0,
+    ...points.map((point) =>
+      metric === "amount" ? point.amount : point.orders,
+    ),
+  );
+  const largest =
+    metric === "amount" ? formatAmount(maximum) : `${maximum} παραγγελίες`;
+  return (
+    <div className={styles.root} role="region" aria-label="Χάρτης καταστημάτων">
+      {tileError ? (
+        <Alert
+          color="orange"
+          title="Το υπόβαθρο του χάρτη δεν φορτώθηκε"
+          mb="sm"
+        >
+          Τα καταστήματα και τα ποσά σου παραμένουν στον πίνακα.
+        </Alert>
+      ) : null}
+      <Text size="xs" mb="xs">
+        Κλίμακα: ο μεγαλύτερος κύκλος αντιστοιχεί σε {largest}. Οι μικρότεροι
+        κύκλοι διατηρούν ένα ελάχιστο μέγεθος για να φαίνονται.
+      </Text>
+      <MapContainer
+        className={styles.canvas}
+        center={[37.98, 23.72]}
+        zoom={7}
+        maxZoom={18}
+        scrollWheelZoom={false}
+        fullscreenControl={true}
+      >
+        <Viewport
+          points={points}
+          selectedId={selectedId}
+          focusRequest={focusRequest}
+        />
+        <TileLayer
+          url={`https://api.mapbox.com/styles/v1/mapbox/${dark ? "dark" : "light"}-v11/tiles/{z}/{x}/{y}?access_token=${mapToken}`}
+          eventHandlers={{ tileerror: () => setTileError(true) }}
+          attribution='&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {points.map((point) => (
+          <StorePointMarker
+            key={point.key}
+            point={point}
+            radius={storePointRadius(
+              metric === "amount" ? point.amount : point.orders,
+              maximum,
+            )}
+            selectedId={selectedId}
+            focusRequest={focusRequest}
+            onSelect={onSelect}
+            onShowOrders={onShowOrders}
+            dark={dark}
+          />
+        ))}
+      </MapContainer>
+    </div>
+  );
+}
+
+export default function Map({ restaurants, ...props }: Props) {
+  const scheme = useComputedColorScheme("light");
+  const mapToken = import.meta.env.VITE_APP_MAPBOX_TOKEN;
+  const points = useMemo(() => groupStorePoints(restaurants), [restaurants]);
+  if (!points.length) return null;
+  if (!mapToken)
+    return (
+      <Alert color="orange" mt="sm">
+        Ο χάρτης δεν είναι διαθέσιμος αυτή τη στιγμή. Μπορείς να δεις τα
+        καταστήματα και τις παραγγελίες τους στον πίνακα.
+      </Alert>
+    );
+  return (
+    <StoreMapCanvas
+      points={points}
+      {...props}
+      dark={scheme === "dark"}
+      mapToken={mapToken}
+    />
+  );
+}

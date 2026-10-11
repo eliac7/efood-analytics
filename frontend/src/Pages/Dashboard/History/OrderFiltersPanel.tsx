@@ -33,8 +33,14 @@ export default function OrderFiltersPanel({
   matchingCount: number;
   onApply: (filters: OrderFilters) => void;
 }) {
-  const [draft, setDraft] = useState<OrderFilters>({ ...EMPTY_ORDER_FILTERS });
-  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState(() => ({
+    applied: appliedFilters,
+    draft: { ...appliedFilters },
+    error: null as string | null,
+  }));
+  // External store selection replaces the applied filters without losing drafts on accordion toggles.
+  const draft = form.applied === appliedFilters ? form.draft : appliedFilters;
+  const error = form.applied === appliedFilters ? form.error : null;
   const [opened, setOpened] = useState<string | null>(null);
   const controlRef = useRef<HTMLButtonElement>(null);
   const stores = [
@@ -63,8 +69,11 @@ export default function OrderFiltersPanel({
     .filter(Boolean)
     .join(" · ");
   const update = (key: keyof OrderFilters, value: string) => {
-    setDraft((current) => ({ ...current, [key]: value }));
-    setError(null);
+    setForm({
+      applied: appliedFilters,
+      draft: { ...draft, [key]: value },
+      error: null,
+    });
   };
   return (
     <Card
@@ -123,7 +132,11 @@ export default function OrderFiltersPanel({
               onSubmit={(event) => {
                 event.preventDefault();
                 const message = validateOrderFilters(draft);
-                setError(message);
+                setForm({
+                  applied: appliedFilters,
+                  draft: { ...draft },
+                  error: message,
+                });
                 if (!message) {
                   onApply({ ...draft });
                   setOpened(null);
@@ -213,8 +226,11 @@ export default function OrderFiltersPanel({
                     !hasOrderFilters(draft) && !hasOrderFilters(appliedFilters)
                   }
                   onClick={() => {
-                    setDraft({ ...EMPTY_ORDER_FILTERS });
-                    setError(null);
+                    setForm({
+                      applied: appliedFilters,
+                      draft: { ...EMPTY_ORDER_FILTERS },
+                      error: null,
+                    });
                     onApply({ ...EMPTY_ORDER_FILTERS });
                   }}
                 >

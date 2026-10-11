@@ -1,4 +1,11 @@
-import { useState, useContext, useCallback, useMemo } from "react";
+import {
+  useState,
+  useContext,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import DefaultLayout from "../../Layouts/DefaultLayout/DefaultLayout";
 import { Alert, Container, Flex, Select } from "@mantine/core";
 import Loading from "../../Components/Loading/Loading";
@@ -19,7 +26,7 @@ import {
 } from "react-icons/fa";
 import { CgRowLast } from "react-icons/cg";
 import { GoGraph } from "react-icons/go";
-import Map from "./Map/Map";
+import StoresPanel from "./Stores/StoresPanel";
 import {
   dateFormat,
   formatAmount,
@@ -130,6 +137,22 @@ function Dashboard() {
   );
   const selectedYearOrders = view?.all;
   const viewKey = `${ordersState?.timestamp.getTime() ?? 0}:${effectiveSelectedYear}:${JSON.stringify(filters)}`;
+  const historyRef = useRef<HTMLDivElement>(null);
+  const historyNavigation = useRef(false);
+  const showStoreOrders = (restaurant: string) => {
+    historyNavigation.current = true;
+    setFilters((previous) => ({ ...previous, restaurant }));
+  };
+  useEffect(() => {
+    if (historyNavigation.current) {
+      historyNavigation.current = false;
+      historyRef.current?.scrollIntoView?.({
+        block: "start",
+        behavior: "smooth",
+      });
+      historyRef.current?.focus({ preventScroll: true });
+    }
+  }, [filters]);
 
   return (
     <>
@@ -141,6 +164,8 @@ function Dashboard() {
       <DefaultLayout>
         <Container
           size="xl"
+          w="100%"
+          miw={0}
           className="
           p-4
          bg-white-200 rounded-md bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-20 shadow-xl
@@ -277,7 +302,22 @@ function Dashboard() {
             />
           )}
           {view ? (
-            <OrderHistoryPanel key={viewKey} history={view.history} />
+            <>
+              <StoresPanel
+                key={viewKey}
+                restaurants={view.all.restaurants}
+                history={view.history}
+                totalPrice={view.all.totalPrice}
+                onShowOrders={showStoreOrders}
+              />
+              <div
+                ref={historyRef}
+                tabIndex={-1}
+                aria-label="Προβολή ιστορικού"
+              >
+                <OrderHistoryPanel key={viewKey} history={view.history} />
+              </div>
+            </>
           ) : null}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             {selectedYearOrders?.restaurantWithMostMoneySpent && (
@@ -340,8 +380,6 @@ function Dashboard() {
               />
             )}
           </div>
-
-          <Map restaurants={selectedYearOrders?.restaurants} />
         </Container>
       </DefaultLayout>
     </>

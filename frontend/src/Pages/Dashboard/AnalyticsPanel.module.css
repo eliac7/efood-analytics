@@ -1,5 +1,6 @@
 .panel {
   --analytics-panel-bg: var(--mantine-color-blue-0);
+  min-width: 0;
 }
 
 .panel,

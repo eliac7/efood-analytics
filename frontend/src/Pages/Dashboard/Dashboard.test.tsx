@@ -201,6 +201,68 @@ describe("Dashboard", () => {
     expect(mockedAxiosGet).not.toHaveBeenCalled();
   });
 
+  it("opens store orders while preserving date, payment and amount filters and clears old map selection", async () => {
+    const orders = {
+      ...testOrders,
+      history: testOrders.history.map((entry) => ({
+        ...entry,
+        restaurant: { ...entry.restaurant, latitude: 38, longitude: 23 },
+      })),
+    };
+    renderWithProviders(<Dashboard />, {
+      state: { user: testUser, orders, loading: false },
+    });
+    const toggle = screen.getByRole("button", { name: "Φίλτρα" });
+    fireEvent.click(toggle);
+    fireEvent.change(await screen.findByLabelText("Τρόπος πληρωμής"), {
+      target: { value: "cash" },
+    });
+    fireEvent.change(screen.getByLabelText("Από ημερομηνία"), {
+      target: { value: "2025-03-01" },
+    });
+    fireEvent.change(screen.getByLabelText("Έως ημερομηνία"), {
+      target: { value: "2025-12-31" },
+    });
+    fireEvent.change(screen.getByLabelText("Ελάχιστο ποσό (€)"), {
+      target: { value: "10" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Εφαρμογή" }));
+    const stores = within(
+      screen.getByRole("region", { name: "Τα καταστήματά σου" }),
+    );
+    fireEvent.click(
+      stores.getByRole("button", { name: "Παραγγελίες: Gyro House" }),
+    );
+    expect(screen.getByLabelText("Προβολή ιστορικού")).toHaveFocus();
+    const history = within(
+      screen.getByRole("region", { name: "Ιστορικό παραγγελιών" }),
+    );
+    expect(history.getByText("1 παραγγελία")).toBeInTheDocument();
+    expect(history.getByText(/12,50/)).toBeInTheDocument();
+    expect(toggle).toHaveTextContent("Gyro House");
+    fireEvent.click(toggle);
+    expect(await screen.findByLabelText("Κατάστημα")).toHaveValue("1");
+    expect(screen.getByLabelText("Τρόπος πληρωμής")).toHaveValue("cash");
+    expect(screen.getByLabelText("Από ημερομηνία")).toHaveValue("2025-03-01");
+    expect(screen.getByLabelText("Έως ημερομηνία")).toHaveValue("2025-12-31");
+    expect(screen.getByLabelText("Ελάχιστο ποσό (€)")).toHaveValue("10");
+    fireEvent.click(screen.getByRole("button", { name: "Καθαρισμός" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Στον χάρτη: Gyro House" }),
+    );
+    expect(
+      screen.getByRole("button", { name: "Στον χάρτη: Gyro House" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    fireEvent.change(screen.getByLabelText("Αναζήτηση καταστήματος"), {
+      target: { value: "Gyro" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Εφαρμογή" }));
+    expect(
+      screen.getByRole("button", { name: "Στον χάρτη: Gyro House" }),
+    ).toHaveAttribute("aria-pressed", "false");
+    expect(mockedAxiosGet).not.toHaveBeenCalled();
+  });
+
   it("renders zero euros correctly and labels delivery time as an estimate", () => {
     const all = {
       ...testOrders.all,

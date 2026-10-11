@@ -1,0 +1,43 @@
+.root {
+  --map-bg: var(--mantine-color-white);
+  --map-text: var(--mantine-color-gray-9);
+  color: var(--map-text);
+}
+
+:global([data-mantine-color-scheme="dark"]) .root {
+  --map-bg: var(--mantine-color-dark-6);
+  --map-text: var(--mantine-color-gray-1);
+}
+
+.canvas {
+  width: 100%;
+  height: clamp(300px, 55vh, 500px);
+  border-radius: var(--mantine-radius-md);
+  isolation: isolate;
+  background: var(--map-bg);
+}
+
+.root :global(.leaflet-popup-content-wrapper),
+.root :global(.leaflet-popup-tip),
+.root :global(.leaflet-tooltip) {
+  background: var(--map-bg);
+  color: var(--map-text);
+}
+
+.root :global(.leaflet-popup-close-button) {
+  color: var(--map-text);
+}
+
+.root :global(.leaflet-popup-content) {
+  margin: 16px;
+  width: min(240px, calc(100vw - 150px)) !important;
+}
+
+.popupContent {
+  max-height: min(320px, 50vh);
+  overflow-y: auto;
+}
+
+.popupContent :global(p) {
+  margin: 0;
+}
