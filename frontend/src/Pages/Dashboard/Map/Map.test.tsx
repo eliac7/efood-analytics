@@ -1,13 +1,23 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
-import { useImperativeHandle, type ReactNode, type Ref } from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { useImperativeHandle, useRef, type ReactNode, type Ref } from "react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import type { Icon, DivIcon } from "leaflet";
 import { MantineProvider } from "@mantine/core";
 import { renderWithProviders } from "../../../test/render";
 import { buildStoreRows } from "../../../utils/storeAnalytics";
 import Map from "./Map";
+import noAvatar from "../../../Assets/Images/no-avatar.webp";
 
 const { map, openPopup, tileEvents } = vi.hoisted(() => ({
-  map: { setView: vi.fn(), fitBounds: vi.fn(), closePopup: vi.fn() },
+  map: {
+    setView: vi.fn(),
+    fitBounds: vi.fn(),
+    closePopup: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    getZoom: vi.fn(() => 14),
+    getContainer: vi.fn(() => ({ focus: vi.fn() })),
+  },
   openPopup: vi.fn(),
   tileEvents: { error: () => {} },
 }));
@@ -17,31 +27,50 @@ vi.mock("react-leaflet", () => ({
     <div>{children}</div>
   ),
   useMap: () => map,
-  CircleMarker: ({
-    center,
-    radius,
+  Marker: ({
     children,
-    ref,
     eventHandlers,
+    alt,
+    ref,
+    icon,
+    position,
   }: {
-    center: [number, number];
-    radius: number;
     children?: ReactNode;
-    ref: Ref<{ openPopup: () => void }>;
-    eventHandlers: { click: () => void };
+    eventHandlers: {
+      click: () => void;
+      keydown: (event: { originalEvent: KeyboardEvent }) => void;
+    };
+    alt: string;
+    icon: Icon | DivIcon;
+    position: [number, number];
+    ref: Ref<{
+      getElement: () => HTMLElement | null;
+      openPopup: () => void;
+    }>;
   }) => {
-    useImperativeHandle(ref, () => ({ openPopup }));
+    const element = useRef<HTMLButtonElement>(null);
+    const image = useRef<HTMLImageElement>(null);
+    const iconUrl = "iconUrl" in icon.options ? icon.options.iconUrl : null;
+    useImperativeHandle(ref, () => ({
+      getElement: () => (iconUrl ? image.current : element.current),
+      openPopup,
+    }));
     return (
       <div
-        data-testid="marker"
-        data-position={center.join(",")}
-        data-radius={radius}
+        data-testid={iconUrl ? "marker" : "cluster"}
+        data-position={position.join(",")}
+        data-radius={(icon.options.iconSize as [number, number])[0] / 2}
+        data-icon-class={icon.options.className}
       >
         <button
-          aria-label={`Σημείο ${center.join(",")}`}
+          ref={element}
+          aria-label={alt}
           onClick={eventHandlers.click}
+          onKeyDown={(event) =>
+            eventHandlers.keydown({ originalEvent: event.nativeEvent })
+          }
         >
-          Σημείο
+          {iconUrl ? <img ref={image} src={iconUrl} alt={alt} /> : "Ομάδα"}
         </button>
         {children}
       </div>
@@ -60,13 +89,17 @@ vi.mock("react-leaflet", () => ({
 }));
 
 describe("store map", () => {
-  beforeEach(() => vi.stubEnv("VITE_APP_MAPBOX_TOKEN", "test-map-token"));
+  beforeEach(() => {
+    vi.stubEnv("VITE_APP_MAPBOX_TOKEN", "test-map-token");
+    map.getZoom.mockReturnValue(14);
+  });
   afterEach(() => vi.unstubAllEnvs());
   const restaurants = buildStoreRows(
     [
       {
         id: 1,
         name: "A",
+        logo: "https://example.com/a.webp",
         totalPrice: 10,
         orders: 1,
         latitude: 0,
@@ -76,6 +109,7 @@ describe("store map", () => {
       {
         id: 2,
         name: "B",
+        logo: "https://example.com/b.webp",
         totalPrice: 30,
         orders: 3,
         latitude: 0,
@@ -122,8 +156,45 @@ describe("store map", () => {
     expect(screen.queryByText(/ΑΝΟΙΧΤΟ|ΚΛΕΙΣΤΟ/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Δες παραγγελίες: B" }));
     expect(base.onShowOrders).toHaveBeenCalledWith("2");
-    fireEvent.click(screen.getByRole("button", { name: "Σημείο 0,0" }));
+    fireEvent.click(screen.getByRole("button", { name: /^A — 2 καταστήματα/ }));
     expect(base.onSelect).toHaveBeenCalledWith("1");
+  });
+
+  it("shows store logos and falls back when a logo is missing or fails to load", () => {
+    renderWithProviders(<Map {...base} />);
+    const markers = screen.getAllByTestId("marker");
+    const logo = within(markers[0]).getByRole("img");
+    expect(logo).toHaveAttribute("src", "https://example.com/a.webp");
+    expect(within(markers[1]).getByRole("img")).toHaveAttribute(
+      "src",
+      noAvatar,
+    );
+    fireEvent.error(logo);
+    expect(logo).toHaveAttribute("src", noAvatar);
+    fireEvent.error(logo);
+    expect(logo).toHaveAttribute("src", noAvatar);
+  });
+
+  it("shows and selects the chosen store's logo when stores share a position", () => {
+    const { rerender } = render(<Map {...base} selectedId="1" />, {
+      wrapper: ({ children }) => <MantineProvider>{children}</MantineProvider>,
+    });
+    rerender(<Map {...base} selectedId="2" />);
+    const marker = screen.getAllByTestId("marker")[0];
+    expect(within(marker).getByRole("img")).toHaveAttribute(
+      "src",
+      "https://example.com/b.webp",
+    );
+    fireEvent.click(
+      within(marker).getByRole("button", { name: /^B — 2 καταστήματα/ }),
+    );
+    expect(base.onSelect).toHaveBeenLastCalledWith("2");
+    expect(
+      screen.getByRole("button", { name: "Δες παραγγελίες: A" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Δες παραγγελίες: B" }),
+    ).toBeInTheDocument();
   });
 
   it("focuses the selected store and updates marker sizes without resetting the viewport", () => {
@@ -160,6 +231,50 @@ describe("store map", () => {
       screen.getByText("Το υπόβαθρο του χάρτη δεν φορτώθηκε"),
     ).toBeInTheDocument();
     expect(screen.getAllByTestId("marker")).toHaveLength(2);
+  });
+
+  it("expands a cluster without selecting a store or applying any order filter", () => {
+    const close = buildStoreRows(
+      [
+        {
+          id: 1,
+          name: "A",
+          orders: 1,
+          totalPrice: 10,
+          latitude: 38,
+          longitude: 23,
+        },
+        {
+          id: 2,
+          name: "B",
+          orders: 3,
+          totalPrice: 30,
+          latitude: 38.00001,
+          longitude: 23.00001,
+        },
+      ],
+      [],
+      40,
+    );
+    renderWithProviders(<Map {...base} restaurants={close} />);
+    expect(screen.getByTestId("cluster")).toBeInTheDocument();
+    map.setView.mockClear();
+    fireEvent.click(
+      screen.getByRole("button", { name: /2 καταστήματα, 40,00/ }),
+    );
+    expect(map.setView).toHaveBeenCalledWith(expect.anything(), 18, {
+      animate: false,
+    });
+    expect(base.onSelect).not.toHaveBeenCalled();
+    expect(base.onShowOrders).not.toHaveBeenCalled();
+    for (const key of ["Enter", " "]) {
+      map.setView.mockClear();
+      fireEvent.keyDown(
+        screen.getByRole("button", { name: /2 καταστήματα, 40,00/ }),
+        { key },
+      );
+      expect(map.setView).toHaveBeenCalledTimes(1);
+    }
   });
 
   it("does not create a map for an empty history or missing token", () => {
