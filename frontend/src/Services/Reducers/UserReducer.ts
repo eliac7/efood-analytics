@@ -1,4 +1,4 @@
-import { initialStateType, OrderStats, PerYear, User } from "../../types";
+import { initialStateType, Orders, User } from "../../types";
 import {
   LOCAL_STORAGE_ORDERS,
   LOCAL_STORAGE_USER,
@@ -9,7 +9,7 @@ import { writeStorage, removeStorage } from "../../utils/storage";
 export type Action =
   | {
       type: "SET_ORDERS";
-      payload: { all: OrderStats; perYear: PerYear[] };
+      payload: Pick<Orders, "all" | "perYear" | "timeline">;
       requestUser: Pick<User, "session_id" | "loginAt">;
     }
   | {
@@ -22,17 +22,29 @@ export type Action =
 
 export const UserReducer = (
   state: initialStateType,
-  action: Action
+  action: Action,
 ): initialStateType => {
   switch (action.type) {
     case "SET_ORDERS": {
-      if (!state.user || typeof state.user.loginAt !== "number" ||
-          state.user.session_id !== action.requestUser.session_id || state.user.loginAt !== action.requestUser.loginAt) return state;
-      const { all, perYear } = action.payload;
+      if (
+        !state.user ||
+        typeof state.user.loginAt !== "number" ||
+        state.user.session_id !== action.requestUser.session_id ||
+        state.user.loginAt !== action.requestUser.loginAt
+      )
+        return state;
+      const { all, perYear, timeline } = action.payload;
 
       const timestamp = new Date();
-      const orders = { all, perYear, timestamp, cacheVersion: ORDERS_CACHE_VERSION,
-        ownerSessionId: state.user.session_id, ownerLoginAt: state.user.loginAt };
+      const orders = {
+        all,
+        perYear,
+        timeline,
+        timestamp,
+        cacheVersion: ORDERS_CACHE_VERSION,
+        ownerSessionId: state.user.session_id,
+        ownerLoginAt: state.user.loginAt,
+      };
 
       writeStorage(LOCAL_STORAGE_ORDERS, orders);
       return {
@@ -41,21 +53,41 @@ export const UserReducer = (
       };
     }
     case "SET_USER": {
-      if (action.authRevision !== undefined && action.authRevision !== (state.authRevision ?? 0)) return state;
+      if (
+        action.authRevision !== undefined &&
+        action.authRevision !== (state.authRevision ?? 0)
+      )
+        return state;
       const user = { ...(action.payload as User), loginAt: Date.now() };
       writeStorage(LOCAL_STORAGE_USER, user);
       removeStorage(LOCAL_STORAGE_ORDERS);
-      return { ...state, user, orders: null, loading: false, authRevision: (state.authRevision ?? 0) + 1 };
+      return {
+        ...state,
+        user,
+        orders: null,
+        loading: false,
+        authRevision: (state.authRevision ?? 0) + 1,
+      };
     }
 
     case "SET_LOADING":
-      if (action.authRevision !== undefined && action.authRevision !== (state.authRevision ?? 0)) return state;
+      if (
+        action.authRevision !== undefined &&
+        action.authRevision !== (state.authRevision ?? 0)
+      )
+        return state;
       return { ...state, loading: action.payload };
 
     case "LOGOUT":
       removeStorage(LOCAL_STORAGE_USER);
       removeStorage(LOCAL_STORAGE_ORDERS);
-      return { ...state, user: null, orders: null, loading: false, authRevision: (state.authRevision ?? 0) + 1 };
+      return {
+        ...state,
+        user: null,
+        orders: null,
+        loading: false,
+        authRevision: (state.authRevision ?? 0) + 1,
+      };
 
     default:
       return state;

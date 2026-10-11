@@ -1,5 +1,6 @@
 import type { Orders, OrderStats, Restaurant, User } from "../types";
 import { COST_COMPONENT_KEYS } from "./costs";
+import { isOrderTimeline } from "./timelineValidation";
 
 const record = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === "object" && !Array.isArray(v);
@@ -13,22 +14,47 @@ const optionalString = (v: unknown) => v === undefined || nullableString(v);
 const optionalText = (v: unknown) => v === undefined || typeof v === "string";
 const countMap = (v: unknown) => record(v) && Object.values(v).every(count);
 
-function isCostAmount(v: unknown, totalOrders: number, signed = false): boolean {
-  if (!record(v) || !count(v.coveredOrders) || v.coveredOrders > totalOrders ||
-      !finite(v.knownAmount) || (!signed && v.knownAmount < 0) ||
-      (v.coveredOrders === 0 && v.knownAmount !== 0)) return false;
-  return v.coveredOrders === totalOrders ? finite(v.amount) && v.amount === v.knownAmount : v.amount === null;
+function isCostAmount(
+  v: unknown,
+  totalOrders: number,
+  signed = false,
+): boolean {
+  if (
+    !record(v) ||
+    !count(v.coveredOrders) ||
+    v.coveredOrders > totalOrders ||
+    !finite(v.knownAmount) ||
+    (!signed && v.knownAmount < 0) ||
+    (v.coveredOrders === 0 && v.knownAmount !== 0)
+  )
+    return false;
+  return v.coveredOrders === totalOrders
+    ? finite(v.amount) && v.amount === v.knownAmount
+    : v.amount === null;
 }
 
 function isCostBreakdown(v: unknown, totalOrders: number): boolean {
-  if (!record(v) || !record(v.components) || !record(v.reconciliation)) return false;
-  const components = v.components, r = v.reconciliation;
-  return COST_COMPONENT_KEYS.every((key) => isCostAmount(components[key], totalOrders, key === "productLines")) &&
-    isCostAmount(v.additionalCharges, totalOrders) && isCostAmount(v.includedTaxes, totalOrders) &&
-    count(r.matchedOrders) && count(r.mismatchedOrders) && count(r.unavailableOrders) &&
-    r.matchedOrders + r.mismatchedOrders + r.unavailableOrders === totalOrders &&
-    finite(r.netDifference) && finite(r.absoluteDifference) && r.absoluteDifference >= 0 &&
-    Math.round(r.absoluteDifference * 100) >= Math.abs(Math.round(r.netDifference * 100));
+  if (!record(v) || !record(v.components) || !record(v.reconciliation))
+    return false;
+  const components = v.components,
+    r = v.reconciliation;
+  return (
+    COST_COMPONENT_KEYS.every((key) =>
+      isCostAmount(components[key], totalOrders, key === "productLines"),
+    ) &&
+    isCostAmount(v.additionalCharges, totalOrders) &&
+    isCostAmount(v.includedTaxes, totalOrders) &&
+    count(r.matchedOrders) &&
+    count(r.mismatchedOrders) &&
+    count(r.unavailableOrders) &&
+    r.matchedOrders + r.mismatchedOrders + r.unavailableOrders ===
+      totalOrders &&
+    finite(r.netDifference) &&
+    finite(r.absoluteDifference) &&
+    r.absoluteDifference >= 0 &&
+    Math.round(r.absoluteDifference * 100) >=
+      Math.abs(Math.round(r.netDifference * 100))
+  );
 }
 
 export const isUser = (v: unknown): v is User =>
@@ -95,10 +121,11 @@ function isOrderStats(v: unknown): v is OrderStats {
 
 export function isOrderAnalytics(
   v: unknown,
-): v is Pick<Orders, "all" | "perYear"> {
+): v is Pick<Orders, "all" | "perYear" | "timeline"> {
   return (
     record(v) &&
     isOrderStats(v.all) &&
+    isOrderTimeline(v.timeline, v.all.totalOrders, v.all.totalPrice) &&
     Array.isArray(v.perYear) &&
     v.perYear.every(
       (year) =>
@@ -112,7 +139,7 @@ export function isOrderAnalytics(
 
 export function parseOrderAnalyticsResponse(
   v: unknown,
-): Pick<Orders, "all" | "perYear"> {
+): Pick<Orders, "all" | "perYear" | "timeline"> {
   if (!record(v) || !isOrderAnalytics(v.orders))
     throw new Error("Η απόκριση στατιστικών δεν είναι έγκυρη.");
   return v.orders;

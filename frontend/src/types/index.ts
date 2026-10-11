@@ -1,6 +1,7 @@
 export interface Orders {
   all: OrderStats;
   perYear: PerYear[];
+  timeline: OrderTimeline;
   timestamp: Date;
   cacheVersion: number;
   ownerSessionId: string;
@@ -30,8 +31,18 @@ export interface OrderStats {
   costBreakdown: CostBreakdown;
 }
 
-export type CostComponentKey = "productLines" | "delivery" | "service" | "bags" | "tips" |
-  "priority" | "smallOrder" | "recycling" | "donation" | "coupon" | "joker";
+export type CostComponentKey =
+  | "productLines"
+  | "delivery"
+  | "service"
+  | "bags"
+  | "tips"
+  | "priority"
+  | "smallOrder"
+  | "recycling"
+  | "donation"
+  | "coupon"
+  | "joker";
 
 export interface CostAmount {
   amount: number | null;
@@ -54,6 +65,54 @@ export interface CostBreakdown {
 
 export interface PerYear extends OrderStats {
   year: string;
+}
+
+export interface PeriodMetrics {
+  totalOrders: number;
+  totalPrice: number;
+  averagePrice: number | null;
+  medianPrice: number | null;
+}
+export interface TimeBucket extends PeriodMetrics {
+  key: string;
+  from: string;
+  through: string;
+  partial: boolean;
+}
+export interface ComparedPeriod extends PeriodMetrics {
+  from: string;
+  through: string;
+  complete: boolean;
+}
+export interface MetricChange {
+  absolute: number;
+  percent: number | null;
+}
+export interface PeriodComparison {
+  key: string;
+  days: number;
+  current: ComparedPeriod;
+  previous: ComparedPeriod;
+  change: {
+    totalPrice: MetricChange;
+    totalOrders: MetricChange;
+    averagePrice: MetricChange | null;
+    medianPrice: MetricChange | null;
+  } | null;
+}
+export interface OrderTimeline {
+  asOf: string;
+  coverage: {
+    from: string | null;
+    through: string;
+    undatedOrders: number;
+    undatedAmount: number;
+    futureOrders: number;
+    futureAmount: number;
+  };
+  months: TimeBucket[];
+  weeks: TimeBucket[];
+  comparisons: PeriodComparison[];
 }
 
 export interface Restaurant {

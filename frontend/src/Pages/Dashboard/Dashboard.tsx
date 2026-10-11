@@ -20,7 +20,12 @@ import {
 import { CgRowLast } from "react-icons/cg";
 import { GoGraph } from "react-icons/go";
 import Map from "./Map/Map";
-import { dateFormat, formatAmount, NO_DATA, timeFormat } from "../../utils/helpers";
+import {
+  dateFormat,
+  formatAmount,
+  NO_DATA,
+  timeFormat,
+} from "../../utils/helpers";
 import { useQuery } from "@tanstack/react-query";
 import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import { UserContext } from "../../Services/UserContext/UserContext";
@@ -33,6 +38,7 @@ import WeekdayChart from "./Charts/WeekdayChart";
 import HourCard from "./Cards/HourCard";
 import MapCard from "./Cards/MapCard";
 import CostBreakdownPanel from "./CostBreakdown/CostBreakdownPanel";
+import SpendingPanel from "./Spending/SpendingPanel";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
@@ -53,31 +59,38 @@ function Dashboard() {
 
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
-  const effectiveSelectedYear = years.some((year) => year.value === selectedYear) ? selectedYear : defaultSelectedYear;
+  const effectiveSelectedYear = years.some(
+    (year) => year.value === selectedYear,
+  )
+    ? selectedYear
+    : defaultSelectedYear;
 
-  const fetchOrders = useCallback(async (signal: AbortSignal) => {
-    if (!user?.session_id) {
-      throw new Error("Session ID is required");
-    }
-    const response = await EfoodAxios.get("/orders", {
-      signal,
-      headers: {
-        session_id: user.session_id,
-      },
-    });
+  const fetchOrders = useCallback(
+    async (signal: AbortSignal) => {
+      if (!user?.session_id) {
+        throw new Error("Session ID is required");
+      }
+      const response = await EfoodAxios.get("/orders", {
+        signal,
+        headers: {
+          session_id: user.session_id,
+        },
+      });
 
-    if (signal.aborted) throw new Error("Order request cancelled");
-    const orders = parseOrderAnalyticsResponse(response.data);
-    dispatch({ type: "SET_ORDERS", payload: orders, requestUser: user });
-    showNotification({
-      title: "Επιτυχής ανάκτηση δεδομένων",
-      message: `Βρέθηκαν συνολικά ${orders.all.totalOrders} παραγγελίες`,
-      color: "green",
-      icon: <GoGraph />,
-    });
+      if (signal.aborted) throw new Error("Order request cancelled");
+      const orders = parseOrderAnalyticsResponse(response.data);
+      dispatch({ type: "SET_ORDERS", payload: orders, requestUser: user });
+      showNotification({
+        title: "Επιτυχής ανάκτηση δεδομένων",
+        message: `Βρέθηκαν συνολικά ${orders.all.totalOrders} παραγγελίες`,
+        color: "green",
+        icon: <GoGraph />,
+      });
 
-    return response;
-  }, [user, dispatch]);
+      return response;
+    },
+    [user, dispatch],
+  );
 
   const {
     refetch,
@@ -100,10 +113,9 @@ function Dashboard() {
       return ordersState.all;
     }
     return ordersState.perYear.find(
-      (year: PerYear) => year.year === effectiveSelectedYear
+      (year: PerYear) => year.year === effectiveSelectedYear,
     );
   }, [effectiveSelectedYear, ordersState]);
-
 
   return (
     <>
@@ -173,7 +185,10 @@ function Dashboard() {
               title="Μέσος Όρος / Παραγγελία"
               value={
                 selectedYearOrders && selectedYearOrders.totalOrders > 0
-                  ? formatAmount(selectedYearOrders.totalPrice / selectedYearOrders.totalOrders)
+                  ? formatAmount(
+                      selectedYearOrders.totalPrice /
+                        selectedYearOrders.totalOrders,
+                    )
                   : NO_DATA
               }
               icon={<GoGraph size={40} />}
@@ -211,15 +226,26 @@ function Dashboard() {
               color="rgba(234, 179, 8, 0.25)"
             />
           </div>
-          {selectedYearOrders && <CostBreakdownPanel data={selectedYearOrders.costBreakdown}
-            totalOrders={selectedYearOrders.totalOrders} totalPrice={selectedYearOrders.totalPrice} />}
+          {ordersState && (
+            <SpendingPanel
+              timeline={ordersState.timeline}
+              year={effectiveSelectedYear ?? "all"}
+            />
+          )}
+          {selectedYearOrders && (
+            <CostBreakdownPanel
+              data={selectedYearOrders.costBreakdown}
+              totalOrders={selectedYearOrders.totalOrders}
+              totalPrice={selectedYearOrders.totalPrice}
+            />
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             {selectedYearOrders?.restaurantWithMostMoneySpent && (
               <RestaurantCard
                 data={selectedYearOrders?.restaurantWithMostMoneySpent}
               />
             )}
-            
+
             {selectedYearOrders?.mostOrderedProduct && (
               <OrderCard data={selectedYearOrders?.mostOrderedProduct} />
             )}

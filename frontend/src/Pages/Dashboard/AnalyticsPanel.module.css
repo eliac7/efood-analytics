@@ -1,0 +1,9 @@
+.panel {
+  --analytics-panel-bg: var(--mantine-color-blue-0);
+  --mantine-color-dimmed: var(--mantine-color-gray-7);
+}
+
+:global([data-mantine-color-scheme="dark"]) .panel {
+  --analytics-panel-bg: var(--mantine-color-dark-6);
+  --mantine-color-dimmed: var(--mantine-color-gray-4);
+}

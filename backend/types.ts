@@ -39,7 +39,11 @@ export interface EfoodOrder {
   delivery_cost?: number | null;
   tip?: number | null;
   service_fee?: number | null;
-  service_fees?: { total?: number | null; current?: number | null; late_night?: number | null };
+  service_fees?: {
+    total?: number | null;
+    current?: number | null;
+    late_night?: number | null;
+  };
   bags?: { amount?: number | null };
   csr?: { amount?: number | null };
   priority_fee?: number | null;
@@ -108,8 +112,18 @@ export interface CommonOrderStats {
   costBreakdown: CostBreakdown;
 }
 
-export type CostComponentKey = "productLines" | "delivery" | "service" | "bags" | "tips" |
-  "priority" | "smallOrder" | "recycling" | "donation" | "coupon" | "joker";
+export type CostComponentKey =
+  | "productLines"
+  | "delivery"
+  | "service"
+  | "bags"
+  | "tips"
+  | "priority"
+  | "smallOrder"
+  | "recycling"
+  | "donation"
+  | "coupon"
+  | "joker";
 
 export interface CostAmount {
   /** Complete total, or null when some orders have unavailable data. */
@@ -139,6 +153,59 @@ export interface YearOrderStats extends CommonOrderStats {
 export interface OrderAnalytics {
   all: CommonOrderStats;
   perYear: YearOrderStats[];
+  timeline: OrderTimeline;
+}
+
+export interface PeriodMetrics {
+  totalOrders: number;
+  totalPrice: number;
+  averagePrice: number | null;
+  medianPrice: number | null;
+}
+
+export interface TimeBucket extends PeriodMetrics {
+  key: string;
+  from: string;
+  through: string;
+  partial: boolean;
+}
+
+export interface ComparedPeriod extends PeriodMetrics {
+  from: string;
+  through: string;
+  complete: boolean;
+}
+
+export interface MetricChange {
+  absolute: number;
+  percent: number | null;
+}
+export interface PeriodComparison {
+  key: string;
+  days: number;
+  current: ComparedPeriod;
+  previous: ComparedPeriod;
+  change: {
+    totalPrice: MetricChange;
+    totalOrders: MetricChange;
+    averagePrice: MetricChange | null;
+    medianPrice: MetricChange | null;
+  } | null;
+}
+
+export interface OrderTimeline {
+  asOf: string;
+  coverage: {
+    from: string | null;
+    through: string;
+    undatedOrders: number;
+    undatedAmount: number;
+    futureOrders: number;
+    futureAmount: number;
+  };
+  months: TimeBucket[];
+  weeks: TimeBucket[];
+  comparisons: PeriodComparison[];
 }
 
 export interface AuthService {

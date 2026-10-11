@@ -1,14 +1,53 @@
-import { CostAmount, CostBreakdown, CostComponentKey, Orders, User } from "../types";
+import {
+  CostAmount,
+  CostBreakdown,
+  CostComponentKey,
+  Orders,
+  OrderTimeline,
+  PeriodMetrics,
+  User,
+} from "../types";
 import { ORDERS_CACHE_VERSION } from "../utils/constants";
 import { COST_COMPONENT_KEYS } from "../utils/costs";
 
-export function makeTestCostBreakdown(totalOrders: number, productLines = 0, delivery = 0, tips = 0, coupon = 0): CostBreakdown {
-  const unknown = (): CostAmount => ({ amount: totalOrders === 0 ? 0 : null, knownAmount: 0, coveredOrders: 0 });
-  const known = (amount: number): CostAmount => ({ amount, knownAmount: amount, coveredOrders: totalOrders });
-  const components = Object.fromEntries(COST_COMPONENT_KEYS.map((key) => [key, unknown()])) as Record<CostComponentKey, CostAmount>;
-  Object.assign(components, { productLines: known(productLines), delivery: known(delivery), tips: known(tips), coupon: known(coupon) });
-  return { components, additionalCharges: unknown(), includedTaxes: unknown(),
-    reconciliation: { matchedOrders: 0, mismatchedOrders: 0, unavailableOrders: totalOrders, netDifference: 0, absoluteDifference: 0 } };
+export function makeTestCostBreakdown(
+  totalOrders: number,
+  productLines = 0,
+  delivery = 0,
+  tips = 0,
+  coupon = 0,
+): CostBreakdown {
+  const unknown = (): CostAmount => ({
+    amount: totalOrders === 0 ? 0 : null,
+    knownAmount: 0,
+    coveredOrders: 0,
+  });
+  const known = (amount: number): CostAmount => ({
+    amount,
+    knownAmount: amount,
+    coveredOrders: totalOrders,
+  });
+  const components = Object.fromEntries(
+    COST_COMPONENT_KEYS.map((key) => [key, unknown()]),
+  ) as Record<CostComponentKey, CostAmount>;
+  Object.assign(components, {
+    productLines: known(productLines),
+    delivery: known(delivery),
+    tips: known(tips),
+    coupon: known(coupon),
+  });
+  return {
+    components,
+    additionalCharges: unknown(),
+    includedTaxes: unknown(),
+    reconciliation: {
+      matchedOrders: 0,
+      mismatchedOrders: 0,
+      unavailableOrders: totalOrders,
+      netDifference: 0,
+      absoluteDifference: 0,
+    },
+  };
 }
 
 export const testUser: User = {
@@ -18,6 +57,7 @@ export const testUser: User = {
 };
 
 export const testOrders: Orders = {
+  timeline: makeTestTimeline(),
   cacheVersion: ORDERS_CACHE_VERSION,
   ownerSessionId: testUser.session_id,
   ownerLoginAt: testUser.loginAt!,
@@ -67,9 +107,9 @@ export const testOrders: Orders = {
     },
     averageDeliveryTime: 38,
     uniqueRestaurants: 3,
-    weekdays: { "Δευτέρα": 1, "Τρίτη": 2 },
+    weekdays: { Δευτέρα: 1, Τρίτη: 2 },
     phases: { night: 1, morning: 1, noon: 1, afternoon: 0 },
-    months: { "Μάρτιος": 1, "Απρίλιος": 1, "Δεκέμβριος": 1 },
+    months: { Μάρτιος: 1, Απρίλιος: 1, Δεκέμβριος: 1 },
     cities: { Athens: 2, Patras: 1 },
   },
   perYear: [
@@ -106,9 +146,9 @@ export const testOrders: Orders = {
       },
       averageDeliveryTime: 30,
       uniqueRestaurants: 1,
-      weekdays: { "Δευτέρα": 1, "Τρίτη": 1 },
+      weekdays: { Δευτέρα: 1, Τρίτη: 1 },
       phases: { morning: 1, noon: 1, afternoon: 0, night: 0 },
-      months: { "Μάρτιος": 1, "Απρίλιος": 1 },
+      months: { Μάρτιος: 1, Απρίλιος: 1 },
       cities: { Athens: 1, Koukaki: 1 },
     },
     {
@@ -144,10 +184,97 @@ export const testOrders: Orders = {
       },
       averageDeliveryTime: 45,
       uniqueRestaurants: 1,
-      weekdays: { "Τρίτη": 1 },
+      weekdays: { Τρίτη: 1 },
       phases: { night: 1, morning: 0, noon: 0, afternoon: 0 },
-      months: { "Δεκέμβριος": 1 },
+      months: { Δεκέμβριος: 1 },
       cities: { Patras: 1 },
     },
   ],
 };
+
+export function makeTestTimeline(
+  totalOrders = 4,
+  totalPrice = 49.74,
+): OrderTimeline {
+  const values = [
+    { day: "2024-12-31", price: 9.99 },
+    { day: "2025-03-10", price: 12.5 },
+    { day: "2025-04-15", price: 20.25 },
+  ];
+  const metrics = (from: string, through: string): PeriodMetrics => {
+    const prices = values
+      .filter((v) => v.day >= from && v.day <= through)
+      .map((v) => v.price)
+      .sort((a, b) => a - b);
+    const total = prices.reduce((sum, p) => sum + Math.round(p * 100), 0);
+    return {
+      totalOrders: prices.length,
+      totalPrice: total / 100,
+      averagePrice: prices.length
+        ? Math.round(total / prices.length) / 100
+        : null,
+      medianPrice: prices.length ? prices[Math.floor(prices.length / 2)] : null,
+    };
+  };
+  const key = (d: Date) => d.toISOString().slice(0, 10);
+  const buckets = (weekly: boolean) => {
+    const result: OrderTimeline["months"] = [];
+    for (
+      let date = new Date(weekly ? "2024-12-30" : "2024-12-01");
+      key(date) <= "2026-01-01";
+    ) {
+      const from = key(date),
+        end = new Date(date);
+      if (weekly)
+        end.setUTCDate(end.getUTCDate() + 6 - ((end.getUTCDay() + 6) % 7));
+      else end.setUTCMonth(end.getUTCMonth() + 1, 0);
+      if (end.getUTCFullYear() > date.getUTCFullYear())
+        end.setUTCFullYear(date.getUTCFullYear(), 11, 31);
+      const through = key(end);
+      result.push({
+        key: weekly ? from : from.slice(0, 7),
+        from,
+        through,
+        partial: from < "2024-12-31" || through >= "2026-01-01",
+        ...metrics(from, through),
+      });
+      date = new Date(end);
+      date.setUTCDate(date.getUTCDate() + 1);
+    }
+    return result;
+  };
+  const empty = {
+    totalOrders: 0,
+    totalPrice: 0,
+    averagePrice: null,
+    medianPrice: null,
+    complete: false,
+  };
+  return {
+    asOf: "2026-01-01T08:30:00.000Z",
+    coverage: {
+      from: "2024-12-31",
+      through: "2026-01-01",
+      undatedOrders: totalOrders - 3,
+      undatedAmount: (Math.round(totalPrice * 100) - 4274) / 100,
+      futureOrders: 0,
+      futureAmount: 0,
+    },
+    months: buckets(false),
+    weeks: buckets(true),
+    comparisons: [
+      "month",
+      "days30",
+      "days90",
+      "year:2026",
+      "year:2025",
+      "year:2024",
+    ].map((key) => ({
+      key,
+      days: 0,
+      current: { ...empty, from: "2026-01-01", through: "2026-01-01" },
+      previous: { ...empty, from: "2025-01-01", through: "2025-01-01" },
+      change: null,
+    })),
+  };
+}
