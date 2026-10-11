@@ -7,6 +7,10 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
 const text = (value: unknown): string | undefined => typeof value === "string" ? value : undefined;
 const number = (value: unknown): number | null =>
   typeof value === "number" && Number.isFinite(value) && Math.abs(value * 100) <= Number.MAX_SAFE_INTEGER ? value : null;
+const nonNegativeAmount = (value: unknown): number | null => {
+  const parsed = number(value);
+  return parsed !== null && parsed >= 0 ? parsed : null;
+};
 const id = (value: unknown): string | number | undefined =>
   typeof value === "string" && value.trim() ? value.trim() :
   typeof value === "number" && Number.isSafeInteger(value) ? value : undefined;
@@ -49,6 +53,8 @@ export function normalizeOrder(value: unknown, requireId = false): EfoodOrder {
   const delivery = isRecord(value.delivery) ? value.delivery : null;
   const estimate = delivery && isRecord(delivery.time_estimation) ? delivery.time_estimation : null;
   const address = isRecord(value.delivery_address) ? value.delivery_address : null;
+  const serviceFees = isRecord(value.service_fees) ? value.service_fees : null;
+  const donation = isRecord(value.csr) ? value.csr : null;
   return {
     ...value, id: orderId, price: requiredNumber(value.price, "price"),
     submission_date: parseOrderDate(value.submission_date) ? value.submission_date as string : null,
@@ -56,6 +62,15 @@ export function normalizeOrder(value: unknown, requireId = false): EfoodOrder {
     coupon: value.coupon === null ? null :
       isRecord(value.coupon) ? { ...value.coupon, amount: number(value.coupon.amount) ?? undefined } : undefined,
     tip: number(value.tip), delivery_cost: number(value.delivery_cost), delivery_time: number(value.delivery_time),
+    service_fee: nonNegativeAmount(value.service_fee),
+    service_fees: serviceFees ? { total: nonNegativeAmount(serviceFees.total),
+      current: nonNegativeAmount(serviceFees.current), late_night: nonNegativeAmount(serviceFees.late_night) } : undefined,
+    bags: isRecord(value.bags) ? { amount: nonNegativeAmount(value.bags.amount) } : undefined,
+    // The history explicitly reports no donation with an empty csr object.
+    csr: donation ? { amount: Object.keys(donation).length === 0 ? 0 : nonNegativeAmount(donation.amount) } : undefined,
+    priority_fee: nonNegativeAmount(value.priority_fee), small_order_fee: nonNegativeAmount(value.small_order_fee),
+    pvc_recycling_taxes: nonNegativeAmount(value.pvc_recycling_taxes),
+    additional_taxes: nonNegativeAmount(value.additional_taxes), joker_discount: nonNegativeAmount(value.joker_discount),
     delivery: estimate ? { time_estimation: { minutes: number(estimate.minutes) } } : undefined,
     restaurant: {
       ...restaurant, id: restaurantId, name: text(restaurant.name), address: text(restaurant.address),

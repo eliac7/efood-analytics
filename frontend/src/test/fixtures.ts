@@ -1,5 +1,15 @@
-import { Orders, User } from "../types";
+import { CostAmount, CostBreakdown, CostComponentKey, Orders, User } from "../types";
 import { ORDERS_CACHE_VERSION } from "../utils/constants";
+import { COST_COMPONENT_KEYS } from "../utils/costs";
+
+export function makeTestCostBreakdown(totalOrders: number, productLines = 0, delivery = 0, tips = 0, coupon = 0): CostBreakdown {
+  const unknown = (): CostAmount => ({ amount: totalOrders === 0 ? 0 : null, knownAmount: 0, coveredOrders: 0 });
+  const known = (amount: number): CostAmount => ({ amount, knownAmount: amount, coveredOrders: totalOrders });
+  const components = Object.fromEntries(COST_COMPONENT_KEYS.map((key) => [key, unknown()])) as Record<CostComponentKey, CostAmount>;
+  Object.assign(components, { productLines: known(productLines), delivery: known(delivery), tips: known(tips), coupon: known(coupon) });
+  return { components, additionalCharges: unknown(), includedTaxes: unknown(),
+    reconciliation: { matchedOrders: 0, mismatchedOrders: 0, unavailableOrders: totalOrders, netDifference: 0, absoluteDifference: 0 } };
+}
 
 export const testUser: User = {
   session_id: "00000000-0000-0000-0000-000000000000",
@@ -13,6 +23,7 @@ export const testOrders: Orders = {
   ownerLoginAt: testUser.loginAt!,
   timestamp: new Date("2026-01-01T10:30:00"),
   all: {
+    costBreakdown: makeTestCostBreakdown(4, 51.99, 3, 2, 1.5),
     totalOrders: 4,
     totalPrice: 49.74,
     couponAmount: 1.5,
@@ -64,6 +75,7 @@ export const testOrders: Orders = {
   perYear: [
     {
       year: "2025",
+      costBreakdown: makeTestCostBreakdown(2, 35, 2, 2, 1),
       totalOrders: 2,
       totalPrice: 32.75,
       couponAmount: 1,
@@ -101,6 +113,7 @@ export const testOrders: Orders = {
     },
     {
       year: "2024",
+      costBreakdown: makeTestCostBreakdown(1, 9.99, 1, 0, 0.5),
       totalOrders: 1,
       totalPrice: 9.99,
       couponAmount: 0.5,

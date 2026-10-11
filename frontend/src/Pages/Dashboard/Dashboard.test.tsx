@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../test/render";
-import { testOrders, testUser } from "../../test/fixtures";
+import { makeTestCostBreakdown, testOrders, testUser } from "../../test/fixtures";
 import { useAuth } from "../../Hooks/Auth/useAuth";
 import EfoodAxios from "../../Services/EfoodAxios/Efoodaxios";
 import Dashboard from "./Dashboard";
@@ -67,6 +67,9 @@ describe("Dashboard", () => {
     });
     expect(screen.getAllByText("1").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/9,99/).length).toBeGreaterThan(0);
+    const costs = within(screen.getByRole("region", { name: "Ανάλυση κόστους" }));
+    expect(costs.getByText("1 παραγγελία")).toBeInTheDocument();
+    expect(costs.getByText(/σε 1\/1 παραγγελίες/i)).toBeInTheDocument();
   });
 
   it("fetches orders when no cached analytics exist", async () => {
@@ -147,7 +150,7 @@ describe("Dashboard", () => {
     renderWithProviders(<Dashboard />, { dispatch, state: { user: testUser, orders: { ...testOrders, timestamp: new Date(0) }, loading: false } });
     fireEvent.click(screen.getByRole("button", { name: "Ανανέωση παραγγελιών" }));
     expect(dispatch).not.toHaveBeenCalled();
-    const updated = { all: { ...testOrders.all, totalOrders: 5 }, perYear: testOrders.perYear };
+    const updated = { all: { ...testOrders.all, totalOrders: 5, costBreakdown: makeTestCostBreakdown(5) }, perYear: testOrders.perYear };
     await act(async () => { complete({ data: { orders: updated } }); });
     await waitFor(() => { expect(dispatch).toHaveBeenCalledWith({ type: "SET_ORDERS", payload: updated, requestUser: testUser }); });
     expect(dispatch).toHaveBeenCalledOnce();

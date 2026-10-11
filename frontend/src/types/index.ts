@@ -27,6 +27,29 @@ export interface OrderStats {
   phases: Phases;
   months: { [key: string]: number };
   cities: { [key: string]: number };
+  costBreakdown: CostBreakdown;
+}
+
+export type CostComponentKey = "productLines" | "delivery" | "service" | "bags" | "tips" |
+  "priority" | "smallOrder" | "recycling" | "donation" | "coupon" | "joker";
+
+export interface CostAmount {
+  amount: number | null;
+  knownAmount: number;
+  coveredOrders: number;
+}
+
+export interface CostBreakdown {
+  components: Record<CostComponentKey, CostAmount>;
+  additionalCharges: CostAmount;
+  includedTaxes: CostAmount;
+  reconciliation: {
+    matchedOrders: number;
+    mismatchedOrders: number;
+    unavailableOrders: number;
+    netDifference: number;
+    absoluteDifference: number;
+  };
 }
 
 export interface PerYear extends OrderStats {

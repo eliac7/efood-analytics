@@ -5,6 +5,7 @@ import {
 import { findMostOrderedProduct } from "./productStats.js";
 import { calculateRestaurantStats } from "./restaurantStats.js";
 import { calculateTimeStats } from "./timeStats.js";
+import { calculateCostStats } from "./costStats.js";
 import type { CommonOrderStats, EfoodOrder, YearOrderStats } from "../../../types.js";
 
 /**
@@ -30,6 +31,7 @@ export function calculateYearStats(orders: EfoodOrder[], year: string): YearOrde
   return {
     year,
     totalOrders: orders.length,
+    costBreakdown: calculateCostStats(orders),
     totalPrice: Math.round(aggregateStats.totalPrice * 100) / 100,
     platforms: aggregateStats.platforms,
     paymentMethods: aggregateStats.paymentMethods,
@@ -68,6 +70,7 @@ export function calculateAllTimeStats(
 
   return {
     totalOrders: allOrders.length,
+    costBreakdown: calculateCostStats(allOrders),
     totalPrice: Math.round(aggregateStats.totalPrice * 100) / 100,
     platforms: aggregateStats.platforms,
     paymentMethods: aggregateStats.paymentMethods,

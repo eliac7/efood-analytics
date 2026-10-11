@@ -32,6 +32,7 @@ import PlatformAndPaymentChart from "./Charts/PlatformAndPaymentChart";
 import WeekdayChart from "./Charts/WeekdayChart";
 import HourCard from "./Cards/HourCard";
 import MapCard from "./Cards/MapCard";
+import CostBreakdownPanel from "./CostBreakdown/CostBreakdownPanel";
 
 function Dashboard() {
   const { state, dispatch } = useContext(UserContext);
@@ -210,6 +211,8 @@ function Dashboard() {
               color="rgba(234, 179, 8, 0.25)"
             />
           </div>
+          {selectedYearOrders && <CostBreakdownPanel data={selectedYearOrders.costBreakdown}
+            totalOrders={selectedYearOrders.totalOrders} totalPrice={selectedYearOrders.totalPrice} />}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 my-4">
             {selectedYearOrders?.restaurantWithMostMoneySpent && (
               <RestaurantCard

@@ -43,4 +43,18 @@ describe("analytics cache", () => {
       expect(getStoredOrders(testUser)).toBeNull();
     }
   });
+
+  it("rejects missing breakdowns or inconsistent cost coverage", () => {
+    const cost = testOrders.all.costBreakdown;
+    for (const costBreakdown of [undefined, {}, { ...cost, additionalCharges: { amount: 1, knownAmount: 1, coveredOrders: 99 } },
+      { ...cost, reconciliation: { ...cost.reconciliation, matchedOrders: 999 } }]) {
+      localStorage.setItem(LOCAL_STORAGE_ORDERS, JSON.stringify({ ...testOrders, all: { ...testOrders.all, costBreakdown } }));
+      expect(getStoredOrders(testUser)).toBeNull();
+    }
+  });
+
+  it("invalidates version 3 analytics so cost analysis is fetched", () => {
+    localStorage.setItem(LOCAL_STORAGE_ORDERS, JSON.stringify({ ...testOrders, cacheVersion: 3 }));
+    expect(getStoredOrders(testUser)).toBeNull();
+  });
 });

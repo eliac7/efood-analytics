@@ -38,6 +38,15 @@ export interface EfoodOrder {
   coupon?: { amount?: number } | null;
   delivery_cost?: number | null;
   tip?: number | null;
+  service_fee?: number | null;
+  service_fees?: { total?: number | null; current?: number | null; late_night?: number | null };
+  bags?: { amount?: number | null };
+  csr?: { amount?: number | null };
+  priority_fee?: number | null;
+  small_order_fee?: number | null;
+  pvc_recycling_taxes?: number | null;
+  additional_taxes?: number | null;
+  joker_discount?: number | null;
   delivery_time?: number | string | null;
   delivery?: {
     time_estimation?: { minutes?: number | null };
@@ -96,6 +105,31 @@ export interface CommonOrderStats {
   phases: CountMap;
   months: CountMap;
   cities: CountMap;
+  costBreakdown: CostBreakdown;
+}
+
+export type CostComponentKey = "productLines" | "delivery" | "service" | "bags" | "tips" |
+  "priority" | "smallOrder" | "recycling" | "donation" | "coupon" | "joker";
+
+export interface CostAmount {
+  /** Complete total, or null when some orders have unavailable data. */
+  amount: number | null;
+  knownAmount: number;
+  coveredOrders: number;
+}
+
+export interface CostBreakdown {
+  components: Record<CostComponentKey, CostAmount>;
+  additionalCharges: CostAmount;
+  includedTaxes: CostAmount;
+  reconciliation: {
+    matchedOrders: number;
+    mismatchedOrders: number;
+    unavailableOrders: number;
+    /** Differences for comparable orders only; absolute total prevents cancellation. */
+    netDifference: number;
+    absoluteDifference: number;
+  };
 }
 
 export interface YearOrderStats extends CommonOrderStats {
